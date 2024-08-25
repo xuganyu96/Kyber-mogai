@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include "kyber/ref/randombytes.h"
 #include "kyber/ref/symmetric.h"
 #include "kyber/ref/params.h"
 #include "kyber/ref/indcpa.h"
@@ -30,6 +31,16 @@ int etm_encap_derand(uint8_t *ct,
     memcpy(kt, kk, KYBER_SYMBYTES);
     memcpy(kt + KYBER_SYMBYTES, ct + KYBER_CIPHERTEXTBYTES, MAC_TAG_BYTES);
     hash_h(ss, kt, sizeof(kt));
+
+    return 0;
+}
+
+int etm_encap(uint8_t *ct,
+              uint8_t *ss,
+              const uint8_t *pk) {
+    uint8_t ptcoins[KYBER_INDCPA_MSGBYTES + KYBER_SYMBYTES];
+    randombytes(ptcoins, sizeof(ptcoins));
+    etm_encap_derand(ct, ss, pk, ptcoins, ptcoins + KYBER_INDCPA_MSGBYTES);
 
     return 0;
 }

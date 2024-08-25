@@ -60,3 +60,4 @@ dkms.conf
 
 # test binaries
 tests/test_authenticators
+main
