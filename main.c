@@ -5,7 +5,6 @@
 #include "stdint.h"
 #include "authenticators.h"
 #include "etm.h"
-#include "kyber/ref/indcpa.h"
 
 int main(int argc, char *argv[]) {
     uint8_t pk[KYBER_PUBLICKEYBYTES];
@@ -27,4 +26,22 @@ int main(int argc, char *argv[]) {
 
     // encap
     etm_encap(ct, ss, pk);
+
+    // decap
+    uint8_t decapsulation[KYBER_SYMBYTES];
+    etm_decap(ct, decapsulation, sk);
+
+    // check correctness
+    int fail = 0;
+    for(size_t i = 0; i < KYBER_SYMBYTES; i++) {
+        if(ss[i] != decapsulation[i]) {
+            fail = 1;
+        }
+    }
+    if(fail) {
+        fprintf(stderr, "Decapsulation failed");
+        return 1;
+    }
+    printf("Decapsulation succeeded");
+    return 0;
 }
