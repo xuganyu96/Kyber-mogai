@@ -51,7 +51,7 @@ int etm_decap(uint8_t *ct, uint8_t *ss, const uint8_t *sk) {
     uint8_t verify_tag[MAC_TAG_BYTES];
     indcpa_dec(mh, ct, sk);
     memcpy(mh + KYBER_INDCPA_MSGBYTES, sk + KYBER_SECRETKEYBYTES - 2 * KYBER_SYMBYTES, KYBER_SYMBYTES);
-    hash_h(kk, mh, sizeof(mh));
+    hash_g(kk, mh, sizeof(mh));
 
     // verify the tag
     mac(kk + KYBER_SYMBYTES, ct, KYBER_CIPHERTEXTBYTES, verify_tag);

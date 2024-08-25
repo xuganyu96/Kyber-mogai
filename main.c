@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
         }
     }
     if(fail) {
-        fprintf(stderr, "Decapsulation failed");
+        fprintf(stderr, "Decapsulation failed\n");
         return 1;
     }
-    printf("Decapsulation succeeded");
+    printf("Decapsulation succeeded\n");
     return 0;
 }
