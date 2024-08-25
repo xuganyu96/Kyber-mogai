@@ -4,6 +4,7 @@
 #include "kyber/ref/symmetric.h"
 #include "kyber/ref/params.h"
 #include "kyber/ref/indcpa.h"
+#include "etm.h"
 #include "authenticators.h"
 
 int etm_encap_derand(uint8_t *ct,

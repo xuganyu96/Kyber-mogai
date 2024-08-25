@@ -59,5 +59,11 @@ dkms.conf
 .DS_Store
 
 # test binaries
-tests/test_authenticators
 main
+test/test_authenticators
+test/test_etm512
+test/test_etm768
+test/test_etm1024
+test/test_speed512
+test/test_speed768
+test/test_speed1024

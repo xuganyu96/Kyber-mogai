@@ -6,7 +6,7 @@
 
 #define ROUNDS 10000
 
-static int randomized_encap_then_decap() {
+static int randomized_encap_then_decap(void) {
     uint8_t pk[KYBER_PUBLICKEYBYTES];
     uint8_t sk[KYBER_SECRETKEYBYTES];
     uint8_t ct[KYBER_CIPHERTEXTBYTES + MAC_TAG_BYTES];
@@ -35,5 +35,7 @@ int main(void) {
     if (fail) {
         return 1;
     }
+
+    printf("Ok\n");
     return 0;
 }

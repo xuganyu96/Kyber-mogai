@@ -16,25 +16,56 @@ RM = /bin/rm
 SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c $(OPENSSLDIR)/lib/libcrypto.a
 HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h
 
-.PHONY: test clean
+.PHONY: test clean speed
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(SOURCES) main.c -o $@
 
 test: \
 	test/test_authenticators \
-	test/test_etm
+	test/test_etm512 \
+	test/test_etm768 \
+	test/test_etm1024 \
+	test/test_speed512 \
+	test/test_speed768 \
+	test/test_speed1024
 	./test/test_authenticators
-	./test/test_etm
-	echo "Ok"
+	./test/test_etm512
+	./test/test_etm768
+	./test/test_etm1024
+
+speed: \
+	test/test_speed512 \
+	test/test_speed768 \
+	test/test_speed1024
 
 test/test_authenticators: $(SOURCES) $(HEADERS) test/test_authenticators.c
 	$(CC) $(CFLAGS) $(SOURCES) test/test_authenticators.c -o $@
 
-test/test_etm: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) test/test_etm.c -o $@
+test/test_etm512: $(SOURCES) $(HEADERS) test/test_etm.c
+	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=2 test/test_etm.c -o $@
+
+test/test_etm768: $(SOURCES) $(HEADERS) test/test_etm.c
+	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=3 test/test_etm.c -o $@
+
+test/test_etm1024: $(SOURCES) $(HEADERS) test/test_etm.c
+	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=4 test/test_etm.c -o $@
+
+test/test_speed512: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=2 -o $@
+
+test/test_speed768: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=3 -o $@
+
+test/test_speed1024: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=4 -o $@
 
 clean:
 	$(RM) -f main
 	$(RM) -f test/test_authenticators
-	$(RM) -f test/test_etm
+	$(RM) -f test/test_etm512
+	$(RM) -f test/test_etm768
+	$(RM) -f test/test_etm1024
+	$(RM) -f test/test_speed512
+	$(RM) -f test/test_speed768
+	$(RM) -f test/test_speed1024
