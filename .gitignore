@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Language server
+.clangd
+
+
+# MacOS
+.DS_Store
