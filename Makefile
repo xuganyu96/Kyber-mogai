@@ -22,7 +22,9 @@ main: $(SOURCES) $(HEADERS) main.c
 	./main
 
 test: \
-	test/test_authenticators \
+	test/test_authenticators512 \
+	test/test_authenticators768 \
+	test/test_authenticators1024 \
 	test/test_etm512_poly1305 \
 	test/test_etm768_poly1305 \
 	test/test_etm1024_poly1305 \
@@ -32,7 +34,9 @@ test: \
 	test/test_speed512 \
 	test/test_speed768 \
 	test/test_speed1024
-	./test/test_authenticators
+	./test/test_authenticators512
+	./test/test_authenticators768
+	./test/test_authenticators1024
 	./test/test_etm512_poly1305
 	./test/test_etm768_poly1305
 	./test/test_etm1024_poly1305
@@ -45,8 +49,14 @@ speed: \
 	test/test_speed768 \
 	test/test_speed1024
 
-test/test_authenticators: $(SOURCES) $(HEADERS) test/test_authenticators.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
+test/test_authenticators512: $(SOURCES) $(HEADERS) test/test_authenticators.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=2 $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
+
+test/test_authenticators768: $(SOURCES) $(HEADERS) test/test_authenticators.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=3 $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
+
+test/test_authenticators1024: $(SOURCES) $(HEADERS) test/test_authenticators.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=4 $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
 
 test/test_etm512_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=2 test/test_etm.c -o $@
@@ -77,7 +87,9 @@ test/test_speed1024: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cp
 
 clean:
 	$(RM) -f main
-	$(RM) -f test/test_authenticators
+	$(RM) -f test/test_authenticators512
+	$(RM) -f test/test_authenticators768
+	$(RM) -f test/test_authenticators1024
 	$(RM) -f test/test_etm1024_gmac
 	$(RM) -f test/test_etm1024_poly1305
 	$(RM) -f test/test_etm512_gmac

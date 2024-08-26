@@ -1,0 +1,52 @@
+./test/test_authenticators512
+Poly1305, len(msg) = 768 bytes
+median: 909 cycles/ticks
+average: 2823 cycles/ticks
+
+AES-256-GCM, len(msg) = 768 bytes
+median: 3899 cycles/ticks
+average: 4859 cycles/ticks
+
+AES-256-CBC, len(msg) = 768 bytes
+median: 6291 cycles/ticks
+average: 6373 cycles/ticks
+
+KMAC-256, len(msg) = 768 bytes
+median: 7565 cycles/ticks
+average: 7791 cycles/ticks
+
+Ok
+./test/test_authenticators768
+Poly1305, len(msg) = 1088 bytes
+median: 961 cycles/ticks
+average: 2704 cycles/ticks
+
+AES-256-GCM, len(msg) = 1088 bytes
+median: 3899 cycles/ticks
+average: 4827 cycles/ticks
+
+AES-256-CBC, len(msg) = 1088 bytes
+median: 7305 cycles/ticks
+average: 7588 cycles/ticks
+
+KMAC-256, len(msg) = 1088 bytes
+median: 9697 cycles/ticks
+average: 9928 cycles/ticks
+
+Ok
+./test/test_authenticators1024
+Poly1305, len(msg) = 1568 bytes
+median: 1065 cycles/ticks
+average: 2809 cycles/ticks
+
+AES-256-GCM, len(msg) = 1568 bytes
+median: 4055 cycles/ticks
+average: 5026 cycles/ticks
+
+AES-256-CBC, len(msg) = 1568 bytes
+median: 8735 cycles/ticks
+average: 8772 cycles/ticks
+
+KMAC-256, len(msg) = 1568 bytes
+median: 11647 cycles/ticks
+average: 12186 cycles/ticks

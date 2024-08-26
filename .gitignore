@@ -60,7 +60,9 @@ dkms.conf
 
 # test binaries
 main
-test/test_authenticators
+test/test_authenticators512
+test/test_authenticators768
+test/test_authenticators1024
 test/test_etm1024_gmac
 test/test_etm1024_poly1305
 test/test_etm512_gmac
