@@ -21,5 +21,17 @@ $(CC) ... $(CFLAGS) $(LDFLAGS) -lcrypto ...
 
 ```yaml
 CompileFlags:
-  Add: ["-I/opt/homebrew/Cellar/openssl@3/3.3.1/include"]
+  Add: [
+    "-I/opt/homebrew/Cellar/openssl@3/3.3.1/include", 
+    "-D__arm64__",
+    "-Wall", 
+    "-Wextra", 
+    "-Wpedantic", 
+    "-Wmissing-prototypes", 
+    "-Wredundant-decls", 
+    "-Wshadow", 
+    "-Wpointer-arith", 
+    "-O3", 
+    "-fomit-frame-pointer",
+  ]
 ```
