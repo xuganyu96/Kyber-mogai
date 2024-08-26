@@ -20,36 +20,52 @@ HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(SOURCES) main.c -o $@
+	./main
 
 test: \
 	test/test_authenticators \
-	test/test_etm512 \
-	test/test_etm768 \
-	test/test_etm1024 \
+	test/test_etm512_poly1305 \
+	test/test_etm768_poly1305 \
+	test/test_etm1024_poly1305 \
+	test/test_etm512_gmac \
+	test/test_etm768_gmac \
+	test/test_etm1024_gmac \
 	test/test_speed512 \
 	test/test_speed768 \
 	test/test_speed1024
 	./test/test_authenticators
-	./test/test_etm512
-	./test/test_etm768
-	./test/test_etm1024
+	./test/test_etm512_poly1305
+	./test/test_etm768_poly1305
+	./test/test_etm1024_poly1305
+	./test/test_etm512_gmac
+	./test/test_etm768_gmac
+	./test/test_etm1024_gmac
 
 speed: \
 	test/test_speed512 \
 	test/test_speed768 \
 	test/test_speed1024
 
-test/test_authenticators: $(SOURCES) $(HEADERS) test/test_authenticators.c
-	$(CC) $(CFLAGS) $(SOURCES) test/test_authenticators.c -o $@
+test/test_authenticators: $(SOURCES) $(HEADERS) test/test_authenticators.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
+	$(CC) $(CFLAGS) $(SOURCES) $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
 
-test/test_etm512: $(SOURCES) $(HEADERS) test/test_etm.c
+test/test_etm512_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
 	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=2 test/test_etm.c -o $@
 
-test/test_etm768: $(SOURCES) $(HEADERS) test/test_etm.c
+test/test_etm768_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
 	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=3 test/test_etm.c -o $@
 
-test/test_etm1024: $(SOURCES) $(HEADERS) test/test_etm.c
+test/test_etm1024_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
 	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=4 test/test_etm.c -o $@
+
+test/test_etm512_gmac: $(SOURCES) $(HEADERS) test/test_etm.c
+	$(CC) $(CFLAGS) $(SOURCES) -DMACNAME=GMAC -DKYBER_K=2 test/test_etm.c -o $@
+
+test/test_etm768_gmac: $(SOURCES) $(HEADERS) test/test_etm.c
+	$(CC) $(CFLAGS) $(SOURCES) -DMACNAME=GMAC -DKYBER_K=3 test/test_etm.c -o $@
+
+test/test_etm1024_gmac: $(SOURCES) $(HEADERS) test/test_etm.c
+	$(CC) $(CFLAGS) $(SOURCES) -DMACNAME=GMAC -DKYBER_K=4 test/test_etm.c -o $@
 
 test/test_speed512: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
 	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=2 -o $@
@@ -63,9 +79,12 @@ test/test_speed1024: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cp
 clean:
 	$(RM) -f main
 	$(RM) -f test/test_authenticators
-	$(RM) -f test/test_etm512
-	$(RM) -f test/test_etm768
-	$(RM) -f test/test_etm1024
+	$(RM) -f test/test_etm1024_gmac
+	$(RM) -f test/test_etm1024_poly1305
+	$(RM) -f test/test_etm512_gmac
+	$(RM) -f test/test_etm512_poly1305
+	$(RM) -f test/test_etm768_gmac
+	$(RM) -f test/test_etm768_poly1305
 	$(RM) -f test/test_speed512
 	$(RM) -f test/test_speed768
 	$(RM) -f test/test_speed1024
