@@ -17,6 +17,8 @@ export LDFLAGS="-L${OPENSSL_PATH}/lib"
 $(CC) ... $(CFLAGS) $(LDFLAGS) -lcrypto ...
 ```
 
+这个项目依赖于 OpenSSL 3（开发环境使用 3.3.1），不兼容 OpenSSL 1.1。
+
 ## 配置 language server
 
 ```yaml
