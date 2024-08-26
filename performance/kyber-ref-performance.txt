@@ -1,0 +1,62 @@
+./test/test_speed512
+kyber_keypair_derand:
+median: 69809 cycles/ticks
+average: 70192 cycles/ticks
+
+kyber_keypair:
+median: 75945 cycles/ticks
+average: 76171 cycles/ticks
+
+kyber_encaps_derand:
+median: 89907 cycles/ticks
+average: 90360 cycles/ticks
+
+kyber_encaps:
+median: 91467 cycles/ticks
+average: 92065 cycles/ticks
+
+kyber_decaps:
+median: 121185 cycles/ticks
+average: 121650 cycles/ticks
+
+./test/test_speed768
+kyber_keypair_derand:
+median: 117987 cycles/ticks
+average: 118367 cycles/ticks
+
+kyber_keypair:
+median: 129895 cycles/ticks
+average: 130650 cycles/ticks
+
+kyber_encaps_derand:
+median: 144793 cycles/ticks
+average: 145471 cycles/ticks
+
+kyber_encaps:
+median: 146405 cycles/ticks
+average: 147400 cycles/ticks
+
+kyber_decaps:
+median: 186445 cycles/ticks
+average: 187529 cycles/ticks
+
+./test/test_speed1024
+kyber_keypair_derand:
+median: 171469 cycles/ticks
+average: 172222 cycles/ticks
+
+kyber_keypair:
+median: 194921 cycles/ticks
+average: 195465 cycles/ticks
+
+kyber_encaps_derand:
+median: 197755 cycles/ticks
+average: 198578 cycles/ticks
+
+kyber_encaps:
+median: 199185 cycles/ticks
+average: 199903 cycles/ticks
+
+kyber_decaps:
+median: 246245 cycles/ticks
+average: 247320 cycles/ticks
