@@ -1,4 +1,3 @@
-OPENSSLDIR = /opt/homebrew/Cellar/openssl@3/3.3.1
 CC = /usr/bin/cc
 
 
@@ -13,13 +12,13 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
 NISTFLAGS += -Wno-unused-result -O3 -fomit-frame-pointer
 RM = /bin/rm
 
-SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c $(OPENSSLDIR)/lib/libcrypto.a
+SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c
 HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h
 
 .PHONY: test clean speed
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(CFLAGS) $(SOURCES) main.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -lcrypto main.c -o $@
 	./main
 
 test: \
@@ -47,34 +46,34 @@ speed: \
 	test/test_speed1024
 
 test/test_authenticators: $(SOURCES) $(HEADERS) test/test_authenticators.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
-	$(CC) $(CFLAGS) $(SOURCES) $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c test/test_authenticators.c -o $@
 
 test/test_etm512_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=2 test/test_etm.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=2 test/test_etm.c -o $@
 
 test/test_etm768_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=3 test/test_etm.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=3 test/test_etm.c -o $@
 
 test/test_etm1024_poly1305: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) -DKYBER_K=4 test/test_etm.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DKYBER_K=4 test/test_etm.c -o $@
 
 test/test_etm512_gmac: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) -DMACNAME=GMAC -DKYBER_K=2 test/test_etm.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMACNAME=GMAC -DKYBER_K=2 test/test_etm.c -o $@
 
 test/test_etm768_gmac: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) -DMACNAME=GMAC -DKYBER_K=3 test/test_etm.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMACNAME=GMAC -DKYBER_K=3 test/test_etm.c -o $@
 
 test/test_etm1024_gmac: $(SOURCES) $(HEADERS) test/test_etm.c
-	$(CC) $(CFLAGS) $(SOURCES) -DMACNAME=GMAC -DKYBER_K=4 test/test_etm.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMACNAME=GMAC -DKYBER_K=4 test/test_etm.c -o $@
 
 test/test_speed512: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
-	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=2 -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=2 -o $@
 
 test/test_speed768: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
-	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=3 -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=3 -o $@
 
 test/test_speed1024: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
-	$(CC) $(CFLAGS) $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=4 -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=4 -o $@
 
 clean:
 	$(RM) -f main
