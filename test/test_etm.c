@@ -7,16 +7,16 @@
 #define ROUNDS 10000
 
 static int randomized_encap_then_decap(void) {
-    uint8_t pk[KYBER_PUBLICKEYBYTES];
-    uint8_t sk[KYBER_SECRETKEYBYTES];
-    uint8_t ct[KYBER_CIPHERTEXTBYTES + MAC_TAG_BYTES];
-    uint8_t ss[KYBER_SYMBYTES];
-    uint8_t decapsulation[KYBER_SYMBYTES];
+    uint8_t pk[ETM_PUBLICKEYBYTES];
+    uint8_t sk[ETM_SECRETKEYBYTES];
+    uint8_t ct[ETM_CIPHERTEXTBYTES];
+    uint8_t ss[ETM_SESSIONKEYBYTES];
+    uint8_t decapsulation[ETM_SESSIONKEYBYTES];
     crypto_kem_keypair(pk, sk);
     for(int round = 0; round < ROUNDS; round++) {
         etm_encap(ct, ss, pk);
         etm_decap(ct, decapsulation, sk);
-        for(size_t i = 0; i < KYBER_SYMBYTES; i++) {
+        for(size_t i = 0; i < ETM_SESSIONKEYBYTES; i++) {
             if(ss[i] != decapsulation[i]) {
                 fprintf(stderr, "Decapsulation failed\n");
                 return 1;

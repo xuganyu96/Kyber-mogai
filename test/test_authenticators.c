@@ -18,8 +18,8 @@ static int test_poly1305_wrapper(void) {
         t[i] = cpucycles();
         fail |= mac_poly1305(key, msg, sizeof(msg), digest);
     }
-    printf("Poly1305, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
-    print_results("\t", t, NTESTS);
+    // printf("Poly1305, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
+    // print_results("\t", t, NTESTS);
 
     return fail;
 }
@@ -34,8 +34,8 @@ static int test_gmac(void) {
         t[i] = cpucycles();
         fail |= mac_gmac(key, msg, sizeof(msg), digest);
     }
-    printf("AES-256-GCM, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
-    print_results("\t", t, NTESTS);
+    // printf("AES-256-GCM, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
+    // print_results("\t", t, NTESTS);
 
     return fail;
 }
@@ -50,8 +50,8 @@ static int test_cmac(void) {
         t[i] = cpucycles();
         fail |= mac_cmac(key, msg, sizeof(msg), digest);
     }
-    printf("AES-256-CBC, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
-    print_results("\t", t, NTESTS);
+    // printf("AES-256-CBC, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
+    // print_results("\t", t, NTESTS);
 
     return fail;
 }
@@ -66,8 +66,8 @@ static int test_kmac(void) {
         t[i] = cpucycles();
         fail |= mac_kmac(key, msg, sizeof(msg), digest);
     }
-    printf("KMAC-256, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
-    print_results("\t", t, NTESTS);
+    // printf("KMAC-256, len(msg) = %d bytes", KYBER_CIPHERTEXTBYTES);
+    // print_results("\t", t, NTESTS);
 
     return fail;
 }

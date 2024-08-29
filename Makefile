@@ -1,5 +1,5 @@
 CC = /usr/bin/cc
-
+DEVPORT = 8888
 
 # Flags copied from kyber/ref/Makefile
 KYBERDIR = kyber/ref
@@ -10,12 +10,11 @@ KYBERHEADERSKECCAK = $(KYBERHEADERS) $(KYBERDIR)/fips202.h
 CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
   -Wshadow -Wpointer-arith -O3 -fomit-frame-pointer 
 NISTFLAGS += -Wno-unused-result -O3 -fomit-frame-pointer
-RM = /bin/rm
 
-SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c
-HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h
+SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c kex.c
+HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h kex.h
 
-.PHONY: test clean speed
+.PHONY: test clean speed run_kex_server512 run_kex_client512
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -lcrypto main.c -o $@
@@ -85,17 +84,31 @@ test/test_speed768: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpu
 test/test_speed1024: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=4 -o $@
 
+kex_server512: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=2 -o $@
+
+run_kex_server512: kex_server512
+	./kex_server512 $(DEVPORT)
+
+kex_client512: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=2 -o $@
+
+run_kex_client512: kex_client512
+	./kex_client512
+
 clean:
-	$(RM) -f main
-	$(RM) -f test/test_authenticators512
-	$(RM) -f test/test_authenticators768
-	$(RM) -f test/test_authenticators1024
-	$(RM) -f test/test_etm1024_gmac
-	$(RM) -f test/test_etm1024_poly1305
-	$(RM) -f test/test_etm512_gmac
-	$(RM) -f test/test_etm512_poly1305
-	$(RM) -f test/test_etm768_gmac
-	$(RM) -f test/test_etm768_poly1305
-	$(RM) -f test/test_speed512
-	$(RM) -f test/test_speed768
-	$(RM) -f test/test_speed1024
+	$(RM) main
+	$(RM) kex_server512
+	$(RM) kex_client512
+	$(RM) test/test_authenticators512
+	$(RM) test/test_authenticators768
+	$(RM) test/test_authenticators1024
+	$(RM) test/test_etm1024_gmac
+	$(RM) test/test_etm1024_poly1305
+	$(RM) test/test_etm512_gmac
+	$(RM) test/test_etm512_poly1305
+	$(RM) test/test_etm768_gmac
+	$(RM) test/test_etm768_poly1305
+	$(RM) test/test_speed512
+	$(RM) test/test_speed768
+	$(RM) test/test_speed1024

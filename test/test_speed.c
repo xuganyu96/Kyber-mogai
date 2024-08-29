@@ -21,11 +21,11 @@
 uint64_t t[NTESTS];
 
 int main(void) {
-    uint8_t pk[KYBER_PUBLICKEYBYTES];
-    uint8_t sk[KYBER_SECRETKEYBYTES];
-    uint8_t ct[KYBER_CIPHERTEXTBYTES + MAC_TAG_BYTES];
-    uint8_t ss[KYBER_SYMBYTES];
-    uint8_t decapsulation[KYBER_SYMBYTES];
+    uint8_t pk[ETM_PUBLICKEYBYTES];
+    uint8_t sk[ETM_SECRETKEYBYTES];
+    uint8_t ct[ETM_CIPHERTEXTBYTES];
+    uint8_t ss[ETM_SESSIONKEYBYTES];
+    uint8_t decapsulation[ETM_SESSIONKEYBYTES];
     uint8_t indcpa_pt[KYBER_INDCPA_MSGBYTES];
     uint8_t coins32[KYBER_SYMBYTES];
     uint8_t coins64[2*KYBER_SYMBYTES];
