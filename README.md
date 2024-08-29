@@ -1,22 +1,24 @@
-# 魔改 Kyber
-性能比较请参见[性能比较](./performance/readme.md)
+# Kyber-mogai
 
-## 配置 OpenSSL
-在 MacOS 上推荐使用 brew 安装 OpenSSL。安装完成后需要输出两个环境变量：
+## Naked Key Exchange
+
+## Configuring build environment with OpenSSL
+Export environment variables `CFLAGS` and `LDFLAGS` so that the compiler can find OpenSSL.
 ```bash
 export OPENSSLDIR="/path/to/openssl"
 export CFLAGS="-I${OPENSSL_PATH}/include"
 export LDFLAGS="-L${OPENSSL_PATH}/lib"
 ```
 
-在 Makefile 中写编译指令的时候需要加入对应的变量
+Include `$(CFLAGS)` and `$(LDFLAGS)` so that the environment variables are reflected into the compiler command
 ```makefile
 $(CC) ... $(CFLAGS) $(LDFLAGS) -lcrypto ...
 ```
 
-这个项目依赖于 OpenSSL 3（开发环境使用 3.3.1），不兼容 OpenSSL 1.1。
+The dev environment uses OpenSSL 3.3.1. This project is NOT compatible with OpenSSL 1.1
 
-## 配置 language server
+## Configuring language server
+Configure the following stuff in `.clangd`
 
 ```yaml
 CompileFlags:

@@ -1,5 +1,5 @@
-# 开发环境配置
-编译器
+# Build environment
+Compiler
 ```bash
 [ec2-user@ip-172-31-22-199 neofetch]$ /usr/bin/cc --version
 cc (GCC) 11.4.1 20230605 (Red Hat 11.4.1-2)
@@ -8,13 +8,13 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
-OpenSSL 版本
+OpenSSL
 ```bash
 [ec2-user@ip-172-31-22-199 ~]$ openssl version
 OpenSSL 3.0.8 7 Feb 2023 (Library: OpenSSL 3.0.8 7 Feb 2023)
 ```
 
-系统配置 (AWS c7a.medium)
+AWS c7a.medium
 ```
 [ec2-user@ip-172-31-22-199 neofetch]$ neofetch
              `-/oydNNdyo:.`                ec2-user@ip-172-31-22-199.us-west-2.compute.internal
@@ -38,10 +38,9 @@ dMMMMMMMMMMMMMMMMh    yMMMMMMMMMMMMMMMMd
             `-+shy    shs+:`
 ```
 
-# 性能比较
-几种不同的消息认证码之间的性能比较
+# Performance comparison
 
-|名称|吞吐数据量（字节）|CPU周期中位数|CPU周期平均数|
+|MAC|Input size|Median CPU cycles|Average CPU cycles|
 |:--|:--|:--|:--|
 |Poly1305|768|909|2823|
 |AES-256-GCM (GMAC)|768|3899|4859|
@@ -56,9 +55,7 @@ dMMMMMMMMMMMMMMMMh    yMMMMMMMMMMMMMMMMd
 |AES-256-CBC (CMAC)|1568|8735|8772|
 |KMAC-256|1568|11647|12186|
 
-密钥封装中各种例程的性能（CPU周期中位数）比较
-
-|安全级别|消息认证码|确定性生成密钥对|随机性生成密钥对|确定性封装|随机性封装|解封装|
+|KEM|MAC|Derandomized keygen|Randomized keygen|De-randomized encap|encap|decap|
 |:--|:--|:--|:--|:--|:--|:--|
 |Kyber512|N/A|69809|75945|89907|91467|121185|
 |Kyber512|Poly1305|70043|76907|91831|93157|33773|
