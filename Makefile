@@ -96,10 +96,14 @@ kex_client512: $(SOURCES) $(HEADERS) kex_client.c
 run_kex_client512: kex_client512
 	./kex_client512
 
+keygen: $(SOURCES) $(HEADERS) keygen.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) keygen.c -DKYBER_K=2 -o $@
+
 clean:
 	$(RM) main
 	$(RM) kex_server512
 	$(RM) kex_client512
+	$(RM) keygen
 	$(RM) test/test_authenticators512
 	$(RM) test/test_authenticators768
 	$(RM) test/test_authenticators1024
