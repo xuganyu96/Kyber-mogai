@@ -14,10 +14,10 @@ NISTFLAGS += -Wno-unused-result -O3 -fomit-frame-pointer
 SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c kex.c
 HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h kex.h
 
-.PHONY: test clean speed run_kex_server512 run_kex_client512
+.PHONY: test clean speed run_kex_server512 run_kex_client512 run_uakex_server512 run_uakex_client512
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -lcrypto main.c -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) main.c -o $@
 	./main
 
 test: \
@@ -96,6 +96,18 @@ kex_client512: $(SOURCES) $(HEADERS) kex_client.c
 run_kex_client512: kex_client512
 	./kex_client512
 
+uakex_server512: $(SOURCES) $(HEADERS) uakex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) uakex_server.c -DKYBER_K=2 -o $@
+
+run_uakex_server512: uakex_server512
+	./uakex_server512 $(DEVPORT)
+
+uakex_client512: $(SOURCES) $(HEADERS) uakex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) uakex_client.c -DKYBER_K=2 -o $@
+
+run_uakex_client512: uakex_client512
+	./uakex_client512
+
 keygen: $(SOURCES) $(HEADERS) keygen.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) keygen.c -DKYBER_K=2 -o $@
 
@@ -103,6 +115,8 @@ clean:
 	$(RM) main
 	$(RM) kex_server512
 	$(RM) kex_client512
+	$(RM) uakex_server512
+	$(RM) uakex_client512
 	$(RM) keygen
 	$(RM) test/test_authenticators512
 	$(RM) test/test_authenticators768

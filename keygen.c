@@ -1,11 +1,8 @@
 #include "etm.h"
 #include "kyber/ref/kem.h"
-#include "openssl/bio.h"
-#include "openssl/evp.h"
 #include <stdio.h>
+#include <stdlib.h>
 #define MAX_KEYNAME 256
-
-const BIO_METHOD *BIO_f_base64(void);
 
 /** Generate a keypair, then write to separate files
  */
@@ -15,9 +12,9 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
   char pk_filename[MAX_KEYNAME];
-  sprintf(pk_filename, "%s.pub", argv[1]);
+  sprintf(pk_filename, "%s.pub.bin", argv[1]);
   char sk_filename[MAX_KEYNAME];
-  sprintf(sk_filename, "%s", argv[1]);
+  sprintf(sk_filename, "%s.bin", argv[1]);
 
   printf("public key writes to %s\n", pk_filename);
   printf("secret key writes to %s\n", sk_filename);
@@ -31,21 +28,10 @@ int main(int argc, char *argv[]) {
   sk_fd = fopen(sk_filename, "w+");
 
   // write the public key
-  BIO *bio, *b64;
-  b64 = BIO_new(BIO_f_base64());
-  bio = BIO_new_fp(pk_fd, BIO_NOCLOSE);
-  BIO_push(b64, bio);
-  BIO_write(b64, pk, KYBER_PUBLICKEYBYTES);
-  BIO_flush(b64);
-  BIO_free_all(b64);
+  fwrite(pk, KYBER_PUBLICKEYBYTES, 1, pk_fd);
   fclose(pk_fd);
 
-  b64 = BIO_new(BIO_f_base64());
-  bio = BIO_new_fp(sk_fd, BIO_NOCLOSE);
-  BIO_push(b64, bio);
-  BIO_write(b64, sk, KYBER_SECRETKEYBYTES);
-  BIO_flush(b64);
-  BIO_free_all(b64);
+  fwrite(sk, KYBER_SECRETKEYBYTES, 1, sk_fd);
   fclose(sk_fd);
 
   return 0;

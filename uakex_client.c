@@ -4,6 +4,7 @@
 #include "sys/socket.h"
 #include "unistd.h"
 #include "kex.h"
+#include "etm.h"
 #include "arpa/inet.h"
 
 #define PORT 8888
@@ -31,7 +32,10 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  if (kex_client(stream) != 0) {
+  FILE *server_pk_fd = fopen("id_kyber.pub.bin", "r");
+  uint8_t server_pk[ETM_PUBLICKEYBYTES];
+  fread_exact(server_pk_fd, server_pk, ETM_PUBLICKEYBYTES);
+  if (uakex_client(stream, server_pk) != 0) {
     fprintf(stderr, "Client failed to finish key exchange\n");
   } else {
     printf("Client finished key exchange\n");

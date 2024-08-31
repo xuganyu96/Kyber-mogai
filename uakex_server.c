@@ -1,4 +1,8 @@
+/** Unilaterally authenticated key exchange
+* Server has server's long-term secret key, client has server's long-term public key
+*/
 #include "kex.h"
+#include "etm.h"
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,7 +72,10 @@ int main(int argc, char *argv[]) {
   int peer_port = ntohs(peer_addr.sin_port);
   printf("Connected to %s:%d\n", peer_addr_str, peer_port);
 
-  if (kex_server(stream) != 0) {
+  FILE *server_sk_fd = fopen("id_kyber.bin", "r");
+  uint8_t server_sk[ETM_SECRETKEYBYTES];
+  fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
+  if (uakex_server(stream, server_sk) != 0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
     printf("Server finished key exchange\n");

@@ -63,6 +63,8 @@ main
 keygen
 kex_server512
 kex_client512
+uakex_server512
+uakex_client512
 test/test_authenticators512
 test/test_authenticators768
 test/test_authenticators1024
@@ -76,5 +78,5 @@ test/test_speed512
 test/test_speed768
 test/test_speed1024
 # test keypairs
-*id_kyber
-*id_kyber.pub
+*id_kyber*
+*id_kyber.pub*
