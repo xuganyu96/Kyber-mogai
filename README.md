@@ -19,16 +19,27 @@ make run_kex_client512
 # Verify that the session keys are identical
 ```
 
-- **Unilterally authenticated key exchange (UAKEX)**:
-    - client has server's long-term public key `pk_server`
-    - client generates ephemeral keypair `pk_ephemeral`
-    - client runs encaps with server's public key `(ct_server, K_auth) <- encap(pk_server)`
-    - client transmits ephemeral public key and encapsulation `(ct_server, pk_ephemeral)`
-    - server decapsulates `K_auth <- decap(ct_server)` and encapsulate `(ct_ephemeral, K_ephemeral) <- encaps(pk_ephemeral)`
-    - server computes session key `K <- SHA3-256(K_auth, K_ephemeral)`
-    - server transmits `ct_ephemeral`
-    - client decapsulates `K_ephemeral <- decap(ct_ephemeral)`
-    - client computes session key `K <- SHA3-256(K_auth, K_ephemeral)`
+**Unilterally authenticated key exchange (UAKEX)**:
+
+- client has server's long-term public key `pk_server`
+- client generates ephemeral keypair `pk_ephemeral`
+- client runs encaps with server's public key `(ct_server, K_auth) <- encap(pk_server)`
+- client transmits ephemeral public key and encapsulation `(ct_server, pk_ephemeral)`
+- server decapsulates `K_auth <- decap(ct_server)` and encapsulate `(ct_ephemeral, K_ephemeral) <- encaps(pk_ephemeral)`
+- server computes session key `K <- SHA3-256(K_auth, K_ephemeral)`
+- server transmits `ct_ephemeral`
+- client decapsulates `K_ephemeral <- decap(ct_ephemeral)`
+- client computes session key `K <- SHA3-256(K_auth, K_ephemeral)`
+
+```bash
+# Generate keypair
+make keygen && ./keygen
+# Start server first
+make run_uakex_server512
+# Start client on a second terminal
+make run_uakex_client512
+```
+
 - **Mutually authenticated key exchange (AKEX)**:
     - client has server's long-term public key `pk_server`
     - client generates ephemeral public key `(pk_e, sk_e)`

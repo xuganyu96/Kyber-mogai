@@ -225,3 +225,123 @@ int uakex_client(int stream, const uint8_t *server_pk) {
 
   return 0;
 }
+
+/**
+ * Server-side handler for authenticated key exchange
+ *
+ * Authenticated key exchange involves the following transmission:
+ * - client sends server: ephemeral public key (pk_e), server's authentication
+ *   encapsulation (ct_server_auth)
+ * - server sends client: ephemeral encapsulation (ct_e), client's
+ * authentication encapsulation (ct_client_auth)
+ *
+ * The final session key (pre-master secret) is
+ * session_key <- SHA3-256(ss_e, ss_server_auth, ss_client_auth)
+ */
+int akex_server(int stream, uint8_t *client_pk, uint8_t *server_sk) {
+  uint8_t prekey[3 * ETM_SESSIONKEYBYTES];
+  uint8_t *ss_e = prekey;
+  uint8_t *ss_server_auth = prekey + ETM_SESSIONKEYBYTES;
+  uint8_t *ss_client_auth = prekey + 2 * ETM_SESSIONKEYBYTES;
+  uint8_t server_tx[2 * ETM_CIPHERTEXTBYTES];
+  uint8_t *ct_e = server_tx;
+  uint8_t *ct_client_auth = server_tx + ETM_CIPHERTEXTBYTES;
+  uint8_t client_tx[ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES];
+  uint8_t *pk_e = client_tx;
+  uint8_t *ct_server_auth = client_tx + ETM_PUBLICKEYBYTES;
+
+  printf("Waiting for client transmission...\n");
+  size_t rx_len =
+      read(stream, client_tx, ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES);
+  if (rx_len != ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES) {
+    fprintf(stderr,
+            "Client transmission is malformed: expected %d bytes, received %ld "
+            "bytes\n",
+            ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES, rx_len);
+    return 1;
+  } else {
+    printf("Received client transmission\n");
+  }
+  // TODO: check for errors
+  etm_encap(ct_e, ss_e, pk_e);
+  etm_encap(ct_client_auth, ss_client_auth, client_pk);
+  etm_decap(ct_server_auth, ss_server_auth, server_sk);
+
+  size_t tx_len = send(stream, server_tx, 2 * ETM_CIPHERTEXTBYTES, 0);
+  if (tx_len != 2 * ETM_CIPHERTEXTBYTES) {
+    fprintf(stderr, "Failed to transmit encapsulation to client\n");
+    return 1;
+  } else {
+    printf("Transmitted %d bytes to client\n", 2 * ETM_CIPHERTEXTBYTES);
+  }
+
+  uint8_t session_key[ETM_SESSIONKEYBYTES];
+  sha3_256(session_key, prekey, 3 * ETM_SESSIONKEYBYTES);
+  printf("Session key: 0x");
+  for (size_t i = 0; i < ETM_SESSIONKEYBYTES; i++) {
+    printf("%02X", session_key[i]);
+  }
+  printf("\n");
+
+  return 0;
+}
+
+/**
+ * Client-side handler for authenticated key exchange
+ *
+ */
+int akex_client(int stream, uint8_t *server_pk, uint8_t *client_sk) {
+  uint8_t prekey[3 * ETM_SESSIONKEYBYTES];
+  uint8_t *ss_e = prekey;
+  uint8_t *ss_server_auth = prekey + ETM_SESSIONKEYBYTES;
+  uint8_t *ss_client_auth = prekey + 2 * ETM_SESSIONKEYBYTES;
+  uint8_t client_tx[ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES];
+  uint8_t *pk_e = client_tx;
+  uint8_t *ct_server_auth = client_tx + ETM_PUBLICKEYBYTES;
+  uint8_t server_tx[2 * ETM_CIPHERTEXTBYTES];
+  uint8_t *ct_e = server_tx;
+  uint8_t *ct_client_auth = server_tx + ETM_CIPHERTEXTBYTES;
+  uint8_t sk_e[ETM_SECRETKEYBYTES];
+
+  if (crypto_kem_keypair(pk_e, sk_e) != 0) {
+    fprintf(stderr, "Client failed to generate keypair\n");
+    return 1;
+  }
+  if (etm_encap(ct_server_auth, ss_server_auth, server_pk) != 0) {
+    fprintf(stderr, "Client failed to generate server authentication\n");
+    return 1;
+  }
+  size_t tx_len = send(stream, client_tx, sizeof(client_tx), 0);
+  if (tx_len != ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES) {
+    fprintf(stderr,
+            "Client failed to send ephemeral publickey + server auth\n");
+    return 1;
+  }
+  size_t rx_len = read(stream, server_tx, sizeof(server_tx));
+  if (rx_len != sizeof(server_tx)) {
+    fprintf(
+        stderr,
+        "Server resonse is malformed: expected %ld bytes, received %ld bytes\n",
+        sizeof(server_tx), rx_len);
+    return 1;
+  } else {
+    printf("Received %ld bytes from server\n", rx_len);
+  }
+  if (etm_decap(ct_e, ss_e, sk_e) != 0) {
+    fprintf(stderr, "Client failed to decapsulate ephemeral encapsulation\n");
+    return 1;
+  }
+  if (etm_decap(ct_client_auth, ss_client_auth, client_sk) != 0) {
+    fprintf(stderr, "Client failed to decapsulate client authentication\n");
+    return 1;
+  }
+
+  uint8_t session_key[ETM_SESSIONKEYBYTES];
+  sha3_256(session_key, prekey, sizeof(prekey));
+  printf("Session key: 0x");
+  for (size_t i = 0; i < ETM_SESSIONKEYBYTES; i++) {
+    printf("%02X", session_key[i]);
+  }
+  printf("\n");
+  return 0;
+}
