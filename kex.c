@@ -283,6 +283,7 @@ int akex_server(int stream, uint8_t *client_pk, uint8_t *server_sk) {
     printf("Transmitted %d bytes to client\n", 2 * ETM_CIPHERTEXTBYTES);
   }
 
+
   uint8_t session_key[ETM_SESSIONKEYBYTES];
   sha3_256(session_key, prekey, 3 * ETM_SESSIONKEYBYTES);
   printf("Session key: 0x");

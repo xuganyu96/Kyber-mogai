@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
   FILE *client_pk_fd = fopen("id_kyber.pub.bin", "r");
   uint8_t client_pk[ETM_PUBLICKEYBYTES];
-  fread_exact(client_pk_fd, client_pk, ETM_SECRETKEYBYTES);
+  fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
   if (akex_server(stream, client_pk, server_sk) != 0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
