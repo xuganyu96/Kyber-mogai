@@ -8,6 +8,13 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+static void print_hexstr(uint8_t *bytes, size_t bytes_len) {
+  for (size_t i = 0; i < bytes_len; i++) {
+    printf("%02X", bytes[i]);
+  }
+  printf("\n");
+}
+
 /**
  * Read exactly data_len bytes from fd. Return 0 on success
  */
@@ -264,6 +271,7 @@ int akex_server(int stream, uint8_t *client_pk, uint8_t *server_sk) {
   }
   // TODO: check for errors
   etm_encap(ct_e, ss_e, pk_e);
+  // BUG: somehow ct_client_auth wrote into ss_e
   etm_encap(ct_client_auth, ss_client_auth, client_pk);
   etm_decap(ct_server_auth, ss_server_auth, server_sk);
 
