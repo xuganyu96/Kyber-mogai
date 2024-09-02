@@ -1,8 +1,9 @@
 /** Mutually authenticated key exchange
-* Server has server's long-term secret key, client has server's long-term public key
-*/
-#include "kex.h"
+ * Server has server's long-term secret key, client has server's long-term
+ * public key
+ */
 #include "etm.h"
+#include "kex.h"
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +79,8 @@ int main(int argc, char *argv[]) {
   FILE *client_pk_fd = fopen("id_kyber.pub.bin", "r");
   uint8_t client_pk[ETM_PUBLICKEYBYTES];
   fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
-  if (akex_server(stream, client_pk, server_sk) != 0) {
+  if (server_handle(stream, server_sk, ETM_SECRETKEYBYTES, client_pk,
+                    ETM_PUBLICKEYBYTES) != 0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
     printf("Server finished key exchange\n");

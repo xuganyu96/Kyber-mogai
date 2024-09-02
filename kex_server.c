@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   int peer_port = ntohs(peer_addr.sin_port);
   printf("Connected to %s:%d\n", peer_addr_str, peer_port);
 
-  if (kex_server(stream) != 0) {
+  if (server_handle(stream, NULL, 0, NULL, 0) != 0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
     printf("Server finished key exchange\n");

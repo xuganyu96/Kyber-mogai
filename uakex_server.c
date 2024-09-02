@@ -1,8 +1,9 @@
 /** Unilaterally authenticated key exchange
-* Server has server's long-term secret key, client has server's long-term public key
-*/
-#include "kex.h"
+ * Server has server's long-term secret key, client has server's long-term
+ * public key
+ */
 #include "etm.h"
+#include "kex.h"
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,12 +76,13 @@ int main(int argc, char *argv[]) {
   FILE *server_sk_fd = fopen("id_kyber.bin", "r");
   uint8_t server_sk[ETM_SECRETKEYBYTES];
   fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
-  if (uakex_server(stream, server_sk) != 0) {
+  if (server_handle(stream, server_sk, ETM_SECRETKEYBYTES, NULL, 0) != 0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
     printf("Server finished key exchange\n");
   }
 
+  fclose(server_sk_fd);
   close(stream);
   close(listener);
 }

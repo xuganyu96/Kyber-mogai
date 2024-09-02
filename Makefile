@@ -23,7 +23,18 @@ HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h kex.h
 	run_uakex_server512 \
 	run_uakex_client512 \
 	run_akex_server512 \
-	run_akex_client512
+	run_akex_client512 \
+	all
+
+all: main \
+	test \
+	speed \
+	kex_server512 \
+	kex_client512 \
+	uakex_server512 \
+	uakex_client512 \
+	akex_server512 \
+	akex_client512
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) main.c -o $@
