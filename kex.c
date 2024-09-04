@@ -1,8 +1,8 @@
 #include "kex.h"
 #include "etm.h"
-#include "utils.h"
 #include "kyber/ref/fips202.h"
 #include "kyber/ref/kem.h"
+#include "utils.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/socket.h>
