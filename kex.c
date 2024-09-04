@@ -1,18 +1,12 @@
 #include "kex.h"
 #include "etm.h"
+#include "utils.h"
 #include "kyber/ref/fips202.h"
 #include "kyber/ref/kem.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
-static void print_hexstr(uint8_t *bytes, size_t bytes_len) {
-  for (size_t i = 0; i < bytes_len; i++) {
-    printf("%02X", bytes[i]);
-  }
-  printf("\n");
-}
 
 /**
  * Read exactly data_len bytes from fd. Return 0 on success

@@ -48,3 +48,11 @@ void debug_network_peer(int stream) {
   int peer_port = ntohs(peer_addr.sin_port);
   printf("Connected to %s:%d\n", peer_addr_str, peer_port);
 }
+
+void print_hexstr(uint8_t *bytes, size_t bytes_len) {
+  printf("0x");
+  for (size_t i = 0; i < bytes_len; i++) {
+    printf("%02X", bytes[i]);
+  }
+  printf("\n");
+}

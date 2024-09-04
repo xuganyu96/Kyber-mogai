@@ -28,3 +28,7 @@ int parse_args(int argc, char *argv[], int *auth_mode, char *host, int *port);
  * Retrieve and display the host name and port of the peer
  */
 void debug_network_peer(int stream);
+
+/** Print byte arrays to hexadecimal string
+ */
+void print_hexstr(uint8_t *bytes, size_t bytes_len);

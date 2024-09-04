@@ -76,6 +76,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Client failed to finish key exchange\n");
   } else {
     printf("Client finished key exchange\n");
+    printf("Session key: "); print_hexstr(session_key, ETM_SESSIONKEYBYTES);
   }
 
   close(stream);

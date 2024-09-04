@@ -1,11 +1,10 @@
 # Kyber-mogai
 
 # Key exchange
-I want to have a single handler for all three types of key exchanges: unauthenticated, unilaterally authenticated, and mutually authenticated.
-
-```c
-int server_handle(int stream, uint8_t *sk_server, size_t sk_server_len, uint8_t *pk_client, size_t pk_client_len);
-int client_handle(int stream, uint8_t *sk_client, size_t sk_client_len, uint8_t *pk_server, size_t pk_server_len);
+```bash
+make kex
+./kex_server512 <none|server|client|all> <host> <port>
+./kex_client512 <none|server|client|all> <host> <port>
 ```
 
 ## Configuring build environment with OpenSSL

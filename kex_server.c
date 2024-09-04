@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
   }
   if (kex_return == 0) {
     printf("Server finished key exchange\n");
+    printf("Session key: "); print_hexstr(session_key, ETM_SESSIONKEYBYTES);
   }
 
   fclose(server_sk_fd);
