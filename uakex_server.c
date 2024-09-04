@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
   FILE *server_sk_fd = fopen("id_kyber.bin", "r");
   uint8_t server_sk[ETM_SECRETKEYBYTES];
   fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
-  if (server_handle(stream, server_sk, ETM_SECRETKEYBYTES, NULL, 0) != 0) {
+  if (server_handle(stream, server_sk, NULL) != 0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
     printf("Server finished key exchange\n");

@@ -22,8 +22,7 @@ int fread_exact(FILE *fd, uint8_t *data, size_t data_len) {
   return file_len - data_len;
 }
 
-int server_handle(int stream, uint8_t *sk_server, size_t sk_server_len,
-                  uint8_t *pk_client, size_t pk_client_len) {
+int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client) {
   uint8_t prekey[3 * ETM_SESSIONKEYBYTES];
   uint8_t client_tx[ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES];
   uint8_t server_tx[2 * ETM_CIPHERTEXTBYTES];
@@ -45,7 +44,7 @@ int server_handle(int stream, uint8_t *sk_server, size_t sk_server_len,
     printf("Client did not request server authentication\n");
   } else if (rx_len == ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES) {
     printf("Client requested server authentication\n");
-    if (sk_server_len != ETM_SECRETKEYBYTES) {
+    if (!sk_server) {
       fprintf(stderr, "ERROR: Server secret key is not ready\n");
       return 1;
     }
@@ -71,7 +70,7 @@ int server_handle(int stream, uint8_t *sk_server, size_t sk_server_len,
     fprintf(stderr, "ERROR: server failed to encapsulate ephemeral secret\n");
     return 1;
   }
-  if (ETM_PUBLICKEYBYTES == pk_client_len) {
+  if (pk_client) {
     if (0 != etm_encap(ct_client_auth, ss_client_auth, pk_client)) {
       fprintf(stderr,
               "ERROR: server failed to encapsulate client authentication\n");
@@ -113,8 +112,7 @@ int server_handle(int stream, uint8_t *sk_server, size_t sk_server_len,
   return 0;
 }
 
-int client_handle(int stream, uint8_t *sk_client, size_t sk_client_len,
-                  uint8_t *pk_server, size_t pk_server_len) {
+int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server) {
   uint8_t prekey[3 * ETM_SESSIONKEYBYTES];
   uint8_t client_tx[ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES];
   uint8_t server_tx[2 * ETM_CIPHERTEXTBYTES];
@@ -133,7 +131,7 @@ int client_handle(int stream, uint8_t *sk_client, size_t sk_client_len,
 
   // Prepare client transmission
   crypto_kem_keypair(pk_e, sk_e);
-  if (pk_server_len == ETM_PUBLICKEYBYTES) {
+  if (pk_server) {
     printf("Client requested server authentication\n");
     etm_encap(ct_server_auth, ss_server_auth, pk_server);
     ct_server_auth_len = ETM_CIPHERTEXTBYTES;
@@ -159,7 +157,7 @@ int client_handle(int stream, uint8_t *sk_client, size_t sk_client_len,
   } else if (rx_len == 2 * ETM_CIPHERTEXTBYTES) {
     printf("Server requested client authentication\n");
     ct_client_auth_len = ETM_CIPHERTEXTBYTES;
-    if (sk_client_len != ETM_SECRETKEYBYTES) {
+    if (!sk_client) {
       fprintf(stderr, "Client secret key is not ready\n");
       return 1;
     }

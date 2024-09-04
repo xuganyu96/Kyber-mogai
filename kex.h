@@ -26,7 +26,28 @@ int fread_exact(FILE *fd, uint8_t *data, size_t data_len);
  * into the Keccak. Shared secrets will always be absorbed in this order:
  * ephemeral, server authentication, client authentication.
  */
-int server_handle(int stream, uint8_t *sk_server, size_t sk_server_len,
-                  uint8_t *pk_client, size_t pk_client_len);
-int client_handle(int stream, uint8_t *sk_client, size_t sk_client_len,
-                  uint8_t *pk_server, size_t pk_server_len);
+int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client);
+
+/**
+ * Client-side handler for key exchange.
+ *
+ * Return 0 upon success.
+ *
+ * In each key exchange, the client is responsible for running the key
+ * generation routine and sending the first transmission. Depending on whether
+ * server and/or client authentication is needed, the content of client's
+ * transmission, and the server's response, will vary.
+ * - in unauthenticated key exchange, client only sends the ephemeral public
+ *   key, and server only responds with ephemeral ciphertext
+ * - if server authentication is required, then caller needs to pass in server's
+ *   public key; client transmission will contain (ephemeral public key ||
+ *   server authentciation ciphertext); server transmissions will contain only
+ *   the ephemeral ciphertext
+ * - if both server authentication and client authentication are required, then
+ *   caller needs to pass in server's public key and client's secret key. Client
+ *   transmission will contain (ephemeral public key || server authentication
+ *   ciphertext); server transmission should contain (ephemeral ciphertext ||
+ *   client authentication ciphertext)
+ *
+ */
+int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server);

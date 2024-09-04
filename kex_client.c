@@ -38,7 +38,7 @@ int main(void) {
   int peer_port = ntohs(peer_addr.sin_port);
   printf("Connected to %s:%d\n", peer_addr_str, peer_port);
 
-  if (client_handle(stream, NULL, 0, NULL, 0) != 0) {
+  if (client_handle(stream, NULL, NULL) != 0) {
     fprintf(stderr, "Client failed to finish key exchange\n");
   } else {
     printf("Client finished key exchange\n");
