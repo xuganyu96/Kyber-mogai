@@ -1,3 +1,4 @@
+#include "etm.h"
 #include "kex.h"
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -67,8 +68,9 @@ int main(int argc, char *argv[]) {
   inet_ntop(AF_INET, &(peer_addr.sin_addr), peer_addr_str, INET_ADDRSTRLEN);
   int peer_port = ntohs(peer_addr.sin_port);
   printf("Connected to %s:%d\n", peer_addr_str, peer_port);
-
-  if (server_handle(stream, NULL, NULL) != 0) {
+  uint8_t session_key[ETM_SESSIONKEYBYTES];
+  if (server_handle(stream, NULL, NULL, session_key, ETM_SESSIONKEYBYTES) !=
+      0) {
     fprintf(stderr, "Server failed to finish key exchange :(\n");
   } else {
     printf("Server finished key exchange\n");

@@ -26,7 +26,8 @@ int fread_exact(FILE *fd, uint8_t *data, size_t data_len);
  * into the Keccak. Shared secrets will always be absorbed in this order:
  * ephemeral, server authentication, client authentication.
  */
-int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client);
+int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
+                  uint8_t *session_key, size_t session_key_len);
 
 /**
  * Client-side handler for key exchange.
@@ -50,4 +51,5 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client);
  *   client authentication ciphertext)
  *
  */
-int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server);
+int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
+                  uint8_t *session_key, size_t session_key_len);

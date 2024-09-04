@@ -4,28 +4,18 @@
  */
 #include "etm.h"
 #include "kex.h"
+#include "utils.h"
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-/** Try to parse args; if args malformed, exit with non-zero exit code */
-static void parse_args(int argc, char *argv[], int *port) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: kex_server <port>\n");
+int main(int argc, char *argv[]) {
+  int auth_mode, port;
+  if (0 != parse_args(argc, argv, &auth_mode, NULL, &port)) {
     exit(EXIT_FAILURE);
   }
-
-  char *port_str = argv[1];
-  *port = atoi(port_str);
-
-  printf("Port is %d\n", *port);
-}
-
-int main(int argc, char *argv[]) {
-  int port;
-  parse_args(argc, argv, &port);
 
   // listener is a socket, socket binds to a port, socket accepts a connection,
   // a TCP connection is a stream
@@ -45,7 +35,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (bind(listener, (struct socketaddr *)&server_addr, server_addr_len) < 0) {
-    fprintf(stderr, "Failed to bind socket to port %d", port);
+    fprintf(stderr, "Failed to bind socket to port %d\n", port);
     close(listener);
     exit(EXIT_FAILURE);
   }
@@ -63,25 +53,46 @@ int main(int argc, char *argv[]) {
     close(listener);
     exit(EXIT_FAILURE);
   }
-  // get and display peer's address
-  struct sockaddr_in peer_addr;
-  size_t peer_addr_len = sizeof(peer_addr);
-  char peer_addr_str[INET_ADDRSTRLEN];
-  getpeername(stream, (struct socketaddr *)&peer_addr,
-              (socklen_t *)&peer_addr_len);
-  inet_ntop(AF_INET, &(peer_addr.sin_addr), peer_addr_str, INET_ADDRSTRLEN);
-  int peer_port = ntohs(peer_addr.sin_port);
-  printf("Connected to %s:%d\n", peer_addr_str, peer_port);
 
-  FILE *server_sk_fd = fopen("id_kyber.bin", "r");
+  debug_network_peer(stream);
+
+  uint8_t session_key[ETM_SESSIONKEYBYTES];
   uint8_t server_sk[ETM_SECRETKEYBYTES];
-  fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
-  FILE *client_pk_fd = fopen("id_kyber.pub.bin", "r");
   uint8_t client_pk[ETM_PUBLICKEYBYTES];
-  fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
-  if (server_handle(stream, server_sk, client_pk) != 0) {
-    fprintf(stderr, "Server failed to finish key exchange :(\n");
-  } else {
+  int kex_return;
+  FILE *server_sk_fd = NULL;
+  FILE *client_pk_fd = NULL;
+  switch (auth_mode) {
+  case AUTH_NONE:
+    kex_return =
+        server_handle(stream, NULL, NULL, session_key, ETM_SESSIONKEYBYTES);
+    break;
+  case AUTH_SERVER:
+    server_sk_fd = fopen("id_kyber.bin", "r");
+    fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
+    fclose(server_sk_fd);
+    kex_return = server_handle(stream, server_sk, NULL, session_key,
+                               ETM_SESSIONKEYBYTES);
+    break;
+  case AUTH_CLIENT:
+    client_pk_fd = fopen("id_kyber.pub.bin", "r");
+    fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
+    fclose(client_pk_fd);
+    kex_return = server_handle(stream, NULL, client_pk, session_key,
+                               ETM_SESSIONKEYBYTES);
+    break;
+  case AUTH_ALL:
+    server_sk_fd = fopen("id_kyber.bin", "r");
+    fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
+    fclose(server_sk_fd);
+    client_pk_fd = fopen("id_kyber.pub.bin", "r");
+    fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
+    fclose(client_pk_fd);
+    kex_return = server_handle(stream, server_sk, client_pk, session_key,
+                               ETM_SESSIONKEYBYTES);
+    break;
+  }
+  if (kex_return == 0) {
     printf("Server finished key exchange\n");
   }
 

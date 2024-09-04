@@ -45,7 +45,9 @@ int main(void) {
   FILE *client_sk_fd = fopen("id_kyber.bin", "r");
   uint8_t client_sk[ETM_SECRETKEYBYTES];
   fread_exact(client_sk_fd, client_sk, ETM_SECRETKEYBYTES);
-  if (client_handle(stream, client_sk, server_pk) != 0) {
+  uint8_t session_key[ETM_SESSIONKEYBYTES];
+  if (client_handle(stream, client_sk, server_pk, session_key,
+                    ETM_SESSIONKEYBYTES) != 0) {
     fprintf(stderr, "Client failed to finish key exchange\n");
   } else {
     printf("Client finished key exchange\n");

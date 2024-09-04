@@ -1,9 +1,9 @@
 #include "kex.h"
 #include "etm.h"
+#include "kyber/ref/fips202.h"
 #include "kyber/ref/kem.h"
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -22,7 +22,8 @@ int fread_exact(FILE *fd, uint8_t *data, size_t data_len) {
   return file_len - data_len;
 }
 
-int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client) {
+int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
+                  uint8_t *session_key, size_t session_key_len) {
   uint8_t prekey[3 * ETM_SESSIONKEYBYTES];
   uint8_t client_tx[ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES];
   uint8_t server_tx[2 * ETM_CIPHERTEXTBYTES];
@@ -98,21 +99,28 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client) {
   }
 
   // derive session key
+  keccak_state state;
+  shake256_init(&state);
   printf("Ephemeral shared secret: ");
   print_hexstr(ss_e, ETM_SESSIONKEYBYTES);
+  shake256_absorb(&state, ss_e, ETM_SESSIONKEYBYTES);
   if (ss_server_auth_len == ETM_SESSIONKEYBYTES) {
     printf("Server authentication: ");
     print_hexstr(ss_server_auth, ETM_SESSIONKEYBYTES);
+    shake256_absorb(&state, ss_e, ETM_SESSIONKEYBYTES);
   }
   if (ss_client_auth_len == ETM_SESSIONKEYBYTES) {
     printf("Client authentication: ");
     print_hexstr(ss_client_auth, ETM_SESSIONKEYBYTES);
+    shake256_absorb(&state, ss_e, ETM_SESSIONKEYBYTES);
   }
-  // TODO: actually derive the key
+  shake256_finalize(&state);
+  shake256_squeeze(session_key, session_key_len, &state);
   return 0;
 }
 
-int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server) {
+int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
+                  uint8_t *session_key, size_t session_key_len) {
   uint8_t prekey[3 * ETM_SESSIONKEYBYTES];
   uint8_t client_tx[ETM_PUBLICKEYBYTES + ETM_CIPHERTEXTBYTES];
   uint8_t server_tx[2 * ETM_CIPHERTEXTBYTES];
@@ -179,18 +187,25 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server) {
       ss_client_auth_len = ETM_SESSIONKEYBYTES;
     }
   }
+
   // derive session key
+  keccak_state state;
+  shake256_init(&state);
   printf("Ephemeral shared secret: ");
   print_hexstr(ss_e, ETM_SESSIONKEYBYTES);
+  shake256_absorb(&state, ss_e, ETM_SESSIONKEYBYTES);
   if (ss_server_auth_len == ETM_SESSIONKEYBYTES) {
     printf("Server authentication: ");
     print_hexstr(ss_server_auth, ETM_SESSIONKEYBYTES);
+    shake256_absorb(&state, ss_e, ETM_SESSIONKEYBYTES);
   }
   if (ss_client_auth_len == ETM_SESSIONKEYBYTES) {
     printf("Client authentication: ");
     print_hexstr(ss_client_auth, ETM_SESSIONKEYBYTES);
+    shake256_absorb(&state, ss_e, ETM_SESSIONKEYBYTES);
   }
-  // TODO: actually derive the key
+  shake256_finalize(&state);
+  shake256_squeeze(session_key, session_key_len, &state);
 
   return 0;
 }
