@@ -11,8 +11,8 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
   -Wshadow -Wpointer-arith -O3 -fomit-frame-pointer 
 NISTFLAGS += -Wno-unused-result -O3 -fomit-frame-pointer
 
-SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c kex.c
-HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h kex.h
+SOURCES = $(KYBERSOURCESKECCAK) authenticators.c etm.c kex.c utils.c
+HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h kex.h utils.h
 
 .PHONY: \
 	test \
@@ -52,7 +52,8 @@ test: \
 	test/test_etm1024_gmac \
 	test/test_speed512 \
 	test/test_speed768 \
-	test/test_speed1024
+	test/test_speed1024 \
+	test/test_utils
 	./test/test_authenticators512
 	./test/test_authenticators768
 	./test/test_authenticators1024
@@ -62,6 +63,7 @@ test: \
 	./test/test_etm512_gmac
 	./test/test_etm768_gmac
 	./test/test_etm1024_gmac
+	./test/test_utils
 
 speed: \
 	test/test_speed512 \
@@ -103,6 +105,9 @@ test/test_speed768: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpu
 
 test/test_speed1024: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/cpucycles.h $(KYBERDIR)/test/speed_print.c $(KYBERDIR)/test/speed_print.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_speed.c $(KYBERDIR)/test/cpucycles.c $(KYBERDIR)/test/speed_print.c -DKYBER_K=4 -o $@
+
+test/test_utils: $(SOURCES) $(HEADERS) test/test_utils.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_utils.c -o $@
 
 kex_server512: $(SOURCES) $(HEADERS) kex_server.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=2 -o $@
@@ -164,3 +169,4 @@ clean:
 	$(RM) test/test_speed512
 	$(RM) test/test_speed768
 	$(RM) test/test_speed1024
+	$(RM) test/test_utils
