@@ -63,6 +63,10 @@ main
 keygen
 kex_server512
 kex_client512
+kex_server768
+kex_client768
+kex_server1024
+kex_client1024
 uakex_server512
 uakex_client512
 akex_server512

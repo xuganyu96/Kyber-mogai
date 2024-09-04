@@ -18,27 +18,25 @@ HEADERS = $(KYBERHEADERSKECCAK) authenticators.h etm.h kex.h utils.h
 	test \
 	clean \
 	speed \
-	run_kex_server512 \
-	run_kex_client512 \
-	run_uakex_server512 \
-	run_uakex_client512 \
-	run_akex_server512 \
-	run_akex_client512 \
+	kex \
 	all
 
 all: main \
 	test \
 	speed \
-	kex_server512 \
-	kex_client512 \
-	uakex_server512 \
-	uakex_client512 \
-	akex_server512 \
-	akex_client512
+	kex
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) main.c -o $@
 	./main
+
+kex: \
+	kex_server512 \
+	kex_client512 \
+	kex_server768 \
+	kex_client768 \
+	kex_server1024 \
+	kex_client1024
 
 test: \
 	test/test_authenticators512 \
@@ -112,38 +110,20 @@ test/test_utils: $(SOURCES) $(HEADERS) test/test_utils.c
 kex_server512: $(SOURCES) $(HEADERS) kex_server.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=2 -o $@
 
-run_kex_server512: kex_server512
-	./kex_server512 $(DEVPORT)
-
 kex_client512: $(SOURCES) $(HEADERS) kex_client.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=2 -o $@
 
-run_kex_client512: kex_client512
-	./kex_client512
+kex_server768: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=3 -o $@
 
-uakex_server512: $(SOURCES) $(HEADERS) uakex_server.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) uakex_server.c -DKYBER_K=2 -o $@
+kex_client768: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=3 -o $@
 
-run_uakex_server512: uakex_server512
-	./uakex_server512 $(DEVPORT)
+kex_server1024: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=4 -o $@
 
-uakex_client512: $(SOURCES) $(HEADERS) uakex_client.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) uakex_client.c -DKYBER_K=2 -o $@
-
-run_uakex_client512: uakex_client512
-	./uakex_client512
-
-akex_server512: $(SOURCES) $(HEADERS) akex_server.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) akex_server.c -DKYBER_K=2 -o $@
-
-run_akex_server512: akex_server512
-	./akex_server512 $(DEVPORT)
-
-akex_client512: $(SOURCES) $(HEADERS) akex_client.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) akex_client.c -DKYBER_K=2 -o $@
-
-run_akex_client512: akex_client512
-	./akex_client512
+kex_client1024: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=4 -o $@
 
 keygen: $(SOURCES) $(HEADERS) keygen.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) keygen.c -DKYBER_K=2 -o $@
@@ -152,10 +132,10 @@ clean:
 	$(RM) main
 	$(RM) kex_server512
 	$(RM) kex_client512
-	$(RM) uakex_server512
-	$(RM) uakex_client512
-	$(RM) akex_server512
-	$(RM) akex_client512
+	$(RM) kex_server768
+	$(RM) kex_client768
+	$(RM) kex_server1024
+	$(RM) kex_client1024
 	$(RM) keygen
 	$(RM) test/test_authenticators512
 	$(RM) test/test_authenticators768
