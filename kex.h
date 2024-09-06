@@ -5,6 +5,15 @@
 #include "kyber/ref/kem.h"
 #include <stdio.h>
 
+#ifdef USE_MLKEM
+#define KEX_SESSION_KEY_BYTES CRYPTO_BYTES
+#define KEX_PUBLIC_KEY_BYTES CRYPTO_PUBLICKEYBYTES
+#define KEX_SECRET_KEY_BYTES CRYPTO_SECRETKEYBYTES
+#define KEX_CIPHERTEXT_BYTES CRYPTO_CIPHERTEXTBYTES
+#define kex_decap crypto_kem_dec
+#define kex_encap crypto_kem_enc
+#define kex_keygen crypto_kem_keypair
+#else
 #define KEX_SESSION_KEY_BYTES ETM_SESSIONKEYBYTES
 #define KEX_PUBLIC_KEY_BYTES ETM_PUBLICKEYBYTES
 #define KEX_SECRET_KEY_BYTES ETM_SECRETKEYBYTES
@@ -12,6 +21,7 @@
 #define kex_decap etm_decap
 #define kex_encap etm_encap
 #define kex_keygen crypto_kem_keypair
+#endif
 
 /** Read exactly data_len bytes from the file descriptor. Data is copied onto
  * data. Return 0 on success.

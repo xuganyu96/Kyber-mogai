@@ -42,12 +42,12 @@ kex: \
 	keygen512 \
 	keygen768 \
 	keygen1024 \
-	kex_server512 \
-	kex_client512 \
-	kex_server768 \
-	kex_client768 \
-	kex_server1024 \
-	kex_client1024
+	kex_etm512_server \
+	kex_etm512_client \
+	kex_etm768_server \
+	kex_etm768_client \
+	kex_etm1024_server \
+	kex_etm1024_client
 
 test: \
 	test/test_authenticators512 \
@@ -193,22 +193,22 @@ test/test_speed1024_kmac: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/te
 test/test_utils: $(SOURCES) $(HEADERS) test/test_utils.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_utils.c -o $@
 
-kex_server512: $(SOURCES) $(HEADERS) kex_server.c
+kex_etm512_server: $(SOURCES) $(HEADERS) kex_server.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=2 -o $@
 
-kex_client512: $(SOURCES) $(HEADERS) kex_client.c
+kex_etm512_client: $(SOURCES) $(HEADERS) kex_client.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=2 -o $@
 
-kex_server768: $(SOURCES) $(HEADERS) kex_server.c
+kex_etm768_server: $(SOURCES) $(HEADERS) kex_server.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=3 -o $@
 
-kex_client768: $(SOURCES) $(HEADERS) kex_client.c
+kex_etm768_client: $(SOURCES) $(HEADERS) kex_client.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=3 -o $@
 
-kex_server1024: $(SOURCES) $(HEADERS) kex_server.c
+kex_etm1024_server: $(SOURCES) $(HEADERS) kex_server.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=4 -o $@
 
-kex_client1024: $(SOURCES) $(HEADERS) kex_client.c
+kex_etm1024_client: $(SOURCES) $(HEADERS) kex_client.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=4 -o $@
 
 keygen512: $(SOURCES) $(HEADERS) keygen.c
@@ -222,12 +222,12 @@ keygen1024: $(SOURCES) $(HEADERS) keygen.c
 
 clean:
 	$(RM) main
-	$(RM) kex_server512
-	$(RM) kex_client512
-	$(RM) kex_server768
-	$(RM) kex_client768
-	$(RM) kex_server1024
-	$(RM) kex_client1024
+	$(RM) kex_etm512_server
+	$(RM) kex_etm512_client
+	$(RM) kex_etm768_server
+	$(RM) kex_etm768_client
+	$(RM) kex_etm1024_server
+	$(RM) kex_etm1024_client
 	$(RM) keygen512
 	$(RM) keygen768
 	$(RM) keygen1024

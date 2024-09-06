@@ -54,7 +54,6 @@ dkms.conf
 # Language server
 .clangd
 
-
 # MacOS
 .DS_Store
 
@@ -63,12 +62,12 @@ main
 keygen512
 keygen768
 keygen1024
-kex_server512
-kex_client512
-kex_server768
-kex_client768
-kex_server1024
-kex_client1024
+kex_etm512_server
+kex_etm512_client
+kex_etm768_server
+kex_etm768_client
+kex_etm1024_server
+kex_etm1024_client
 uakex_server512
 uakex_client512
 akex_server512
