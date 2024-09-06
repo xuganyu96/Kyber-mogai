@@ -68,6 +68,12 @@ kex_etm768_server
 kex_etm768_client
 kex_etm1024_server
 kex_etm1024_client
+kex_mlkem512_server
+kex_mlkem512_client
+kex_mlkem768_server
+kex_mlkem768_client
+kex_mlkem1024_server
+kex_mlkem1024_client
 uakex_server512
 uakex_client512
 akex_server512

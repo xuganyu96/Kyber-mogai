@@ -47,7 +47,13 @@ kex: \
 	kex_etm768_server \
 	kex_etm768_client \
 	kex_etm1024_server \
-	kex_etm1024_client
+	kex_etm1024_client \
+	kex_mlkem512_server \
+	kex_mlkem512_client \
+	kex_mlkem768_server \
+	kex_mlkem768_client \
+	kex_mlkem1024_server \
+	kex_mlkem1024_client
 
 test: \
 	test/test_authenticators512 \
@@ -211,6 +217,24 @@ kex_etm1024_server: $(SOURCES) $(HEADERS) kex_server.c
 kex_etm1024_client: $(SOURCES) $(HEADERS) kex_client.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=4 -o $@
 
+kex_mlkem512_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DUSE_MLKEM -DKYBER_K=2 -o $@
+
+kex_mlkem512_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DUSE_MLKEM -DKYBER_K=2 -o $@
+
+kex_mlkem768_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DUSE_MLKEM -DKYBER_K=3 -o $@
+
+kex_mlkem768_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DUSE_MLKEM -DKYBER_K=3 -o $@
+
+kex_mlkem1024_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DUSE_MLKEM -DKYBER_K=4 -o $@
+
+kex_mlkem1024_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DUSE_MLKEM -DKYBER_K=4 -o $@
+
 keygen512: $(SOURCES) $(HEADERS) keygen.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) keygen.c -DKYBER_K=2 -o $@
 
@@ -222,15 +246,21 @@ keygen1024: $(SOURCES) $(HEADERS) keygen.c
 
 clean:
 	$(RM) main
+	$(RM) keygen512
+	$(RM) keygen768
+	$(RM) keygen1024
 	$(RM) kex_etm512_server
 	$(RM) kex_etm512_client
 	$(RM) kex_etm768_server
 	$(RM) kex_etm768_client
 	$(RM) kex_etm1024_server
 	$(RM) kex_etm1024_client
-	$(RM) keygen512
-	$(RM) keygen768
-	$(RM) keygen1024
+	$(RM) kex_mlkem512_server
+	$(RM) kex_mlkem512_client
+	$(RM) kex_mlkem768_server
+	$(RM) kex_mlkem768_client
+	$(RM) kex_mlkem1024_server
+	$(RM) kex_mlkem1024_client
 	$(RM) test/test_authenticators512
 	$(RM) test/test_authenticators768
 	$(RM) test/test_authenticators1024
