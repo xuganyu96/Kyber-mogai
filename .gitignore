@@ -60,7 +60,9 @@ dkms.conf
 
 # test binaries
 main
-keygen
+keygen512
+keygen768
+keygen1024
 kex_server512
 kex_client512
 kex_server768
@@ -74,15 +76,30 @@ akex_client512
 test/test_authenticators512
 test/test_authenticators768
 test/test_authenticators1024
-test/test_etm1024_gmac
+test/test_etm512_poly1305
+test/test_etm768_poly1305
 test/test_etm1024_poly1305
 test/test_etm512_gmac
-test/test_etm512_poly1305
 test/test_etm768_gmac
-test/test_etm768_poly1305
-test/test_speed512
-test/test_speed768
-test/test_speed1024
+test/test_etm1024_gmac
+test/test_etm512_cmac
+test/test_etm768_cmac
+test/test_etm1024_cmac
+test/test_etm512_kmac
+test/test_etm768_kmac
+test/test_etm1024_kmac
+test/test_speed512_poly1305
+test/test_speed768_poly1305
+test/test_speed1024_poly1305
+test/test_speed512_gmac
+test/test_speed768_gmac
+test/test_speed1024_gmac
+test/test_speed512_cmac
+test/test_speed768_cmac
+test/test_speed1024_cmac
+test/test_speed512_kmac
+test/test_speed768_kmac
+test/test_speed1024_kmac
 test/test_utils
 # test keypairs
 *id_kyber*

@@ -56,45 +56,45 @@ int main(int argc, char *argv[]) {
 
   debug_network_peer(stream);
 
-  uint8_t session_key[ETM_SESSIONKEYBYTES];
-  uint8_t server_sk[ETM_SECRETKEYBYTES];
-  uint8_t client_pk[ETM_PUBLICKEYBYTES];
+  uint8_t session_key[KEX_SESSION_KEY_BYTES];
+  uint8_t server_sk[KEX_SECRET_KEY_BYTES];
+  uint8_t client_pk[KEX_PUBLIC_KEY_BYTES];
   int kex_return;
   FILE *server_sk_fd = NULL;
   FILE *client_pk_fd = NULL;
   switch (auth_mode) {
   case AUTH_NONE:
     kex_return =
-        server_handle(stream, NULL, NULL, session_key, ETM_SESSIONKEYBYTES);
+        server_handle(stream, NULL, NULL, session_key, KEX_SESSION_KEY_BYTES);
     break;
   case AUTH_SERVER:
     server_sk_fd = fopen("id_kyber.bin", "r");
-    fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
+    fread_exact(server_sk_fd, server_sk, KEX_SECRET_KEY_BYTES);
     fclose(server_sk_fd);
     kex_return = server_handle(stream, server_sk, NULL, session_key,
-                               ETM_SESSIONKEYBYTES);
+                               KEX_SESSION_KEY_BYTES);
     break;
   case AUTH_CLIENT:
     client_pk_fd = fopen("id_kyber.pub.bin", "r");
-    fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
+    fread_exact(client_pk_fd, client_pk, KEX_PUBLIC_KEY_BYTES);
     fclose(client_pk_fd);
     kex_return = server_handle(stream, NULL, client_pk, session_key,
-                               ETM_SESSIONKEYBYTES);
+                               KEX_SESSION_KEY_BYTES);
     break;
   case AUTH_ALL:
     server_sk_fd = fopen("id_kyber.bin", "r");
-    fread_exact(server_sk_fd, server_sk, ETM_SECRETKEYBYTES);
+    fread_exact(server_sk_fd, server_sk, KEX_SECRET_KEY_BYTES);
     fclose(server_sk_fd);
     client_pk_fd = fopen("id_kyber.pub.bin", "r");
-    fread_exact(client_pk_fd, client_pk, ETM_PUBLICKEYBYTES);
+    fread_exact(client_pk_fd, client_pk, KEX_PUBLIC_KEY_BYTES);
     fclose(client_pk_fd);
     kex_return = server_handle(stream, server_sk, client_pk, session_key,
-                               ETM_SESSIONKEYBYTES);
+                               KEX_SESSION_KEY_BYTES);
     break;
   }
   if (kex_return == 0) {
     printf("Server finished key exchange\n");
-    printf("Session key: "); print_hexstr(session_key, ETM_SESSIONKEYBYTES);
+    printf("Session key: "); print_hexstr(session_key, KEX_SESSION_KEY_BYTES);
   }
 
   fclose(server_sk_fd);

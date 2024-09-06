@@ -2,9 +2,20 @@
  * Unauthenticated key exchange routines
  */
 #include "authenticators.h"
-#include "kyber/ref/params.h"
+#include "kyber/ref/kem.h"
 #include <stdio.h>
 
+#define KEX_SESSION_KEY_BYTES ETM_SESSIONKEYBYTES
+#define KEX_PUBLIC_KEY_BYTES ETM_PUBLICKEYBYTES
+#define KEX_SECRET_KEY_BYTES ETM_SECRETKEYBYTES
+#define KEX_CIPHERTEXT_BYTES ETM_CIPHERTEXTBYTES
+#define kex_decap etm_decap
+#define kex_encap etm_encap
+#define kex_keygen crypto_kem_keypair
+
+/** Read exactly data_len bytes from the file descriptor. Data is copied onto
+ * data. Return 0 on success.
+ */
 int fread_exact(FILE *fd, uint8_t *data, size_t data_len);
 
 /**
