@@ -1,7 +1,6 @@
 #include "../authenticators.h"
 #include "../etm.h"
 #include "../kyber/ref/kem.h"
-#include "../kyber/ref/params.h"
 #include "stdio.h"
 
 #define ROUNDS 10000
@@ -15,7 +14,7 @@ static int randomized_encap_then_decap(void) {
   crypto_kem_keypair(pk, sk);
   for (int round = 0; round < ROUNDS; round++) {
     etm_encap(ct, ss, pk);
-    etm_decap(ct, decapsulation, sk);
+    etm_decap(decapsulation, ct, sk);
     for (size_t i = 0; i < ETM_SESSIONKEYBYTES; i++) {
       if (ss[i] != decapsulation[i]) {
         fprintf(stderr, "Decapsulation failed\n");

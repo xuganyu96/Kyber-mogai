@@ -46,7 +46,7 @@ int etm_encap(uint8_t *ct,
     return 0;
 }
 
-int etm_decap(uint8_t *ct, uint8_t *ss, const uint8_t *sk) {
+int etm_decap(uint8_t *ss, const uint8_t *ct, const uint8_t *sk) {
     uint8_t mh[KYBER_INDCPA_MSGBYTES + KYBER_SYMBYTES];
     uint8_t kk[KYBER_SYMBYTES + MAC_KEY_BYTES];
     uint8_t verify_tag[MAC_TAG_BYTES];

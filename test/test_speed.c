@@ -62,7 +62,7 @@ int main(void) {
 
     for(i=0;i<NTESTS;i++) {
         t[i] = cpucycles();
-        etm_decap(ct, decapsulation, sk);
+        etm_decap(decapsulation, ct, sk);
     }
     print_results("kyber_decaps: ", t, NTESTS);
 }

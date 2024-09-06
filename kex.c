@@ -47,7 +47,7 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
   }
   // Process client transmission
   if (ct_server_auth_len == KEX_CIPHERTEXT_BYTES) {
-    if (0 != kex_decap(ct_server_auth, ss_server_auth, sk_server)) {
+    if (0 != kex_decap(ss_server_auth, ct_server_auth, sk_server)) {
       fprintf(stderr,
               "ERROR: server failed to decapsulate server authentication\n");
       return 1;
@@ -165,12 +165,12 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
   }
 
   // Process server response
-  if (0 != kex_decap(ct_e, ss_e, sk_e)) {
+  if (0 != kex_decap(ss_e, ct_e, sk_e)) {
     fprintf(stderr, "Client failed to decapsulate ephemeral secret\n");
     return 1;
   }
   if (ct_client_auth_len == KEX_CIPHERTEXT_BYTES) {
-    if (0 != kex_decap(ct_client_auth, ss_client_auth, sk_client)) {
+    if (0 != kex_decap(ss_client_auth, ct_client_auth, sk_client)) {
       fprintf(stderr, "Client failed to decapsulate client authentication\n");
       return 1;
     } else {
