@@ -59,27 +59,28 @@ int main(int argc, char *argv[]) {
   uint8_t session_key[KEX_SESSION_KEY_BYTES];
   uint8_t server_sk[KEX_SECRET_KEY_BYTES];
   uint8_t client_pk[KEX_PUBLIC_KEY_BYTES];
-  int kex_return;
+  int kex_return = 0;
   FILE *server_sk_fd = NULL;
   FILE *client_pk_fd = NULL;
+  uint8_t *sk_server, *pk_client;
   switch (auth_mode) {
   case AUTH_NONE:
-    kex_return =
-        server_handle(stream, NULL, NULL, session_key, KEX_SESSION_KEY_BYTES);
+    sk_server = NULL;
+    pk_client = NULL;
     break;
   case AUTH_SERVER:
     server_sk_fd = fopen("id_kyber.bin", "r");
     fread_exact(server_sk_fd, server_sk, KEX_SECRET_KEY_BYTES);
     fclose(server_sk_fd);
-    kex_return = server_handle(stream, server_sk, NULL, session_key,
-                               KEX_SESSION_KEY_BYTES);
+    sk_server = server_sk;
+    pk_client = NULL;
     break;
   case AUTH_CLIENT:
     client_pk_fd = fopen("id_kyber.pub.bin", "r");
     fread_exact(client_pk_fd, client_pk, KEX_PUBLIC_KEY_BYTES);
     fclose(client_pk_fd);
-    kex_return = server_handle(stream, NULL, client_pk, session_key,
-                               KEX_SESSION_KEY_BYTES);
+    sk_server = NULL;
+    pk_client = client_pk;
     break;
   case AUTH_ALL:
     server_sk_fd = fopen("id_kyber.bin", "r");
@@ -88,17 +89,22 @@ int main(int argc, char *argv[]) {
     client_pk_fd = fopen("id_kyber.pub.bin", "r");
     fread_exact(client_pk_fd, client_pk, KEX_PUBLIC_KEY_BYTES);
     fclose(client_pk_fd);
-    kex_return = server_handle(stream, server_sk, client_pk, session_key,
-                               KEX_SESSION_KEY_BYTES);
+    sk_server = server_sk;
+    pk_client = client_pk;
     break;
   }
-  if (kex_return == 0) {
+  for (int i = 0; i < KEX_ROUNDS; i++) {
+    kex_return |= server_handle(stream, sk_server, pk_client, session_key,
+                                KEX_SESSION_KEY_BYTES);
+  }
+  if (kex_return != 0) {
+    fprintf(stderr, "Server failed to finish key exchange\n");
+  } else {
     printf("Server finished key exchange\n");
-    printf("Session key: "); print_hexstr(session_key, KEX_SESSION_KEY_BYTES);
+    printf("Session key: ");
+    print_hexstr(session_key, KEX_SESSION_KEY_BYTES);
   }
 
-  fclose(server_sk_fd);
-  fclose(client_pk_fd);
   close(stream);
   close(listener);
 }

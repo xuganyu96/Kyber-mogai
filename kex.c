@@ -29,12 +29,18 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
   uint8_t *ct_client_auth = server_tx + KEX_CIPHERTEXT_BYTES;
   size_t ct_client_auth_len = 0;
 
+#if (__VERBOSE__ == 1)
   printf("Waiting for client transmission...\n");
+#endif
   size_t rx_len = read(stream, client_tx, sizeof(client_tx));
   if (rx_len == KEX_PUBLIC_KEY_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Client did not request server authentication\n");
+#endif
   } else if (rx_len == KEX_PUBLIC_KEY_BYTES + KEX_CIPHERTEXT_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Client requested server authentication\n");
+#endif
     if (!sk_server) {
       fprintf(stderr, "ERROR: Server secret key is not ready\n");
       return 1;
@@ -67,7 +73,9 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
               "ERROR: server failed to encapsulate client authentication\n");
       return 1;
     } else {
+#if (__VERBOSE__ == 1)
       printf("Server requested client authentication\n");
+#endif
       ss_client_auth_len = KEX_SESSION_KEY_BYTES;
       ct_client_auth_len = KEX_CIPHERTEXT_BYTES;
     }
@@ -91,17 +99,23 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
   // derive session key
   keccak_state state;
   shake256_init(&state);
+#if (__VERBOSE__ == 1)
   printf("Ephemeral shared secret: ");
   print_hexstr(ss_e, KEX_SESSION_KEY_BYTES);
+#endif
   shake256_absorb(&state, ss_e, KEX_SESSION_KEY_BYTES);
   if (ss_server_auth_len == KEX_SESSION_KEY_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Server authentication: ");
     print_hexstr(ss_server_auth, KEX_SESSION_KEY_BYTES);
+#endif
     shake256_absorb(&state, ss_server_auth, KEX_SESSION_KEY_BYTES);
   }
   if (ss_client_auth_len == KEX_SESSION_KEY_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Client authentication: ");
     print_hexstr(ss_client_auth, KEX_SESSION_KEY_BYTES);
+#endif
     shake256_absorb(&state, ss_client_auth, KEX_SESSION_KEY_BYTES);
   }
   shake256_finalize(&state);
@@ -130,7 +144,9 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
   // Prepare client transmission
   kex_keygen(pk_e, sk_e);
   if (pk_server) {
+#if (__VERBOSE__ == 1)
     printf("Client requested server authentication\n");
+#endif
     kex_encap(ct_server_auth, ss_server_auth, pk_server);
     ct_server_auth_len = KEX_CIPHERTEXT_BYTES;
     ss_server_auth_len = KEX_SESSION_KEY_BYTES;
@@ -151,9 +167,13 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
   // Receive server response
   size_t rx_len = read(stream, server_tx, sizeof(server_tx));
   if (rx_len == KEX_CIPHERTEXT_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Server did not request client authentication\n");
+#endif
   } else if (rx_len == 2 * KEX_CIPHERTEXT_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Server requested client authentication\n");
+#endif
     ct_client_auth_len = KEX_CIPHERTEXT_BYTES;
     if (!sk_client) {
       fprintf(stderr, "Client secret key is not ready\n");
@@ -181,17 +201,23 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
   // derive session key
   keccak_state state;
   shake256_init(&state);
+#if (__VERBOSE__ == 1)
   printf("Ephemeral shared secret: ");
   print_hexstr(ss_e, KEX_SESSION_KEY_BYTES);
+#endif
   shake256_absorb(&state, ss_e, KEX_SESSION_KEY_BYTES);
   if (ss_server_auth_len == KEX_SESSION_KEY_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Server authentication: ");
     print_hexstr(ss_server_auth, KEX_SESSION_KEY_BYTES);
+#endif
     shake256_absorb(&state, ss_server_auth, KEX_SESSION_KEY_BYTES);
   }
   if (ss_client_auth_len == KEX_SESSION_KEY_BYTES) {
+#if (__VERBOSE__ == 1)
     printf("Client authentication: ");
     print_hexstr(ss_client_auth, KEX_SESSION_KEY_BYTES);
+#endif
     shake256_absorb(&state, ss_client_auth, KEX_SESSION_KEY_BYTES);
   }
   shake256_finalize(&state);

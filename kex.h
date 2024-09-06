@@ -5,6 +5,9 @@
 #include "kyber/ref/kem.h"
 #include <stdio.h>
 
+#define KEX_ROUNDS 10000
+#define __VERBOSE__ 0
+
 #ifdef USE_MLKEM
 #define KEX_SESSION_KEY_BYTES CRYPTO_BYTES
 #define KEX_PUBLIC_KEY_BYTES CRYPTO_PUBLICKEYBYTES
