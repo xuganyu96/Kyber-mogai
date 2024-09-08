@@ -7,6 +7,9 @@
 #include "sys/socket.h"
 #include "unistd.h"
 #include "utils.h"
+#include <time.h>
+
+uint64_t timestamps[KEX_ROUNDS + 1];
 
 int main(int argc, char *argv[]) {
   int auth_mode, port;
@@ -73,10 +76,13 @@ int main(int argc, char *argv[]) {
     break;
   }
 
+  timestamps[0] = clock_gettime_us();
   for (int i = 0; i < KEX_ROUNDS; i++) {
     kex_return |= client_handle(stream, sk_client, pk_server, session_key,
                                 KEX_SESSION_KEY_BYTES);
+    timestamps[i + 1] = clock_gettime_us();
   }
+  print_results("Client kex: ", timestamps, KEX_ROUNDS + 1);
 
   if (kex_return != 0) {
     fprintf(stderr, "Client failed to finish key exchange\n");

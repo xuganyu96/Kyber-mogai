@@ -1,8 +1,8 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#include <stdint.h>
 
-uint64_t to_microseconds(struct timespec *timer) {
+static uint64_t to_microseconds(struct timespec *timer) {
   return (timer->tv_sec * 1000000) + (timer->tv_nsec / 1000);
 }
 
@@ -13,7 +13,7 @@ int main(void) {
     fprintf(stderr, "Monotonic clock returned error\n");
   } else {
     printf("Seconds: %ld, nanosecond: %ld\n", timer.tv_sec, timer.tv_nsec);
-  printf("microseconds: %llu\n", to_microseconds(&timer));
+    printf("microseconds: %llu\n", to_microseconds(&timer));
   }
 
   return 0;

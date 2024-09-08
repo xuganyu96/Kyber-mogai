@@ -1,11 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define AUTH_NONE 0
 #define AUTH_SERVER 1
 #define AUTH_CLIENT 2
 #define AUTH_ALL 3
 #define MAX_HOSTNAME_LEN 256
+
+/** ripped off test_speed.c
+ */
+void print_results(const char *s, uint64_t *t, size_t tlen);
+
+/** Convert timespect to an absolute timestamp in microseconds
+ */
+uint64_t clock_gettime_us(void);
 
 /** Command-line argument parsing
  *

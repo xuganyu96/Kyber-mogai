@@ -7,6 +7,62 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <time.h>
+
+static uint64_t to_microseconds(const struct timespec *timer) {
+  return (timer->tv_sec * 1000000) + (timer->tv_nsec / 1000);
+}
+
+static int cmp_uint64(const void *a, const void *b) {
+  if (*(uint64_t *)a < *(uint64_t *)b)
+    return -1;
+  if (*(uint64_t *)a > *(uint64_t *)b)
+    return 1;
+  return 0;
+}
+
+static uint64_t median(uint64_t *l, size_t llen) {
+  qsort(l, llen, sizeof(uint64_t), cmp_uint64);
+
+  if (llen % 2)
+    return l[llen / 2];
+  else
+    return (l[llen / 2 - 1] + l[llen / 2]) / 2;
+}
+
+static uint64_t average(uint64_t *t, size_t tlen) {
+  size_t i;
+  uint64_t acc = 0;
+
+  for (i = 0; i < tlen; i++)
+    acc += t[i];
+
+  return acc / tlen;
+}
+
+void print_results(const char *s, uint64_t *t, size_t tlen) {
+  size_t i;
+
+  if (tlen < 2) {
+    fprintf(stderr, "ERROR: Need a least two cycle counts!\n");
+    return;
+  }
+
+  tlen--;
+  for (i = 0; i < tlen; ++i)
+    t[i] = t[i + 1] - t[i];
+
+  printf("%s\n", s);
+  printf("median: %llu us/ticks\n", (unsigned long long)median(t, tlen));
+  printf("average: %llu us/ticks\n", (unsigned long long)average(t, tlen));
+  printf("\n");
+}
+
+uint64_t clock_gettime_us(void) {
+  struct timespec timer;
+  clock_gettime(CLOCK_MONOTONIC, &timer);
+  return to_microseconds(&timer);
+}
 
 int parse_args(int argc, char *argv[], int *auth_mode, char *host, int *port) {
   if (argc != 4) {

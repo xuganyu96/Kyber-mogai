@@ -9,7 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
+
+uint64_t timestamps[KEX_ROUNDS];
 
 int main(int argc, char *argv[]) {
   int auth_mode, port;
@@ -44,6 +47,8 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Failed to listen on port %d\n", port);
     close(listener);
     exit(EXIT_FAILURE);
+  } else {
+    printf("Listening in on port %d\n", port);
   }
 
   stream = accept(listener, (struct socketaddr *)&server_addr,
@@ -93,10 +98,13 @@ int main(int argc, char *argv[]) {
     pk_client = client_pk;
     break;
   }
+  timestamps[0] = clock_gettime_us();
   for (int i = 0; i < KEX_ROUNDS; i++) {
     kex_return |= server_handle(stream, sk_server, pk_client, session_key,
                                 KEX_SESSION_KEY_BYTES);
+    timestamps[i + 1] = clock_gettime_us();
   }
+  print_results("Server kex: ", timestamps, KEX_ROUNDS + 1);
   if (kex_return != 0) {
     fprintf(stderr, "Server failed to finish key exchange\n");
   } else {
