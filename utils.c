@@ -40,7 +40,7 @@ static uint64_t average(uint64_t *t, size_t tlen) {
   return acc / tlen;
 }
 
-void print_results(const char *s, uint64_t *t, size_t tlen) {
+void print_results_no_overhead(const char *s, uint64_t *t, size_t tlen) {
   size_t i;
 
   if (tlen < 2) {

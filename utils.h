@@ -10,7 +10,7 @@
 
 /** ripped off test_speed.c
  */
-void print_results(const char *s, uint64_t *t, size_t tlen);
+void print_results_no_overhead(const char *s, uint64_t *t, size_t tlen);
 
 /** Convert timespect to an absolute timestamp in microseconds
  */
