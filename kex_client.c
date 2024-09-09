@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
                                 KEX_SESSION_KEY_BYTES);
     timestamps[i + 1] = clock_gettime_us();
   }
-  print_results("Client kex: ", timestamps, KEX_ROUNDS + 1);
+  print_results_no_overhead("Client kex: ", timestamps, KEX_ROUNDS + 1);
 
   if (kex_return != 0) {
     fprintf(stderr, "Client failed to finish key exchange\n");
