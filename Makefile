@@ -42,12 +42,30 @@ kex: \
 	keygen512 \
 	keygen768 \
 	keygen1024 \
-	kex_etm512_server \
-	kex_etm512_client \
-	kex_etm768_server \
-	kex_etm768_client \
-	kex_etm1024_server \
-	kex_etm1024_client \
+	kex_etm512_poly1305_server \
+	kex_etm512_poly1305_client \
+	kex_etm768_poly1305_server \
+	kex_etm768_poly1305_client \
+	kex_etm1024_poly1305_server \
+	kex_etm1024_poly1305_client \
+	kex_etm512_gmac_server \
+	kex_etm512_gmac_client \
+	kex_etm768_gmac_server \
+	kex_etm768_gmac_client \
+	kex_etm1024_gmac_server \
+	kex_etm1024_gmac_client \
+	kex_etm512_cmac_server \
+	kex_etm512_cmac_client \
+	kex_etm768_cmac_server \
+	kex_etm768_cmac_client \
+	kex_etm1024_cmac_server \
+	kex_etm1024_cmac_client \
+	kex_etm512_kmac_server \
+	kex_etm512_kmac_client \
+	kex_etm768_kmac_server \
+	kex_etm768_kmac_client \
+	kex_etm1024_kmac_server \
+	kex_etm1024_kmac_client \
 	kex_mlkem512_server \
 	kex_mlkem512_client \
 	kex_mlkem768_server \
@@ -199,23 +217,77 @@ test/test_speed1024_kmac: $(SOURCES) $(HEADERS) test/test_speed.c $(KYBERDIR)/te
 test/test_utils: $(SOURCES) $(HEADERS) test/test_utils.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) test/test_utils.c -o $@
 
-kex_etm512_server: $(SOURCES) $(HEADERS) kex_server.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=2 -o $@
+kex_etm512_poly1305_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(POLY1305) kex_server.c -DKYBER_K=2 -o $@
 
-kex_etm512_client: $(SOURCES) $(HEADERS) kex_client.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=2 -o $@
+kex_etm512_poly1305_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(POLY1305) kex_client.c -DKYBER_K=2 -o $@
 
-kex_etm768_server: $(SOURCES) $(HEADERS) kex_server.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=3 -o $@
+kex_etm768_poly1305_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(POLY1305) kex_server.c -DKYBER_K=3 -o $@
 
-kex_etm768_client: $(SOURCES) $(HEADERS) kex_client.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=3 -o $@
+kex_etm768_poly1305_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(POLY1305) kex_client.c -DKYBER_K=3 -o $@
 
-kex_etm1024_server: $(SOURCES) $(HEADERS) kex_server.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DKYBER_K=4 -o $@
+kex_etm1024_poly1305_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(POLY1305) kex_server.c -DKYBER_K=4 -o $@
 
-kex_etm1024_client: $(SOURCES) $(HEADERS) kex_client.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_client.c -DKYBER_K=4 -o $@
+kex_etm1024_poly1305_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(POLY1305) kex_client.c -DKYBER_K=4 -o $@
+
+kex_etm512_gmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(GMAC) kex_server.c -DKYBER_K=2 -o $@
+
+kex_etm512_gmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(GMAC) kex_client.c -DKYBER_K=2 -o $@
+
+kex_etm768_gmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(GMAC) kex_server.c -DKYBER_K=3 -o $@
+
+kex_etm768_gmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(GMAC) kex_client.c -DKYBER_K=3 -o $@
+
+kex_etm1024_gmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(GMAC) kex_server.c -DKYBER_K=4 -o $@
+
+kex_etm1024_gmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(GMAC) kex_client.c -DKYBER_K=4 -o $@
+
+kex_etm512_cmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(CMAC) kex_server.c -DKYBER_K=2 -o $@
+
+kex_etm512_cmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(CMAC) kex_client.c -DKYBER_K=2 -o $@
+
+kex_etm768_cmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(CMAC) kex_server.c -DKYBER_K=3 -o $@
+
+kex_etm768_cmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(CMAC) kex_client.c -DKYBER_K=3 -o $@
+
+kex_etm1024_cmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(CMAC) kex_server.c -DKYBER_K=4 -o $@
+
+kex_etm1024_cmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(CMAC) kex_client.c -DKYBER_K=4 -o $@
+
+kex_etm512_kmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(KMAC) kex_server.c -DKYBER_K=2 -o $@
+
+kex_etm512_kmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(KMAC) kex_client.c -DKYBER_K=2 -o $@
+
+kex_etm768_kmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(KMAC) kex_server.c -DKYBER_K=3 -o $@
+
+kex_etm768_kmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(KMAC) kex_client.c -DKYBER_K=3 -o $@
+
+kex_etm1024_kmac_server: $(SOURCES) $(HEADERS) kex_server.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(KMAC) kex_server.c -DKYBER_K=4 -o $@
+
+kex_etm1024_kmac_client: $(SOURCES) $(HEADERS) kex_client.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) -DMAC_TYPE=$(KMAC) kex_client.c -DKYBER_K=4 -o $@
 
 kex_mlkem512_server: $(SOURCES) $(HEADERS) kex_server.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -lcrypto $(SOURCES) kex_server.c -DUSE_MLKEM -DKYBER_K=2 -o $@
@@ -249,12 +321,30 @@ clean:
 	$(RM) keygen512
 	$(RM) keygen768
 	$(RM) keygen1024
-	$(RM) kex_etm512_server
-	$(RM) kex_etm512_client
-	$(RM) kex_etm768_server
-	$(RM) kex_etm768_client
-	$(RM) kex_etm1024_server
-	$(RM) kex_etm1024_client
+	$(RM) kex_etm512_poly1305_server
+	$(RM) kex_etm512_poly1305_client
+	$(RM) kex_etm768_poly1305_server
+	$(RM) kex_etm768_poly1305_client
+	$(RM) kex_etm1024_poly1305_server
+	$(RM) kex_etm1024_poly1305_client
+	$(RM) kex_etm512_gmac_server
+	$(RM) kex_etm512_gmac_client
+	$(RM) kex_etm768_gmac_server
+	$(RM) kex_etm768_gmac_client
+	$(RM) kex_etm1024_gmac_server
+	$(RM) kex_etm1024_gmac_client
+	$(RM) kex_etm512_cmac_server
+	$(RM) kex_etm512_cmac_client
+	$(RM) kex_etm768_cmac_server
+	$(RM) kex_etm768_cmac_client
+	$(RM) kex_etm1024_cmac_server
+	$(RM) kex_etm1024_cmac_client
+	$(RM) kex_etm512_kmac_server
+	$(RM) kex_etm512_kmac_client
+	$(RM) kex_etm768_kmac_server
+	$(RM) kex_etm768_kmac_client
+	$(RM) kex_etm1024_kmac_server
+	$(RM) kex_etm1024_kmac_client
 	$(RM) kex_mlkem512_server
 	$(RM) kex_mlkem512_client
 	$(RM) kex_mlkem768_server

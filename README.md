@@ -1,8 +1,5 @@
 # Kyber-mogai
-- [ ] Repeat key exchange many times, on a single TCP connection
-- [ ] Use compiler flags to:
-    - [x] Change MAC
-    - [ ] Change to use Vanilla Kyber for key exchange
+- [ ] Measure time on a realistic network setting
 
 # Key exchange
 ```bash
