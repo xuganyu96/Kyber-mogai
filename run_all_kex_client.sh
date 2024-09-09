@@ -66,8 +66,8 @@ sleep 1
 ./kex_mlkem512_client all $1 8019
 sleep 1
 
-rm id_kyber.bin
-rm id_kyber.pub.bin
+rm -f id_kyber.bin
+rm -f id_kyber.pub.bin
 
 # ML-KEM 768 and variants
 ./keygen768 id_kyber "kyber768"
@@ -117,8 +117,8 @@ sleep 1
 ./kex_mlkem768_client all $1 8039
 sleep 1
 
-rm id_kyber.bin
-rm id_kyber.pub.bin
+rm -f id_kyber.bin
+rm -f id_kyber.pub.bin
 
 # ML-KEM 1024 and variants
 ./keygen1024 id_kyber "kyber1024"
@@ -168,5 +168,5 @@ sleep 1
 ./kex_mlkem1024_client all $1 8059
 sleep 1
 
-rm id_kyber.bin
-rm id_kyber.pub.bin
+rm -f id_kyber.bin
+rm -f id_kyber.pub.bin

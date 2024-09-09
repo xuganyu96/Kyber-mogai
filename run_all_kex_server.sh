@@ -33,8 +33,8 @@ make kex
 ./kex_mlkem512_server client none 8018
 ./kex_mlkem512_server all none 8019
 
-rm id_kyber.bin
-rm id_kyber.pub.bin
+rm -rf id_kyber.bin
+rm -rf id_kyber.pub.bin
 
 # ML-KEM 768 and variants
 ./keygen768 id_kyber "kyber768"
@@ -64,8 +64,8 @@ rm id_kyber.pub.bin
 ./kex_mlkem768_server client none 8038
 ./kex_mlkem768_server all none 8039
 
-rm id_kyber.bin
-rm id_kyber.pub.bin
+rm -rf id_kyber.bin
+rm -rf id_kyber.pub.bin
 
 # ML-KEM 1024 and variants
 ./keygen1024 id_kyber "kyber1024"
@@ -95,5 +95,5 @@ rm id_kyber.pub.bin
 ./kex_mlkem1024_server client none 8058
 ./kex_mlkem1024_server all none 8059
 
-rm id_kyber.bin
-rm id_kyber.pub.bin
+rm -rf id_kyber.bin
+rm -rf id_kyber.pub.bin

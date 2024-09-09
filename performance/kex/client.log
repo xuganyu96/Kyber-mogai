@@ -1,0 +1,425 @@
+127.0.0.1 is reachable
+make: Nothing to be done for `kex'.
+Seed is: 0x45CCD739711702054CFED57C10E1E091973005795E7895047043968095427116
+Connected to 127.0.0.1:8000
+Client kex: 
+median: 70 us/ticks
+average: 72 us/ticks
+
+Client finished key exchange
+Session key: 0x5FBCFD2437EAD39EFE5756B6B093BA91FC3C56792482131B942EE367FE576D7B
+Connected to 127.0.0.1:8001
+Client kex: 
+median: 103 us/ticks
+average: 106 us/ticks
+
+Client finished key exchange
+Session key: 0x021961ED3E2AFDCBA87B6A867B08B66A09036A0CC1869CB805885E60FD9CDD93
+Connected to 127.0.0.1:8002
+Client kex: 
+median: 100 us/ticks
+average: 102 us/ticks
+
+Client finished key exchange
+Session key: 0xC52AF7A426F78F1983F7CC828B07CA88453363054F6AF5429D20D52C961BD0E5
+Connected to 127.0.0.1:8003
+Client kex: 
+median: 133 us/ticks
+average: 138 us/ticks
+
+Client finished key exchange
+Session key: 0x95B80BF672E4F080AB80F206516AA43A1FED0A9ECBE5D933BEA389D49B33A7D8
+Connected to 127.0.0.1:8004
+Client kex: 
+median: 73 us/ticks
+average: 76 us/ticks
+
+Client finished key exchange
+Session key: 0x1D4B3DCB84E4B49B7A0EDCF1F3D46F9FA1B6B61DE998D3F4D64851AD59937F6F
+Connected to 127.0.0.1:8005
+Client kex: 
+median: 106 us/ticks
+average: 110 us/ticks
+
+Client finished key exchange
+Session key: 0xD7D182D97E6B8C604BE48D75D9632595C583452EF4A869DF4B078ADF499EF87B
+Connected to 127.0.0.1:8006
+Client kex: 
+median: 104 us/ticks
+average: 109 us/ticks
+
+Client finished key exchange
+Session key: 0xF516FFE61A7836DBAE7B854A2DD9BBBEB0D75AFCAFF114DBC25F3AEE17AFC527
+Connected to 127.0.0.1:8007
+Client kex: 
+median: 139 us/ticks
+average: 143 us/ticks
+
+Client finished key exchange
+Session key: 0x47B9E1AC38FF253A76E1F96377393C93FB1D9BECD6E832B73829D640548188DE
+Connected to 127.0.0.1:8008
+Client kex: 
+median: 75 us/ticks
+average: 79 us/ticks
+
+Client finished key exchange
+Session key: 0x89D2619F3596FAEDF6B7E3D8FCB5843075A3791AC7C4F32D9D8B2F29C7C7BCE9
+Connected to 127.0.0.1:8009
+Client kex: 
+median: 108 us/ticks
+average: 112 us/ticks
+
+Client finished key exchange
+Session key: 0xF50BA55A3092F853B3A4680A0F09CC5F2DCCD119903510F6C574510429B3D0FA
+Connected to 127.0.0.1:8010
+Client kex: 
+median: 107 us/ticks
+average: 111 us/ticks
+
+Client finished key exchange
+Session key: 0x2177031AB9B52C9CD8893E5666F5C2796A7C4560A0E873A6A91FB0D51717C80B
+Connected to 127.0.0.1:8011
+Client kex: 
+median: 143 us/ticks
+average: 148 us/ticks
+
+Client finished key exchange
+Session key: 0xF45B70BDB2D14146E954539A3DF6AD7503382EAE0730C0DD67C8CD50C3B19D44
+Connected to 127.0.0.1:8012
+Client kex: 
+median: 76 us/ticks
+average: 78 us/ticks
+
+Client finished key exchange
+Session key: 0xD3680CE8FBB1A64DB70AA35C3FB72CD84222B01551FC43626532D26BEED4673A
+Connected to 127.0.0.1:8013
+Client kex: 
+median: 109 us/ticks
+average: 113 us/ticks
+
+Client finished key exchange
+Session key: 0x7E6512DC5986D82BD7D186E88F1CE500A04C30C8676A25E2C6539DBC49F6B64E
+Connected to 127.0.0.1:8014
+Client kex: 
+median: 107 us/ticks
+average: 111 us/ticks
+
+Client finished key exchange
+Session key: 0x2AA5D91D05F904D7E2C51E4C8690E9E1D15D50BE6AC0A27AEADC17BC35DADA41
+Connected to 127.0.0.1:8015
+Client kex: 
+median: 145 us/ticks
+average: 151 us/ticks
+
+Client finished key exchange
+Session key: 0xDE43000BC37F498D4C76B6ECF83340AE229BB9E559B319B1C7411A0058E171E4
+Connected to 127.0.0.1:8016
+Client kex: 
+median: 92 us/ticks
+average: 97 us/ticks
+
+Client finished key exchange
+Session key: 0x2A4394415643E8D5BF753CA03D2095897DD8617E8686992984E36764D67C8DF7
+Connected to 127.0.0.1:8017
+Client kex: 
+median: 145 us/ticks
+average: 151 us/ticks
+
+Client finished key exchange
+Session key: 0x530EBB622AD7B97C690EDDE8136CDB253D5D7C3B496AA4B0AAE161CD437820D0
+Connected to 127.0.0.1:8018
+Client kex: 
+median: 145 us/ticks
+average: 151 us/ticks
+
+Client finished key exchange
+Session key: 0xE4E0607C1B9DC309107692E652937269F85B40D5FD63FE14CF33CCDEE4A9F3E4
+Connected to 127.0.0.1:8019
+Client kex: 
+median: 200 us/ticks
+average: 213 us/ticks
+
+Client finished key exchange
+Session key: 0xA561A952494EFA5142CDA401740A35C7F1D08DCE7CCC27ABC946B3F2FC86B224
+Seed is: 0x04A6D4CB4360A42E4B7F04A60FDD082BCEABD83EF0E1AC8B766EFA4DC5479F7B
+Connected to 127.0.0.1:8020
+Client kex: 
+median: 99 us/ticks
+average: 104 us/ticks
+
+Client finished key exchange
+Session key: 0xDED824B614413007F681A7EBE5415E224918002CCB0EEED47E6C84F2163480B5
+Connected to 127.0.0.1:8021
+Client kex: 
+median: 144 us/ticks
+average: 150 us/ticks
+
+Client finished key exchange
+Session key: 0xBA82AEB75B355F84AA5671A2BBD6E2BE7999A5794D5220F2A54B5B65BD4A000A
+Connected to 127.0.0.1:8022
+Client kex: 
+median: 144 us/ticks
+average: 151 us/ticks
+
+Client finished key exchange
+Session key: 0x15F5231420B3852FFC0370943F8EE10566F8A0E82E9760C9713802B3A97DA3C8
+Connected to 127.0.0.1:8023
+Client kex: 
+median: 190 us/ticks
+average: 196 us/ticks
+
+Client finished key exchange
+Session key: 0x6E11E803F2EBAA5C06C590F10B67D982FCF62491354BF6C1678080970CCCDA92
+Connected to 127.0.0.1:8024
+Client kex: 
+median: 101 us/ticks
+average: 105 us/ticks
+
+Client finished key exchange
+Session key: 0xE6D2073A0E1FE59E5AEE9B8838CB20AF472F5D8739EABBF6DD357E2F926271CA
+Connected to 127.0.0.1:8025
+Client kex: 
+median: 149 us/ticks
+average: 156 us/ticks
+
+Client finished key exchange
+Session key: 0x4C52DDA19C5193ABF1364739F3D677F3A3596166F1E5047AF3766EE55F6C3BC2
+Connected to 127.0.0.1:8026
+Client kex: 
+median: 150 us/ticks
+average: 158 us/ticks
+
+Client finished key exchange
+Session key: 0xD3CB48B995F04917DDEBFA6C9B7A3E09DB412A83BFB056955A1ECFF417C50EB0
+Connected to 127.0.0.1:8027
+Client kex: 
+median: 197 us/ticks
+average: 210 us/ticks
+
+Client finished key exchange
+Session key: 0xCE0698B4BE129187BF18E3F2B690F1D0750487AAD069923EC4D393DE6565735E
+Connected to 127.0.0.1:8028
+Client kex: 
+median: 103 us/ticks
+average: 109 us/ticks
+
+Client finished key exchange
+Session key: 0x383CD1168F74344B92CF58F448FAE8409B6747D296416E37A9D995B732716D6A
+Connected to 127.0.0.1:8029
+Client kex: 
+median: 153 us/ticks
+average: 160 us/ticks
+
+Client finished key exchange
+Session key: 0x2167B2EB60B6DAD0316A080D26597D10902DD0A08FDE2108B5B5DFE80A3550F8
+Connected to 127.0.0.1:8030
+Client kex: 
+median: 152 us/ticks
+average: 158 us/ticks
+
+Client finished key exchange
+Session key: 0xDF06DD12FD3A74B1E48D1A52D12A0659844A223EC13BBCDF72C91AB7A6E7FAA1
+Connected to 127.0.0.1:8031
+Client kex: 
+median: 202 us/ticks
+average: 208 us/ticks
+
+Client finished key exchange
+Session key: 0xCE12ABCA10D1BA16F80895F2A796BEE656EEE39B298E6BC7B2A8ECF44D03DDFB
+Connected to 127.0.0.1:8032
+Client kex: 
+median: 103 us/ticks
+average: 107 us/ticks
+
+Client finished key exchange
+Session key: 0x3031A73D3ED84F155E877F81F616AAED69BE67A729DDBC409994ED49E473CC54
+Connected to 127.0.0.1:8033
+Client kex: 
+median: 154 us/ticks
+average: 159 us/ticks
+
+Client finished key exchange
+Session key: 0x7CD49B972E22ABDFD189F791CD54B4DBDCB043416B59846F36C688DE2498E133
+Connected to 127.0.0.1:8034
+Client kex: 
+median: 153 us/ticks
+average: 159 us/ticks
+
+Client finished key exchange
+Session key: 0xB9806013EEA2D1442F20B433A408D3226E06DED4043AA20C637027784B26B61D
+Connected to 127.0.0.1:8035
+Client kex: 
+median: 204 us/ticks
+average: 210 us/ticks
+
+Client finished key exchange
+Session key: 0xF4561026E64908EEF2B91F9C205E1F0522FB0216C97EFEC9575A2150497B92C3
+Connected to 127.0.0.1:8036
+Client kex: 
+median: 135 us/ticks
+average: 140 us/ticks
+
+Client finished key exchange
+Session key: 0xA1AB3C9BADB1DB249B11F2BE26690C8C3BEFF246D5D7ECA3AA1A33B18CE30F87
+Connected to 127.0.0.1:8037
+Client kex: 
+median: 216 us/ticks
+average: 222 us/ticks
+
+Client finished key exchange
+Session key: 0x954258F01DF86EBA0D0ADCD97EE9F4654860AD7C521B5A0090EFB80D1EF2BCC9
+Connected to 127.0.0.1:8038
+Client kex: 
+median: 216 us/ticks
+average: 224 us/ticks
+
+Client finished key exchange
+Session key: 0x26D5E3A1F00B988CEAC076A87EAB562B429BB4C3C5D1FD4F5D95D3F53FDDD95D
+Connected to 127.0.0.1:8039
+Client kex: 
+median: 294 us/ticks
+average: 301 us/ticks
+
+Client finished key exchange
+Session key: 0x818713AEE83F9DB5B3CD5DC29EBC29E0617DB2295A3E02C35ABC1C73B13D460B
+Seed is: 0xC099BDA1DCB00DE943BF4DA934596908A105DE135A6109BA4EE7484081F173FC
+Connected to 127.0.0.1:8040
+Client kex: 
+median: 138 us/ticks
+average: 141 us/ticks
+
+Client finished key exchange
+Session key: 0x1F6D714772821F5CE38F1FEC62226D4716C84075150CDB8D7C84A03440AC1E65
+Connected to 127.0.0.1:8041
+Client kex: 
+median: 202 us/ticks
+average: 209 us/ticks
+
+Client finished key exchange
+Session key: 0x31B6A228EE8BD3AE6655DF9089A118E921EE97EB45DD31F1D65325403257849C
+Connected to 127.0.0.1:8042
+Client kex: 
+median: 202 us/ticks
+average: 209 us/ticks
+
+Client finished key exchange
+Session key: 0x2894B59F99F422B949DF9E57C12E789797770D5567BC046BC4720141DEEDEFB7
+Connected to 127.0.0.1:8043
+Client kex: 
+median: 265 us/ticks
+average: 273 us/ticks
+
+Client finished key exchange
+Session key: 0xD2AFEB871F2BA88B7FD8BF49F232BC059AE40E8267499AA6A73EA6002B5FB87E
+Connected to 127.0.0.1:8044
+Client kex: 
+median: 140 us/ticks
+average: 145 us/ticks
+
+Client finished key exchange
+Session key: 0xA9F6B28B283A23D495DA9AB1331D6E36838F4D829E842D1DB430B960A809B940
+Connected to 127.0.0.1:8045
+Client kex: 
+median: 212 us/ticks
+average: 228 us/ticks
+
+Client finished key exchange
+Session key: 0xD902E6C3104325F0AE0A3512D62252E35213D4124F31FEA161C797451308CAB4
+Connected to 127.0.0.1:8046
+Client kex: 
+median: 206 us/ticks
+average: 214 us/ticks
+
+Client finished key exchange
+Session key: 0xD13BFAA79DD792D1955E247F77F4907D3625A88D01AA07A39982E8337465CB17
+Connected to 127.0.0.1:8047
+Client kex: 
+median: 273 us/ticks
+average: 282 us/ticks
+
+Client finished key exchange
+Session key: 0x1F98DD00A91A547EB81AF9F513B36B0AEB4FD89842EDAAFCEA8512E1ED650CC7
+Connected to 127.0.0.1:8048
+Client kex: 
+median: 143 us/ticks
+average: 148 us/ticks
+
+Client finished key exchange
+Session key: 0xF8D961AA52235373C993D682D4F666EC7FA0F840E3068FD6D8B2566728296087
+Connected to 127.0.0.1:8049
+Client kex: 
+median: 212 us/ticks
+average: 218 us/ticks
+
+Client finished key exchange
+Session key: 0x07224A0AADA4EF0EB44528625D81AABBC363C1167F1B109208DC418EA34A9BEA
+Connected to 127.0.0.1:8050
+Client kex: 
+median: 212 us/ticks
+average: 219 us/ticks
+
+Client finished key exchange
+Session key: 0x9EF93584D1D0108D7D5EEE9F75942033540B5658CEC7A2AA103F088F5515D4AD
+Connected to 127.0.0.1:8051
+Client kex: 
+median: 280 us/ticks
+average: 287 us/ticks
+
+Client finished key exchange
+Session key: 0x81D63C94FE43305CA2173223FD1B28CAF55C46B81F225577D6829D557B7BDB44
+Connected to 127.0.0.1:8052
+Client kex: 
+median: 144 us/ticks
+average: 149 us/ticks
+
+Client finished key exchange
+Session key: 0x37CF3F09BE2F16AD88935C06A81773C3DE48553E448AC8468DD6BC6C5F6FB07D
+Connected to 127.0.0.1:8053
+Client kex: 
+median: 213 us/ticks
+average: 220 us/ticks
+
+Client finished key exchange
+Session key: 0x00D9C2F992908D79A0641E524C6B356B152216904470CAB2C752D359C4157050
+Connected to 127.0.0.1:8054
+Client kex: 
+median: 220 us/ticks
+average: 242 us/ticks
+
+Client finished key exchange
+Session key: 0x2C41678C5A032D389D839EF85301D007EFAFF4D8B9818803AB49B985360428A8
+Connected to 127.0.0.1:8055
+Client kex: 
+median: 282 us/ticks
+average: 288 us/ticks
+
+Client finished key exchange
+Session key: 0xE465CD1F206703C0406D1232A3B60BBA7BF285E0A520929C32C8F3B9E136F0C4
+Connected to 127.0.0.1:8056
+Client kex: 
+median: 193 us/ticks
+average: 199 us/ticks
+
+Client finished key exchange
+Session key: 0x608BC33095992117A98F89499BAFA55767ADE192D86AFFF00E2DCC299527CD1F
+Connected to 127.0.0.1:8057
+Client kex: 
+median: 310 us/ticks
+average: 318 us/ticks
+
+Client finished key exchange
+Session key: 0xF412A6322FC28058D8A650F5BC7BD056EDA45C926750CBFA47367F6FECCDE055
+Connected to 127.0.0.1:8058
+Client kex: 
+median: 311 us/ticks
+average: 328 us/ticks
+
+Client finished key exchange
+Session key: 0xF4F681D5C73374AECA51450C381D2A5E2769BCB8C6CF13706635A0B46725263D
+Connected to 127.0.0.1:8059
+Client kex: 
+median: 511 us/ticks
+average: 511 us/ticks
+
+Client finished key exchange
+Session key: 0xA1CD01CEC4C0083088E9EE4C1C54DF6ED8ABFB8C0CD47C7C4F80B4267B3D2CA6
