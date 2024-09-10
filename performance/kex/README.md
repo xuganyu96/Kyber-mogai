@@ -1,12 +1,12 @@
 # Key exchange performances
-Measured on M1 MacBook Air using loopback network. Measurement unit is $\mu s$ per round of key exchange, measured between client's first message and client's finishing deriving the final session key.
+Measured on M1 MacBook Air using loopback network. Measurement unit is $\mu s$ (microsecond) per round of key exchange, measured between client's first message and client's finishing deriving the final session key (round trip time, or RTT for short). A total of 10,000 rounds of key exchange were performed.
 
 **Security level: ML-KEM-512**:
 |KEM|Auth mode|Median|Average|
 |:--|:--|:--|:--|
 |ML-KEM512 + Poly1305|None|70|72|
-|ML-KEM512 + CMAC|None|75|79|
 |ML-KEM512 + GMAC|None|73|76|
+|ML-KEM512 + CMAC|None|75|79|
 |ML-KEM512 + KMAC|None|76|78|
 |ML-KEM512|None|92|97|
 |ML-KEM512 + Poly1305|Server|103|106|
