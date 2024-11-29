@@ -1,4 +1,3 @@
-
 KYBERDIR = kyber/ref
 KYBERSOURCES = $(KYBERDIR)/kem.c \
 			   $(KYBERDIR)/indcpa.c \
@@ -42,3 +41,6 @@ main: $(SOURCES) $(HEADERS) main.c
 
 showflags:
 	echo $(CFLAGS) $(LDFLAGS)
+
+clean:
+	$(RM) target/*
