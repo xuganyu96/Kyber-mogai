@@ -1,31 +1,22 @@
-#include "kyber/ref/indcpa.h"
-#include "kyber/ref/params.h"
-#include "kyber/ref/randombytes.h"
+#include "authenticators.h"
 #include <stdio.h>
+#include <string.h>
 
 int main(void) {
-  uint8_t indcpa_pk[KYBER_INDCPA_PUBLICKEYBYTES];
-  uint8_t indcpa_sk[KYBER_INDCPA_SECRETKEYBYTES];
-  uint8_t indcpa_pt[KYBER_INDCPA_MSGBYTES];
-  uint8_t decryption[KYBER_INDCPA_MSGBYTES];
-  uint8_t indcpa_ct[KYBER_INDCPA_BYTES];
-  uint8_t coins[KYBER_SYMBYTES];
-  randombytes(coins, sizeof(coins));
-  randombytes(indcpa_pt, sizeof(indcpa_pt));
-
-  indcpa_keypair_derand(indcpa_pk, indcpa_sk, coins);
-  indcpa_enc(indcpa_ct, indcpa_pt, indcpa_pk, coins);
-  indcpa_dec(decryption, indcpa_ct, indcpa_sk);
-
-  int diff = 0;
-  for (int i = 0; i < sizeof(decryption); i++) {
-    diff |= indcpa_pt[i] ^ decryption[i];
+  uint8_t key[32];
+  size_t keylen = 32;
+  uint8_t digest[16];
+  size_t digestlen = 16;
+  char *msg = "Hello, world";
+  if (mac_kmac(key, keylen, msg, strlen(msg), digest, digestlen, 0)) {
+    printf("MAC computation successful!\n");
   }
-  if (diff == 0) {
-    printf("decryption successful\n");
-  } else {
-    printf("decryption failed\n");
+
+  printf("tag is: 0x");
+  for (size_t i = 0; i < digestlen; i++) {
+    printf("%02X", digest[i]);
   }
+  printf("\n");
 
   return 0;
 }

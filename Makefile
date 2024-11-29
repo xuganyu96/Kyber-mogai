@@ -22,12 +22,23 @@ KYBERHEADERS = $(KYBERDIR)/params.h \
 			   $(KYBERDIR)/verify.h \
 			   $(KYBERDIR)/symmetric.h \
 			   $(KYBERDIR)/fips202.h
-SOURCES = $(KYBERSOURCES)
-HEADERS = $(KYBERHEADERS)
+SOURCES = $(KYBERSOURCES) authenticators.c
+HEADERS = $(KYBERHEADERS) authenticators.h
+
+# OpenSSL header files should be included using the CFLAGS environment variables:
+# for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`
+CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
+  -Wshadow -Wpointer-arith -O3 -fomit-frame-pointer -Wno-incompatible-pointer-types
+# OpenSSL library files are included using the LDFLAGS environment variable:
+# `export LDFLAGS="-L/path/to/opensl/lib $LDFLAGS"
+LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
 .PHONY = main
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(SOURCES) main.c -o target/$@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) main.c -o target/$@
 	./target/$@
+
+showflags:
+	echo $(CFLAGS) $(LDFLAGS)
