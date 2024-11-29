@@ -1,7 +1,7 @@
 #ifndef AUTHENTICATORS_H
 #define AUTHENTICATORS_H
-#include "stdint.h"
-#include "stdio.h"
+#include <stdint.h>
+#include <stdio.h>
 
 #define EVP_MAC_GMAC "GMAC"
 #define GMAC_IVBYTES 12
