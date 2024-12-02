@@ -21,6 +21,10 @@
  * Generate the encrypt-then-MAC keypair using the pseudorandom coins as the
  * seed. Caller is responsible for providing correctly sized buffers.
  *
+ * The ETM-KEM public key is identical to that of the PKE. The ETM-KEM private
+ * key is laid out as kem_sk = pke_sk || pke_pk || SHA3-256(pke_pk) || z
+ * where z is the rejection symbol.
+ *
  * This function will never fail and so no return code is necessary
  */
 static void etmkem_keypair_derand(uint8_t *pk, uint8_t *sk,
