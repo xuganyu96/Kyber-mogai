@@ -1,4 +1,5 @@
 #include "authenticators.h"
+#include "kyber/ref/fips202.h"
 #include "kyber/ref/indcpa.h"
 #include "kyber/ref/params.h"
 #include "kyber/ref/randombytes.h"
@@ -42,13 +43,49 @@ static void etmkem_keypair_derand(uint8_t *pk, uint8_t *sk,
 
 /**
  * The encrypt-then-MAC KEM encapsulates by encrypting a randomly sampled
- * PKE plaintext.
+ * PKE plaintext. The ciphertext and the shared secret will be written to the
+ * input buffer. Caller is responsible for providing correctly sized buffer.
  */
-static void etmkem_encap_derand(const uint8_t *pk, const uint8_t *coins) {
-  // public key || PKE plaintext
-  uint8_t pkpt[KYBER_INDCPA_PUBLICKEYBYTES + KYBER_INDCPA_MSGBYTES];
-  // PKE ciphertext || MAC tag
-  uint8_t cttag[KYBER_INDCPA_BYTES + POLY1305_TAGBYTES];
+static void etmkem_encap(uint8_t *ss, uint8_t *ct, const uint8_t *pk) {
+  // INDCPA public key and plaintext will be absorbed together
+  uint8_t pk_pt[KYBER_INDCPA_PUBLICKEYBYTES + KYBER_INDCPA_MSGBYTES];
+  uint8_t *pt = pk_pt + KYBER_INDCPA_PUBLICKEYBYTES;
+  memcpy(pk_pt, pk, KYBER_INDCPA_PUBLICKEYBYTES);
+  randombytes(pt, KYBER_INDCPA_MSGBYTES);
+
+  // hash public key and plaintext into:
+  // prekey: which will later contribute to the session key
+  // mackey: the symmetric key for the MAC
+  // NOTE: some MAC has nonce (e.g. GMAC), which will need to be filled, as well
+  // uint8_t prekey_mackey_macnonce[KYBER_SSBYTES + GMAC_KEYBYTES +
+  //     GMAC_IVBYTES];
+  uint8_t prekey_mackey[KYBER_SSBYTES + POLY1305_KEYBYTES];
+  uint8_t *mackey = prekey_mackey + KYBER_SSBYTES;
+  keccak_state xof;
+  shake256_init(&xof);
+  // NOTE: absorb_once is non-incremental whereas absorb is incremental; since
+  // we have all absorption material, using absorb_once helps decreases the
+  // number of function calls
+  shake256_absorb_once(&xof, pk_pt,
+                       KYBER_INDCPA_PUBLICKEYBYTES + KYBER_INDCPA_MSGBYTES);
+  // NOTE: squeezeblocks will squeeze full blocks
+  shake256_squeeze(prekey_mackey, KYBER_SSBYTES + POLY1305_KEYBYTES, &xof);
+
+  // ETM-KEM's ciphertext contains the IND-CPA ciphertext and a MAC tag
+  uint8_t coins[KYBER_SYMBYTES];
+  randombytes(coins, KYBER_SYMBYTES);
+  uint8_t *pke_ct = ct;
+  uint8_t *mactag = ct + KYBER_INDCPA_BYTES;
+  indcpa_enc(pke_ct, pt, pk, coins);
+  mac_poly1305(mackey, pke_ct, KYBER_INDCPA_BYTES, mactag);
+
+  // derive session key by hashing prekey (which already contains pk and pt) and
+  // tag
+  shake256_init(&xof);
+  shake256_absorb(&xof, prekey_mackey, KYBER_SSBYTES); // absorb only the prekey
+  shake256_absorb(&xof, mactag, POLY1305_TAGBYTES);
+  shake256_finalize(&xof);
+  shake256_squeeze(ss, KYBER_SSBYTES, &xof);
 }
 
 /**
