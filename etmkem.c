@@ -6,18 +6,6 @@
 #include "kyber/ref/randombytes.h"
 #include <string.h>
 
-// KEM public key will be identical to that of the PKE public key
-#define ETMKEM_PUBLICKEYBYTES KYBER_INDCPA_PUBLICKEYBYTES
-// KEM secret key will include PKE secret key, PKE public key (for hashing into
-// MAC key), and the implicit rejection symbol
-#define ETMKEM_SECRETKEYBYTES                                                  \
-  (KYBER_INDCPA_SECRETKEYBYTES + KYBER_INDCPA_PUBLICKEYBYTES +                 \
-   KYBER_INDCPA_MSGBYTES)
-// The size of seed
-#define ETMKEM_SYMBYTES KYBER_SYMBYTES
-// Size of shared secret
-#define ETMKEM_SSBYTES
-
 /**
  * Generate the encrypt-then-MAC keypair using the pseudorandom coins as the
  * seed. Caller is responsible for providing correctly sized buffers.

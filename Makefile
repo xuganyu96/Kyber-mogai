@@ -33,11 +33,17 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY = main
+.PHONY = main tests
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) main.c -o target/$@
 	./target/$@
+
+tests: test_etmkem
+	./target/test_etmkem
+
+test_etmkem: $(SOURCES) $(HEADERS) tests/etmkem.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) tests/etmkem.c -o target/$@
 
 showflags:
 	echo $(CFLAGS) $(LDFLAGS)
