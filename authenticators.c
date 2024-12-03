@@ -19,7 +19,8 @@
  * half of the key serves as an one-time pad:
  * tag = PolyHash(m, k_1) XOR k_2
  */
-int mac_poly1305(uint8_t *key, void *msg, size_t msglen, uint8_t *digest) {
+int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
+                 size_t msglen) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   size_t _;
@@ -75,8 +76,8 @@ int mac_poly1305(uint8_t *key, void *msg, size_t msglen, uint8_t *digest) {
  * TODO: there might be other ways to get IV, or we can sample random IV and
  * append them to the tag
  */
-int mac_gmac(uint8_t *key, uint8_t *iv, void *msg, size_t msglen,
-             uint8_t *digest) {
+int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
+             const void *msg, size_t msglen) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[4];
@@ -124,7 +125,8 @@ int mac_gmac(uint8_t *key, uint8_t *iv, void *msg, size_t msglen,
  * Caller is responsible for supplying correctly sized buffer for the key
  * (CMAC_KEYBYTES) and the digest (CMAC_TAGBYTES).
  */
-int mac_cmac(uint8_t *key, void *msg, size_t msglen, uint8_t *digest) {
+int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
+             const size_t msglen) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[3];
@@ -176,8 +178,9 @@ int mac_cmac(uint8_t *key, void *msg, size_t msglen, uint8_t *digest) {
  * XOF mode is recommended if the tag size is supposed to be variable. In this
  * use case we should probably not use it.
  */
-int mac_kmac(uint8_t *key, size_t keylen, void *msg, size_t msglen,
-             uint8_t *digest, size_t digestlen, int xof_enabled) {
+int mac_kmac(uint8_t *digest, const uint8_t *key, size_t keylen,
+             const void *msg, size_t msglen, size_t digestlen,
+             int xof_enabled) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[4];

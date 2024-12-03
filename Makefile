@@ -21,8 +21,8 @@ KYBERHEADERS = $(KYBERDIR)/params.h \
 			   $(KYBERDIR)/verify.h \
 			   $(KYBERDIR)/symmetric.h \
 			   $(KYBERDIR)/fips202.h
-SOURCES = $(KYBERSOURCES) authenticators.c
-HEADERS = $(KYBERHEADERS) authenticators.h
+SOURCES = $(KYBERSOURCES) authenticators.c etmkem.c
+HEADERS = $(KYBERHEADERS) authenticators.h etmkem.h
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
 # for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`
