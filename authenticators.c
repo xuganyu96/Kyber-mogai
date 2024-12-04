@@ -36,7 +36,7 @@ int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
     return 0;
   }
   OSSL_PARAM params[2];
-  params[0] = OSSL_PARAM_construct_octet_string(OSSL_MAC_PARAM_KEY, key,
+  params[0] = OSSL_PARAM_construct_octet_string(OSSL_MAC_PARAM_KEY, (void *)key,
                                                 POLY1305_KEYBYTES);
   params[1] = OSSL_PARAM_construct_end();
   if (EVP_MAC_CTX_set_params(ctx, params) != 1) {
@@ -94,7 +94,7 @@ int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
     return 0;
   }
   params[0] = OSSL_PARAM_construct_utf8_string("cipher", "AES-256-GCM", 0);
-  params[1] = OSSL_PARAM_construct_octet_string("iv", iv, GMAC_IVBYTES);
+  params[1] = OSSL_PARAM_construct_octet_string("iv", (void *)iv, GMAC_IVBYTES);
   params[2] = OSSL_PARAM_construct_end();
 
   if (EVP_MAC_CTX_set_params(ctx, params) != 1) {
@@ -143,7 +143,8 @@ int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
     return 0;
   }
   params[0] = OSSL_PARAM_construct_utf8_string("cipher", "AES-256-CBC", 0);
-  params[1] = OSSL_PARAM_construct_octet_string("key", key, CMAC_KEYBYTES);
+  params[1] =
+      OSSL_PARAM_construct_octet_string("key", (void *)key, CMAC_KEYBYTES);
   params[2] = OSSL_PARAM_construct_end();
 
   if (EVP_MAC_CTX_set_params(ctx, params) != 1) {
@@ -208,7 +209,7 @@ int mac_kmac(uint8_t *digest, const uint8_t *key, size_t keylen,
     fprintf(stderr, "Failed to create new context for %s\n", EVP_MAC_KMAC);
     return 0;
   }
-  params[0] = OSSL_PARAM_construct_octet_string("key", key, keylen);
+  params[0] = OSSL_PARAM_construct_octet_string("key", (void *)key, keylen);
   params[1] = OSSL_PARAM_construct_int("xof", &xof_enabled);
   params[2] = OSSL_PARAM_construct_int("size", &macsize);
   params[3] = OSSL_PARAM_construct_end();
