@@ -12,4 +12,6 @@ CompileFlags:
     "-Wpointer-arith", 
     "-O3", 
     "-fomit-frame-pointer",
+    "-DMAC_GMAC",
+    "-DPKE_KYBER"
   ]

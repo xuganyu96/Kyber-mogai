@@ -39,14 +39,40 @@ main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DMAC_POLY1305 main.c -o target/$@
 	./target/$@
 
-tests: test_etmkem
-	./target/test_etmkem
-
-test_etmkem: $(SOURCES) $(HEADERS) tests/etmkem.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) tests/etmkem.c -o target/$@
-
-showflags:
-	echo $(CFLAGS) $(LDFLAGS)
+speed: $(SOURCES) $(HEADERS) speed_etmkem.c speed_mlkem.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=2 speed_mlkem.c -o target/speed_mlkem512
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=3 speed_mlkem.c -o target/speed_mlkem768
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=4 speed_mlkem.c -o target/speed_mlkem1024
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_GMAC -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_GMAC -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_GMAC -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_CMAC -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_CMAC -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_CMAC -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_KMAC256 -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_KMAC256 -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -DPKE_KYBER -DMAC_KMAC256 -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_kmac256
+	# ------------ NIST level 1 ----------------
+	./target/speed_mlkem512
+	./target/speed_mlkem512_poly1305
+	./target/speed_mlkem512_gmac
+	./target/speed_mlkem512_cmac
+	./target/speed_mlkem512_kmac256
+	# ------------ NIST level 2 ----------------
+	./target/speed_mlkem768
+	./target/speed_mlkem768_poly1305
+	./target/speed_mlkem768_gmac
+	./target/speed_mlkem768_cmac
+	./target/speed_mlkem768_kmac256
+	# ------------ NIST level 3 ----------------
+	./target/speed_mlkem1024
+	./target/speed_mlkem1024_poly1305
+	./target/speed_mlkem1024_gmac
+	./target/speed_mlkem1024_cmac
+	./target/speed_mlkem1024_kmac256
 
 clean:
 	$(RM) target/*

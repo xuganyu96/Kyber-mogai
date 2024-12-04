@@ -8,22 +8,28 @@
 // Number of function calls in each batch
 #define BENCH_BATCH_SIZE 128
 
-static void println_hexstr(uint8_t *bytes, size_t len) {
-  printf("0x");
-  for (size_t i = 0; i < len; i++) {
-    printf("%02X", bytes[i]);
-  }
-  printf("\n");
-}
-
-static int clock_t_cmp(const void *a, const void *b) {
-  if (*(clock_t *)a < *(clock_t *)b) {
+static int uint64_t_cmp(const void *a, const void *b) {
+  if (*(uint64_t *)a < *(uint64_t *)b) {
     return -1;
   }
-  if (*(clock_t *)a > *(clock_t *)b) {
+  if (*(uint64_t *)a > *(uint64_t *)b) {
     return 1;
   }
   return 0;
+}
+
+static uint64_t get_cpuclock(void) {
+#if defined(__APPLE__)
+  // on Apple Silicon use high level API
+  return clock();
+#else
+  uint64_t result;
+  __asm__ volatile("rdtsc; shlq $32,%%rdx; orq %%rdx,%%rax"
+                   : "=a"(result)
+                   :
+                   : "%rdx");
+  return result;
+#endif
 }
 
 /**
@@ -36,25 +42,25 @@ static void benchmark_encapsulation_cputime(void) {
   uint8_t kem_ss[ETMKEM_SSBYTES];
   etmkem_keypair(kem_pk, kem_sk);
 
-  clock_t batch_times[BENCH_BATCH_COUNT];
+  uint64_t batch_times[BENCH_BATCH_COUNT];
 
   for (int batch = 0; batch < BENCH_BATCH_COUNT; batch++) {
-    clock_t start = clock();
+    uint64_t start = get_cpuclock();
     for (int round = 0; round < BENCH_BATCH_SIZE; round++) {
       etmkem_encap(kem_ct, kem_ss, kem_pk);
     }
-    clock_t total_dur = clock() - start;
+    uint64_t total_dur = get_cpuclock() - start;
 
-    clock_t overhead_start = clock();
+    uint64_t overhead_start = get_cpuclock();
     for (int round = 0; round < BENCH_BATCH_SIZE; round++)
       ;
-    clock_t overhead_dur = clock() - overhead_start;
+    uint64_t overhead_dur = get_cpuclock() - overhead_start;
     batch_times[batch] = (total_dur - overhead_dur) / BENCH_BATCH_SIZE;
   }
 
-  qsort(batch_times, BENCH_BATCH_COUNT, sizeof(clock_t), clock_t_cmp);
-  clock_t medium = batch_times[(BENCH_BATCH_COUNT - 1) / 2];
-  printf("Encapsulation medium time is %lu\n", medium);
+  qsort(batch_times, BENCH_BATCH_COUNT, sizeof(uint64_t), uint64_t_cmp);
+  uint64_t medium = batch_times[(BENCH_BATCH_COUNT - 1) / 2];
+  printf("Encapsulation medium time is %llu\n", medium);
 }
 
 /**
@@ -71,20 +77,20 @@ static void benchmark_decapsulation_cputime(void) {
   clock_t batch_times[BENCH_BATCH_COUNT];
 
   for (int batch = 0; batch < BENCH_BATCH_COUNT; batch++) {
-    clock_t start = clock();
+    clock_t start = get_cpuclock();
     for (int round = 0; round < BENCH_BATCH_SIZE; round++) {
       etmkem_decap(kem_ss, kem_ct, kem_sk);
     }
-    clock_t total_dur = clock() - start;
+    clock_t total_dur = get_cpuclock() - start;
 
-    clock_t overhead_start = clock();
+    clock_t overhead_start = get_cpuclock();
     for (int round = 0; round < BENCH_BATCH_SIZE; round++)
       ;
-    clock_t overhead_dur = clock() - overhead_start;
+    clock_t overhead_dur = get_cpuclock() - overhead_start;
     batch_times[batch] = (total_dur - overhead_dur) / BENCH_BATCH_SIZE;
   }
 
-  qsort(batch_times, BENCH_BATCH_COUNT, sizeof(clock_t), clock_t_cmp);
+  qsort(batch_times, BENCH_BATCH_COUNT, sizeof(clock_t), uint64_t_cmp);
   clock_t medium = batch_times[(BENCH_BATCH_COUNT - 1) / 2];
   printf("Decapsulation medium time is %lu\n", medium);
 }

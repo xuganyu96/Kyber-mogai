@@ -254,10 +254,10 @@ int mac_sign(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
 #elif defined(MAC_GMAC)
   return mac_gmac(digest, key, iv, msg, msglen);
 #elif defined(MAC_CMAC)
-  return int mac_cmac(digest, key, msg, msglen);
+  return mac_cmac(digest, key, msg, msglen);
 #elif defined(MAC_KMAC256)
-  return int mac_kmac(digest, key, MAC_KEYBYTES, msg, msglen, MAC_TAGBYTES,
-                      KMAC_XOF_MODE);
+  return mac_kmac(digest, key, MAC_KEYBYTES, msg, msglen, MAC_TAGBYTES,
+                  KMAC_XOF_MODE);
 #else
 #error "MAC must be one of Poly1305, GMAC, CMAC, or MAC256"
 #endif

@@ -33,7 +33,7 @@
 #define MAC_TAGBYTES 32
 #define MAC_IVBYTES 0
 #else
-#error "MAC must be one of Poly1305, GMAC, CMAC, or MAC256"
+#error "MAC must be one of Poly1305, GMAC, CMAC, or KMAC256"
 #endif
 
 int mac_sign(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
