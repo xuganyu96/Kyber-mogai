@@ -4,6 +4,18 @@
 #include <limits.h>
 #include <stdint.h>
 
+#define EVP_MAC_POLY1305 "Poly1305"
+#define POLY1305_KEYBYTES 32
+#define POLY1305_TAGBYTES 16
+#define EVP_MAC_GMAC "GMAC"
+#define GMAC_IVBYTES 12
+#define GMAC_KEYBYTES 32
+#define GMAC_TAGBYTES 16
+#define EVP_MAC_CMAC "CMAC"
+#define CMAC_KEYBYTES 32
+#define CMAC_TAGBYTES 16
+#define EVP_MAC_KMAC "KMAC-256"
+
 /**
  * Compute the Poly1305 digest for the input message using the input key. The
  * tag is written to `digest`. Return 1 if the operation is ok; return 0 on
@@ -19,8 +31,8 @@
  * half of the key serves as an one-time pad:
  * tag = PolyHash(m, k_1) XOR k_2
  */
-int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
-                 size_t msglen) {
+static int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
+                        size_t msglen) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   size_t _;
@@ -76,8 +88,8 @@ int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
  * TODO: there might be other ways to get IV, or we can sample random IV and
  * append them to the tag
  */
-int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
-             const void *msg, size_t msglen) {
+static int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
+                    const void *msg, size_t msglen) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[4];
@@ -125,8 +137,8 @@ int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
  * Caller is responsible for supplying correctly sized buffer for the key
  * (CMAC_KEYBYTES) and the digest (CMAC_TAGBYTES).
  */
-int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
-             const size_t msglen) {
+static int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
+                    const size_t msglen) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[3];
@@ -179,9 +191,9 @@ int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
  * XOF mode is recommended if the tag size is supposed to be variable. In this
  * use case we should probably not use it.
  */
-int mac_kmac(uint8_t *digest, const uint8_t *key, size_t keylen,
-             const void *msg, size_t msglen, size_t digestlen,
-             int xof_enabled) {
+static int mac_kmac(uint8_t *digest, const uint8_t *key, size_t keylen,
+                    const void *msg, size_t msglen, size_t digestlen,
+                    int xof_enabled) {
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[4];
@@ -233,4 +245,33 @@ int mac_kmac(uint8_t *digest, const uint8_t *key, size_t keylen,
   EVP_MAC_CTX_free(ctx);
   EVP_MAC_free(mac);
   return 1;
+}
+
+int mac_sign(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
+             const uint8_t *msg, size_t msglen) {
+#if defined(MAC_POLY1305)
+  return mac_poly1305(digest, key, msg, msglen);
+#elif defined(MAC_GMAC)
+  return mac_gmac(digest, key, iv, msg, msglen);
+#elif defined(MAC_CMAC)
+  return int mac_cmac(digest, key, msg, msglen);
+#elif defined(MAC_KMAC256)
+  return int mac_kmac(digest, key, MAC_KEYBYTES, msg, msglen, MAC_TAGBYTES,
+                      KMAC_XOF_MODE);
+#else
+#error "MAC must be one of Poly1305, GMAC, CMAC, or MAC256"
+#endif
+}
+
+int mac_cmp(const uint8_t *digest, const uint8_t *key, const uint8_t *iv,
+            const uint8_t *msg, size_t msglen) {
+  uint8_t digestcmp[MAC_TAGBYTES];
+  mac_sign(digestcmp, key, iv, msg, msglen);
+  int diff = 0;
+
+  for (int i = 0; i < MAC_TAGBYTES; i++) {
+    diff |= digest[i] ^ digestcmp[i];
+  }
+
+  return diff;
 }
