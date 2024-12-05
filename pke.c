@@ -20,6 +20,8 @@ void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
 void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
   indcpa_dec(pke_pt, pke_ct, pke_sk);
 }
+#elif defined(PKE_MCELIECE8192128)
+//  TODO: implement with mceliece8192128
 #else
 #error "valid options: PKE_KYBER, PKE_MCELIECE348864, ..."
 #endif
