@@ -12,6 +12,13 @@
 /**
  * Generate mceliece348864 keypair
  *
+ * Classic McEliece's reference implementation does not have a dedicated
+ * `indcpa_keypair` routine like Kyber, so we directly use the KEM key
+ * generation routine. The performance difference is irrelevant because we don't
+ * care about key generation performance within the scope of this paper.
+ * However, **the KEM key generation adds some pseudorandom seed bytes to the
+ * secret key, so in decryption we need to add the correct offset**
+ *
  * TODO: for now the coins will be ignored because classic McEliece's reference
  * implementation does not have a "derand" key generation routine.
  */
@@ -40,6 +47,8 @@ void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
  * integrity using encrypt-then-MAC
  */
 void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
+  pke_sk += 40; // TODO: 40-bytes include seed and rejection symbol, prbly
+
   int i = 0;
   unsigned char r[SYS_N / 8];
   gf g[SYS_T + 1];

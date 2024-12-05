@@ -1,3 +1,4 @@
+#include "easy-mceliece/mceliece348864/operations.h"
 #include "pke.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -10,7 +11,21 @@ static void println_hexstr(uint8_t *bytes, size_t len) {
   printf("\n");
 }
 
-int main(void) {
+static size_t hamming_weight(uint8_t *bytes, size_t len) {
+  size_t weight = 0;
+
+  for (size_t i = 0; i < len; i++) {
+    uint8_t byte = bytes[i];
+    while (byte != 0) {
+      weight++;
+      byte &= byte - 1;
+    }
+  }
+
+  return weight;
+}
+
+static int test_pke_correctness(void) {
   uint8_t pk[PKE_PUBLICKEYBYTES];
   uint8_t sk[PKE_SECRETKEYBYTES];
   uint8_t pt[PKE_PLAINTEXTBYTES];
@@ -20,25 +35,28 @@ int main(void) {
 
   pke_keypair(pk, sk, coins);
   sample_pke_pt(pt, coins);
-  printf("PKE plaintext: ");
-  println_hexstr(pt, PKE_PLAINTEXTBYTES);
-
+  if (hamming_weight(pt, PKE_PLAINTEXTBYTES) != SYS_T) {
+    printf("Plaintext generation is wrong\n");
+    return 1;
+  } else {
+    printf("Plaintext generatino is Ok\n");
+  }
   pke_enc(ct, pt, pk, coins);
-  printf("PKE ciphertext: ");
-  println_hexstr(ct, PKE_CIPHERTEXTBYTES);
-
   pke_dec(decryption, ct, sk);
-  printf("Decryption: ");
-  println_hexstr(decryption, PKE_PLAINTEXTBYTES);
 
   int diff = 0;
   for (int i = 0; i < PKE_PLAINTEXTBYTES; i++) {
     diff |= pt[i] ^ decryption[i];
   }
-  if (diff) {
+  return diff;
+}
+
+int main(void) {
+  if (test_pke_correctness()) {
     printf("fail\n");
   } else {
-    printf("OK\n");
+    printf("Ok\n");
   }
+
   return 0;
 }
