@@ -1,12 +1,6 @@
-#include "etmkem.h"
+#include "pke.h"
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-// Number of batches
-#define BENCH_BATCH_COUNT 1001
-// Number of function calls in each batch
-#define BENCH_BATCH_SIZE 128
 
 static void println_hexstr(uint8_t *bytes, size_t len) {
   printf("0x");
@@ -16,81 +10,35 @@ static void println_hexstr(uint8_t *bytes, size_t len) {
   printf("\n");
 }
 
-static int clock_t_cmp(const void *a, const void *b) {
-  if (*(clock_t *)a < *(clock_t *)b) {
-    return -1;
-  }
-  if (*(clock_t *)a > *(clock_t *)b) {
-    return 1;
-  }
-  return 0;
-}
-
-/**
- * Compute the number of CPU cycles used to perform encapsulation
- */
-static void benchmark_encapsulation_cputime(void) {
-  uint8_t kem_pk[ETMKEM_PUBLICKEYBYTES];
-  uint8_t kem_sk[ETMKEM_SECRETKEYBYTES];
-  uint8_t kem_ct[ETMKEM_CIPHERTEXTBYTES];
-  uint8_t kem_ss[ETMKEM_SSBYTES];
-  etmkem_keypair(kem_pk, kem_sk);
-
-  clock_t batch_times[BENCH_BATCH_COUNT];
-
-  for (int batch = 0; batch < BENCH_BATCH_COUNT; batch++) {
-    clock_t start = clock();
-    for (int round = 0; round < BENCH_BATCH_SIZE; round++) {
-      etmkem_encap(kem_ct, kem_ss, kem_pk);
-    }
-    clock_t total_dur = clock() - start;
-
-    clock_t overhead_start = clock();
-    for (int round = 0; round < BENCH_BATCH_SIZE; round++)
-      ;
-    clock_t overhead_dur = clock() - overhead_start;
-    batch_times[batch] = (total_dur - overhead_dur) / BENCH_BATCH_SIZE;
-  }
-
-  qsort(batch_times, BENCH_BATCH_COUNT, sizeof(clock_t), clock_t_cmp);
-  clock_t medium = batch_times[(BENCH_BATCH_COUNT - 1) / 2];
-  printf("Encapsulation medium time is %lu\n", medium);
-}
-
-/**
- * Compute the number of CPU cycles used to perform encapsulation
- */
-static void benchmark_decapsulation_cputime(void) {
-  uint8_t kem_pk[ETMKEM_PUBLICKEYBYTES];
-  uint8_t kem_sk[ETMKEM_SECRETKEYBYTES];
-  uint8_t kem_ct[ETMKEM_CIPHERTEXTBYTES];
-  uint8_t kem_ss[ETMKEM_SSBYTES];
-  etmkem_keypair(kem_pk, kem_sk);
-  etmkem_encap(kem_ct, kem_ss, kem_pk);
-
-  clock_t batch_times[BENCH_BATCH_COUNT];
-
-  for (int batch = 0; batch < BENCH_BATCH_COUNT; batch++) {
-    clock_t start = clock();
-    for (int round = 0; round < BENCH_BATCH_SIZE; round++) {
-      etmkem_decap(kem_ss, kem_ct, kem_sk);
-    }
-    clock_t total_dur = clock() - start;
-
-    clock_t overhead_start = clock();
-    for (int round = 0; round < BENCH_BATCH_SIZE; round++)
-      ;
-    clock_t overhead_dur = clock() - overhead_start;
-    batch_times[batch] = (total_dur - overhead_dur) / BENCH_BATCH_SIZE;
-  }
-
-  qsort(batch_times, BENCH_BATCH_COUNT, sizeof(clock_t), clock_t_cmp);
-  clock_t medium = batch_times[(BENCH_BATCH_COUNT - 1) / 2];
-  printf("Decapsulation medium time is %lu\n", medium);
-}
-
 int main(void) {
-  benchmark_encapsulation_cputime();
-  benchmark_decapsulation_cputime();
+  uint8_t pk[PKE_PUBLICKEYBYTES];
+  uint8_t sk[PKE_SECRETKEYBYTES];
+  uint8_t pt[PKE_PLAINTEXTBYTES];
+  uint8_t ct[PKE_CIPHERTEXTBYTES];
+  uint8_t coins[PKE_SYMBYTES];
+  uint8_t decryption[PKE_PLAINTEXTBYTES];
+
+  pke_keypair(pk, sk, coins);
+  sample_pke_pt(pt, coins);
+  printf("PKE plaintext: ");
+  println_hexstr(pt, PKE_PLAINTEXTBYTES);
+
+  pke_enc(ct, pt, pk, coins);
+  printf("PKE ciphertext: ");
+  println_hexstr(ct, PKE_CIPHERTEXTBYTES);
+
+  pke_dec(decryption, ct, sk);
+  printf("Decryption: ");
+  println_hexstr(decryption, PKE_PLAINTEXTBYTES);
+
+  int diff = 0;
+  for (int i = 0; i < PKE_PLAINTEXTBYTES; i++) {
+    diff |= pt[i] ^ decryption[i];
+  }
+  if (diff) {
+    printf("fail\n");
+  } else {
+    printf("OK\n");
+  }
   return 0;
 }

@@ -1,9 +1,11 @@
-#include "pke.h"
+/**
+ * The PKE subroutines of Kyber
+ */
 #include "kyber/ref/indcpa.h"
 #include "kyber/ref/params.h"
 #include "kyber/ref/randombytes.h"
+#include "pke.h"
 
-#if defined(PKE_KYBER)
 void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
   indcpa_keypair_derand(pke_pk, pke_sk, coins);
 }
@@ -20,8 +22,3 @@ void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
 void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
   indcpa_dec(pke_pt, pke_ct, pke_sk);
 }
-#elif defined(PKE_MCELIECE8192128)
-//  TODO: implement with mceliece8192128
-#else
-#error "valid options: PKE_KYBER, PKE_MCELIECE348864, ..."
-#endif

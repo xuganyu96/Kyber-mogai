@@ -10,8 +10,9 @@ CompileFlags:
     "-Wredundant-decls", 
     "-Wshadow", 
     "-Wpointer-arith", 
+    "-Wno-incompatible-pointer-types-discards-qualifiers",
     "-O3", 
     "-fomit-frame-pointer",
     "-DMAC_GMAC",
-    "-DPKE_KYBER"
+    "-DPKE_MCELIECE348864"
   ]
