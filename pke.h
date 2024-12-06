@@ -64,7 +64,8 @@
 #define PKE_CIPHERTEXTBYTES CRYPTO_CIPHERTEXTBYTES
 
 #else
-#error "Must define one of PKE_KYBER, PKE_MCELIECE348864..."
+#error                                                                         \
+    "Must define one of PKE_KYBER or PKE_MCELIECE[348864|460896|6688128|6960119|8192128]"
 #endif
 
 void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins);

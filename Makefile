@@ -202,7 +202,7 @@ MCELIECE8192128SOURCES = easy-mceliece/mceliece8192128/benes.c \
 						 easy-mceliece/mceliece8192128/transpose.c \
 						 easy-mceliece/mceliece8192128/util.c
 
-SOURCES = authenticators.c etmkem.c
+SOURCES = authenticators.c etmkem.c pke.c
 HEADERS = authenticators.h etmkem.h pke.h
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
@@ -216,7 +216,7 @@ LDFLAGS += -lcrypto
 .PHONY = main tests
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) -DPKE_MCELIECE348864 main.c pke_mceliece348864.c -o target/$@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE460896SOURCES) -DPKE_MCELIECE460896 pke.c main.c -o target/$@
 	./target/$@
 
 speed: $(SOURCES) $(HEADERS) speed_etmkem.c speed_mlkem.c
