@@ -252,17 +252,23 @@ HEADERS = authenticators.h etmkem.h pke.h speed.h
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
 # for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`
-CFLAGS += -O3 # -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls -Wshadow -Wpointer-arith -fomit-frame-pointer -Wno-incompatible-pointer-types
+CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers # -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls -Wshadow -Wpointer-arith -fomit-frame-pointer -Wno-incompatible-pointer-types
 # OpenSSL library files are included using the LDFLAGS environment variable:
 # `export LDFLAGS="-L/path/to/opensl/lib $LDFLAGS"
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY = main tests
+.PHONY = main tests speed speed_mlkem speed_mceliece speed_etmkem
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 main.c -o target/$@
 	./target/$@
+
+all: tests speed
+
+tests: test_pke_correctness test_etmkem_correctness
+
+speed: speed_mlkem speed_mceliece speed_etmkem
 
 test_pke_correctness: $(SOURCES) $(HEADERS) test_pke_correctness.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=2 test_pke_correctness.c -o target/test_pke_kyber512_correctness
@@ -282,21 +288,160 @@ test_pke_correctness: $(SOURCES) $(HEADERS) test_pke_correctness.c
 	time ./target/test_pke_mceliece6960119_correctness
 	time ./target/test_pke_mceliece8192128_correctness
 
+# Copy from test_etmkem_speed, then replace speed with correctness
 test_etmkem_correctness: $(SOURCES) $(HEADERS) test_etmkem_correctness.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864  -DMAC_POLY1305 test_etmkem_correctness.c -o target/test_mceliece348864_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber512_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber512_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber512_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber512_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber768_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber768_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber768_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber768_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber1024_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber1024_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber1024_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_kyber1024_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_POLY1305 $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece348864_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_GMAC $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece348864_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_CMAC $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece348864_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_KMAC256 $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece348864_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_POLY1305 $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece460896_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_GMAC $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece460896_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_CMAC $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece460896_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_KMAC256 $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece460896_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_POLY1305 $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6688128_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_GMAC $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6688128_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_CMAC $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6688128_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_KMAC256 $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6688128_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_POLY1305 $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6960119_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_GMAC $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6960119_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_CMAC $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6960119_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_KMAC256 $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece6960119_kmac256_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_POLY1305 $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece8192128_poly1305_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_GMAC $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece8192128_gmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_CMAC $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece8192128_cmac_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_KMAC256 $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_correctness.c -o target/test_mceliece8192128_kmac256_correctness
+	./target/test_kyber512_poly1305_correctness
+	./target/test_kyber512_gmac_correctness
+	./target/test_kyber512_cmac_correctness
+	./target/test_kyber512_kmac256_correctness
+	./target/test_kyber768_poly1305_correctness
+	./target/test_kyber768_gmac_correctness
+	./target/test_kyber768_cmac_correctness
+	./target/test_kyber768_kmac256_correctness
+	./target/test_kyber1024_poly1305_correctness
+	./target/test_kyber1024_gmac_correctness
+	./target/test_kyber1024_cmac_correctness
+	./target/test_kyber1024_kmac256_correctness
 	./target/test_mceliece348864_poly1305_correctness
+	./target/test_mceliece348864_gmac_correctness
+	./target/test_mceliece348864_cmac_correctness
+	./target/test_mceliece348864_kmac256_correctness
+	./target/test_mceliece460896_poly1305_correctness
+	./target/test_mceliece460896_gmac_correctness
+	./target/test_mceliece460896_cmac_correctness
+	./target/test_mceliece460896_kmac256_correctness
+	./target/test_mceliece6688128_poly1305_correctness
+	./target/test_mceliece6688128_gmac_correctness
+	./target/test_mceliece6688128_cmac_correctness
+	./target/test_mceliece6688128_kmac256_correctness
+	./target/test_mceliece6960119_poly1305_correctness
+	./target/test_mceliece6960119_gmac_correctness
+	./target/test_mceliece6960119_cmac_correctness
+	./target/test_mceliece6960119_kmac256_correctness
+	./target/test_mceliece8192128_poly1305_correctness
+	./target/test_mceliece8192128_gmac_correctness
+	./target/test_mceliece8192128_cmac_correctness
+	./target/test_mceliece8192128_kmac256_correctness
 
-speed: $(SOURCES) $(HEADERS) test_mlkem_speed.c test_mceliece_speed.c test_etmkem_speed.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=2 test_mlkem_speed.c -o target/test_mlkem512_speed
+speed_mlkem: $(SOURCES) $(HEADERS) test_mlkem_speed.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -DKYBER_K=2 $(KYBERSOURCES) speed.c test_mlkem_speed.c -o target/test_mlkem512_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DKYBER_K=3 $(KYBERSOURCES) speed.c test_mlkem_speed.c -o target/test_mlkem768_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DKYBER_K=4 $(KYBERSOURCES) speed.c test_mlkem_speed.c -o target/test_mlkem1024_speed
 	./target/test_mlkem512_speed
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=3 test_mlkem_speed.c -o target/test_mlkem768_speed
 	./target/test_mlkem768_speed
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=4 test_mlkem_speed.c -o target/test_mlkem1024_speed
 	./target/test_mlkem1024_speed
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864 -DMAC_POLY1305 test_mceliece_speed.c -o target/test_mceliece348864_speed
+
+speed_mceliece: $(SOURCES) $(HEADERS) test_mceliece_speed.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 $(MCELIECE348864SOURCES) speed.c test_mceliece_speed.c -o target/test_mceliece348864_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 $(MCELIECE460896SOURCES) speed.c test_mceliece_speed.c -o target/test_mceliece460896_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 $(MCELIECE6688128SOURCES) speed.c test_mceliece_speed.c -o target/test_mceliece6688128_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 $(MCELIECE6960119SOURCES) speed.c test_mceliece_speed.c -o target/test_mceliece6960119_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 $(MCELIECE8192128SOURCES) speed.c test_mceliece_speed.c -o target/test_mceliece8192128_speed
 	./target/test_mceliece348864_speed
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864 -DMAC_POLY1305 test_etmkem_speed.c -o target/test_mceliece348864_poly1305_speed
+	./target/test_mceliece460896_speed
+	./target/test_mceliece6688128_speed
+	./target/test_mceliece6960119_speed
+	./target/test_mceliece8192128_speed
+
+# commands generated by cmdgen.py:gen_test_etmkem_speed_cmds
+speed_etmkem: $(SOURCES) $(HEADERS) test_etmkem_speed.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber512_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber512_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber512_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber512_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber768_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber768_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber768_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber768_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber1024_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber1024_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber1024_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_kyber1024_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_POLY1305 $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece348864_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_GMAC $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece348864_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_CMAC $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece348864_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE348864 -DMAC_KMAC256 $(MCELIECE348864SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece348864_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_POLY1305 $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece460896_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_GMAC $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece460896_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_CMAC $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece460896_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE460896 -DMAC_KMAC256 $(MCELIECE460896SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece460896_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_POLY1305 $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6688128_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_GMAC $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6688128_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_CMAC $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6688128_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6688128 -DMAC_KMAC256 $(MCELIECE6688128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6688128_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_POLY1305 $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6960119_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_GMAC $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6960119_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_CMAC $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6960119_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE6960119 -DMAC_KMAC256 $(MCELIECE6960119SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece6960119_kmac256_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_POLY1305 $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece8192128_poly1305_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_GMAC $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece8192128_gmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_CMAC $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece8192128_cmac_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE8192128 -DMAC_KMAC256 $(MCELIECE8192128SOURCES) $(SOURCES) test_etmkem_speed.c -o target/test_mceliece8192128_kmac256_speed
+	./target/test_kyber512_poly1305_speed
+	./target/test_kyber512_gmac_speed
+	./target/test_kyber512_cmac_speed
+	./target/test_kyber512_kmac256_speed
+	./target/test_kyber768_poly1305_speed
+	./target/test_kyber768_gmac_speed
+	./target/test_kyber768_cmac_speed
+	./target/test_kyber768_kmac256_speed
+	./target/test_kyber1024_poly1305_speed
+	./target/test_kyber1024_gmac_speed
+	./target/test_kyber1024_cmac_speed
+	./target/test_kyber1024_kmac256_speed
 	./target/test_mceliece348864_poly1305_speed
+	./target/test_mceliece348864_gmac_speed
+	./target/test_mceliece348864_cmac_speed
+	./target/test_mceliece348864_kmac256_speed
+	./target/test_mceliece460896_poly1305_speed
+	./target/test_mceliece460896_gmac_speed
+	./target/test_mceliece460896_cmac_speed
+	./target/test_mceliece460896_kmac256_speed
+	./target/test_mceliece6688128_poly1305_speed
+	./target/test_mceliece6688128_gmac_speed
+	./target/test_mceliece6688128_cmac_speed
+	./target/test_mceliece6688128_kmac256_speed
+	./target/test_mceliece6960119_poly1305_speed
+	./target/test_mceliece6960119_gmac_speed
+	./target/test_mceliece6960119_cmac_speed
+	./target/test_mceliece6960119_kmac256_speed
+	./target/test_mceliece8192128_poly1305_speed
+	./target/test_mceliece8192128_gmac_speed
+	./target/test_mceliece8192128_cmac_speed
+	./target/test_mceliece8192128_kmac256_speed
+
 
 clean:
 	$(RM) target/*
