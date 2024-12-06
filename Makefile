@@ -279,14 +279,14 @@ test_pke_correctness: $(SOURCES) $(HEADERS) test_pke_correctness.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE6688128SOURCES) pke.c -DPKE_MCELIECE6688128 test_pke_correctness.c -o target/test_pke_mceliece6688128_correctness
 	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE6960119SOURCES) pke.c -DPKE_MCELIECE6960119 test_pke_correctness.c -o target/test_pke_mceliece6960119_correctness
 	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE8192128SOURCES) pke.c -DPKE_MCELIECE8192128 test_pke_correctness.c -o target/test_pke_mceliece8192128_correctness
-	time ./target/test_pke_kyber512_correctness
-	time ./target/test_pke_kyber768_correctness
-	time ./target/test_pke_kyber1024_correctness
-	time ./target/test_pke_mceliece348864_correctness
-	time ./target/test_pke_mceliece460896_correctness
-	time ./target/test_pke_mceliece6688128_correctness
-	time ./target/test_pke_mceliece6960119_correctness
-	time ./target/test_pke_mceliece8192128_correctness
+	./target/test_pke_kyber512_correctness
+	./target/test_pke_kyber768_correctness
+	./target/test_pke_kyber1024_correctness
+	./target/test_pke_mceliece348864_correctness
+	./target/test_pke_mceliece460896_correctness
+	./target/test_pke_mceliece6688128_correctness
+	./target/test_pke_mceliece6960119_correctness
+	./target/test_pke_mceliece8192128_correctness
 
 # Copy from test_etmkem_speed, then replace speed with correctness
 test_etmkem_correctness: $(SOURCES) $(HEADERS) test_etmkem_correctness.c
