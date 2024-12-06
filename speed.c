@@ -7,9 +7,15 @@
  */
 uint64_t get_clock_cpu(void) {
 #if defined(__APPLE__)
+#if defined(__DEBUG__)
+  fprintf("Using Apple Silicon\n");
+#endif
   // on Apple Silicon use high level API
   return clock();
 #else
+#if defined(__DEBUG__)
+  fprintf("Using x86_64 register RDTSC\n");
+#endif
   uint64_t result;
   __asm__ volatile("rdtsc; shlq $32,%%rdx; orq %%rdx,%%rax"
                    : "=a"(result)
