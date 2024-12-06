@@ -286,6 +286,17 @@ test_etmkem_correctness: $(SOURCES) $(HEADERS) test_etmkem_correctness.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864  -DMAC_POLY1305 test_etmkem_correctness.c -o target/test_mceliece348864_poly1305_correctness
 	./target/test_mceliece348864_poly1305_correctness
 
+speed: $(SOURCES) $(HEADERS) test_mlkem_speed.c test_mceliece_speed.c test_etmkem_speed.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=2 test_mlkem_speed.c -o target/test_mlkem512_speed
+	./target/test_mlkem512_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=3 test_mlkem_speed.c -o target/test_mlkem768_speed
+	./target/test_mlkem768_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=4 test_mlkem_speed.c -o target/test_mlkem1024_speed
+	./target/test_mlkem1024_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864 -DMAC_POLY1305 test_mceliece_speed.c -o target/test_mceliece348864_speed
+	./target/test_mceliece348864_speed
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864 -DMAC_POLY1305 test_etmkem_speed.c -o target/test_mceliece348864_poly1305_speed
+	./target/test_mceliece348864_poly1305_speed
 
 clean:
 	$(RM) target/*
