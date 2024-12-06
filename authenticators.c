@@ -33,6 +33,9 @@
  */
 static int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
                         size_t msglen) {
+#ifdef __DEBUG__
+  fprintf(stderr, "called mac_poly1305\n");
+#endif
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   size_t _;
@@ -90,6 +93,9 @@ static int mac_poly1305(uint8_t *digest, const uint8_t *key, const void *msg,
  */
 static int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
                     const void *msg, size_t msglen) {
+#ifdef __DEBUG__
+  fprintf(stderr, "called mac_gmac\n");
+#endif
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[4];
@@ -139,6 +145,9 @@ static int mac_gmac(uint8_t *digest, const uint8_t *key, const uint8_t *iv,
  */
 static int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
                     const size_t msglen) {
+#ifdef __DEBUG__
+  fprintf(stderr, "called mac_cmac\n");
+#endif
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[3];
@@ -194,6 +203,9 @@ static int mac_cmac(uint8_t *digest, const uint8_t *key, const void *msg,
 static int mac_kmac(uint8_t *digest, const uint8_t *key, size_t keylen,
                     const void *msg, size_t msglen, size_t digestlen,
                     int xof_enabled) {
+#ifdef __DEBUG__
+  fprintf(stderr, "called mac_kmac256\n");
+#endif
   EVP_MAC *mac = NULL;
   EVP_MAC_CTX *ctx = NULL;
   OSSL_PARAM params[4];

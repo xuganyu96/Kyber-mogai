@@ -247,8 +247,8 @@ MCELIECE8192128SOURCES = easy-mceliece/mceliece8192128/benes.c \
 						 easy-mceliece/mceliece8192128/transpose.c \
 						 easy-mceliece/mceliece8192128/util.c
 
-SOURCES = authenticators.c etmkem.c pke.c
-HEADERS = authenticators.h etmkem.h pke.h
+SOURCES = authenticators.c etmkem.c pke.c speed.c
+HEADERS = authenticators.h etmkem.h pke.h speed.h
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
 # for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`
@@ -261,10 +261,10 @@ LDFLAGS += -lcrypto
 .PHONY = main tests
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE8192128SOURCES) -DPKE_MCELIECE8192128 pke.c main.c -o target/$@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 main.c -o target/$@
 	./target/$@
 
-test_pke_correctness: pke.c test_pke_correctness.c
+test_pke_correctness: $(SOURCES) $(HEADERS) test_pke_correctness.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=2 test_pke_correctness.c -o target/test_pke_kyber512_correctness
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=3 test_pke_correctness.c -o target/test_pke_kyber768_correctness
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=4 test_pke_correctness.c -o target/test_pke_kyber1024_correctness
@@ -282,40 +282,10 @@ test_pke_correctness: pke.c test_pke_correctness.c
 	time ./target/test_pke_mceliece6960119_correctness
 	time ./target/test_pke_mceliece8192128_correctness
 
-speed: $(SOURCES) $(HEADERS) speed_etmkem.c speed_mlkem.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=2 speed_mlkem.c -o target/speed_mlkem512
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=3 speed_mlkem.c -o target/speed_mlkem768
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=4 speed_mlkem.c -o target/speed_mlkem1024
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_poly1305
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_poly1305
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_poly1305
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_GMAC -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_gmac
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_GMAC -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_gmac
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_GMAC -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_gmac
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_CMAC -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_cmac
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_CMAC -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_cmac
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_CMAC -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_cmac
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_KMAC256 -DKYBER_K=2 speed_etmkem.c -o target/speed_mlkem512_kmac256
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_KMAC256 -DKYBER_K=3 speed_etmkem.c -o target/speed_mlkem768_kmac256
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_KMAC256 -DKYBER_K=4 speed_etmkem.c -o target/speed_mlkem1024_kmac256
-	# ------------ NIST level 1 ----------------
-	./target/speed_mlkem512
-	./target/speed_mlkem512_poly1305
-	./target/speed_mlkem512_gmac
-	./target/speed_mlkem512_cmac
-	./target/speed_mlkem512_kmac256
-	# ------------ NIST level 2 ----------------
-	./target/speed_mlkem768
-	./target/speed_mlkem768_poly1305
-	./target/speed_mlkem768_gmac
-	./target/speed_mlkem768_cmac
-	./target/speed_mlkem768_kmac256
-	# ------------ NIST level 3 ----------------
-	./target/speed_mlkem1024
-	./target/speed_mlkem1024_poly1305
-	./target/speed_mlkem1024_gmac
-	./target/speed_mlkem1024_cmac
-	./target/speed_mlkem1024_kmac256
+test_etmkem_correctness: $(SOURCES) $(HEADERS) test_etmkem_correctness.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) $(SOURCES) -DPKE_MCELIECE348864  -DMAC_POLY1305 test_etmkem_correctness.c -o target/test_mceliece348864_poly1305_correctness
+	./target/test_mceliece348864_poly1305_correctness
+
 
 clean:
 	$(RM) target/*
