@@ -112,6 +112,51 @@ MCELIECE460896SOURCES = easy-mceliece/mceliece460896/benes.c \
 						easy-mceliece/mceliece460896/transpose.c \
 						easy-mceliece/mceliece460896/util.c
 
+MCELIECE6688128HEADERS = easy-mceliece/mceliece6688128/api.h \
+						 easy-mceliece/mceliece6688128/benes.h \
+						 easy-mceliece/mceliece6688128/bm.h \
+						 easy-mceliece/mceliece6688128/controlbits.h \
+						 easy-mceliece/mceliece6688128/crypto_hash.h \
+						 easy-mceliece/mceliece6688128/crypto_kem.h \
+						 easy-mceliece/mceliece6688128/crypto_kem_mceliece6688128.h \
+						 easy-mceliece/mceliece6688128/decrypt.h \
+						 easy-mceliece/mceliece6688128/encrypt.h \
+						 easy-mceliece/mceliece6688128/gf.h \
+						 easy-mceliece/mceliece6688128/int32_sort.h \
+						 easy-mceliece/mceliece6688128/keccak.h \
+						 easy-mceliece/mceliece6688128/operations.h \
+						 easy-mceliece/mceliece6688128/params.h \
+						 easy-mceliece/mceliece6688128/pk_gen.h \
+						 easy-mceliece/mceliece6688128/randombytes.h \
+						 easy-mceliece/mceliece6688128/root.h \
+						 easy-mceliece/mceliece6688128/sk_gen.h \
+						 easy-mceliece/mceliece6688128/synd.h \
+						 easy-mceliece/mceliece6688128/transpose.h \
+						 easy-mceliece/mceliece6688128/uint64_sort.h \
+						 easy-mceliece/mceliece6688128/util.h \
+						 easy-mceliece/mceliece6688128/subroutines/crypto_declassify.h \
+						 easy-mceliece/mceliece6688128/subroutines/crypto_int16.h \
+						 easy-mceliece/mceliece6688128/subroutines/crypto_int32.h \
+						 easy-mceliece/mceliece6688128/subroutines/crypto_uint16.h \
+						 easy-mceliece/mceliece6688128/subroutines/crypto_uint32.h \
+						 easy-mceliece/mceliece6688128/subroutines/crypto_uint64.h
+
+MCELIECE6688128SOURCES = easy-mceliece/mceliece6688128/benes.c \
+						 easy-mceliece/mceliece6688128/bm.c \
+						 easy-mceliece/mceliece6688128/controlbits.c \
+						 easy-mceliece/mceliece6688128/decrypt.c \
+						 easy-mceliece/mceliece6688128/encrypt.c \
+						 easy-mceliece/mceliece6688128/gf.c \
+						 easy-mceliece/mceliece6688128/keccak.c \
+						 easy-mceliece/mceliece6688128/operations.c \
+						 easy-mceliece/mceliece6688128/pk_gen.c \
+						 easy-mceliece/mceliece6688128/randombytes.c \
+						 easy-mceliece/mceliece6688128/root.c \
+						 easy-mceliece/mceliece6688128/sk_gen.c \
+						 easy-mceliece/mceliece6688128/synd.c \
+						 easy-mceliece/mceliece6688128/transpose.c \
+						 easy-mceliece/mceliece6688128/util.c
+
 MCELIECE6960119HEADERS = easy-mceliece/mceliece6960119/api.h \
 						 easy-mceliece/mceliece6960119/benes.h \
 						 easy-mceliece/mceliece6960119/bm.h \
@@ -216,8 +261,26 @@ LDFLAGS += -lcrypto
 .PHONY = main tests
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE460896SOURCES) -DPKE_MCELIECE460896 pke.c main.c -o target/$@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE8192128SOURCES) -DPKE_MCELIECE8192128 pke.c main.c -o target/$@
 	./target/$@
+
+test_pke_correctness: pke.c test_pke_correctness.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=2 test_pke_correctness.c -o target/test_pke_kyber512_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=3 test_pke_correctness.c -o target/test_pke_kyber768_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=4 test_pke_correctness.c -o target/test_pke_kyber1024_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE348864SOURCES) pke.c -DPKE_MCELIECE348864 test_pke_correctness.c -o target/test_pke_mceliece348864_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE460896SOURCES) pke.c -DPKE_MCELIECE460896 test_pke_correctness.c -o target/test_pke_mceliece460896_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE6688128SOURCES) pke.c -DPKE_MCELIECE6688128 test_pke_correctness.c -o target/test_pke_mceliece6688128_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE6960119SOURCES) pke.c -DPKE_MCELIECE6960119 test_pke_correctness.c -o target/test_pke_mceliece6960119_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) $(MCELIECE8192128SOURCES) pke.c -DPKE_MCELIECE8192128 test_pke_correctness.c -o target/test_pke_mceliece8192128_correctness
+	time ./target/test_pke_kyber512_correctness
+	time ./target/test_pke_kyber768_correctness
+	time ./target/test_pke_kyber1024_correctness
+	time ./target/test_pke_mceliece348864_correctness
+	time ./target/test_pke_mceliece460896_correctness
+	time ./target/test_pke_mceliece6688128_correctness
+	time ./target/test_pke_mceliece6960119_correctness
+	time ./target/test_pke_mceliece8192128_correctness
 
 speed: $(SOURCES) $(HEADERS) speed_etmkem.c speed_mlkem.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) -DPKE_KYBER -DKYBER_K=2 speed_mlkem.c -o target/speed_mlkem512

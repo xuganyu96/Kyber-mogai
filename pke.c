@@ -25,7 +25,14 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
   indcpa_dec(pke_pt, pke_ct, pke_sk);
 }
 
-#elif defined(PKE_MCELIECE348864)
+#else
+/**
+ * If it is not Kyber, then it must be McEliece. All McEliece PKE
+ * implementations share the same code, the only difference across variants is
+ * the headers (and the sources, as defined in the Makefile) included, hence the
+ * nested if block
+ */
+#if defined(PKE_MCELIECE348864)
 #include "easy-mceliece/mceliece348864/benes.h"
 #include "easy-mceliece/mceliece348864/bm.h"
 #include "easy-mceliece/mceliece348864/crypto_kem.h"
@@ -35,57 +42,6 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
 #include "easy-mceliece/mceliece348864/root.h"
 #include "easy-mceliece/mceliece348864/synd.h"
 #include "easy-mceliece/mceliece348864/util.h"
-
-void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
-  crypto_kem_keypair(pke_pk, pke_sk);
-}
-
-void sample_pke_pt(uint8_t *pke_pt, const uint8_t *coins) { gen_e(pke_pt); }
-
-void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
-             const uint8_t *coins) {
-  syndrome(pke_ct, pke_pk, pke_pt);
-}
-
-void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
-  // NOTE: all levels of McEliece prepends 40-bytes of pseudorandom seed to
-  // secret key, see crypto_kem_dec in operations.c
-  pke_sk += 40;
-
-  int i = 0;
-  unsigned char r[SYS_N / 8];
-  gf g[SYS_T + 1];
-  gf L[SYS_N];
-  gf s[SYS_T * 2];
-  gf locator[SYS_T + 1];
-  gf images[SYS_N];
-  gf t;
-
-  for (i = 0; i < SYND_BYTES; i++)
-    r[i] = pke_ct[i];
-  for (i = SYND_BYTES; i < SYS_N / 8; i++)
-    r[i] = 0;
-
-  for (i = 0; i < SYS_T; i++) {
-    g[i] = load_gf(pke_sk);
-    pke_sk += 2;
-  }
-  g[SYS_T] = 1;
-
-  support_gen(L, pke_sk);
-  synd(s, g, L, r);
-  bm(locator, s);
-  root(images, locator, L);
-
-  for (i = 0; i < SYS_N / 8; i++)
-    pke_pt[i] = 0;
-
-  for (i = 0; i < SYS_N; i++) {
-    t = gf_iszero(images[i]) & 1;
-
-    pke_pt[i / 8] |= t << (i % 8);
-  }
-}
 
 #elif defined(PKE_MCELIECE460896)
 #include "easy-mceliece/mceliece460896/benes.h"
@@ -98,57 +54,6 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
 #include "easy-mceliece/mceliece460896/synd.h"
 #include "easy-mceliece/mceliece460896/util.h"
 
-void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
-  crypto_kem_keypair(pke_pk, pke_sk);
-}
-
-void sample_pke_pt(uint8_t *pke_pt, const uint8_t *coins) { gen_e(pke_pt); }
-
-void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
-             const uint8_t *coins) {
-  syndrome(pke_ct, pke_pk, pke_pt);
-}
-
-void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
-  // NOTE: all levels of McEliece prepends 40-bytes of pseudorandom seed to
-  // secret key, see crypto_kem_dec in operations.c
-  pke_sk += 40;
-
-  int i = 0;
-  unsigned char r[SYS_N / 8];
-  gf g[SYS_T + 1];
-  gf L[SYS_N];
-  gf s[SYS_T * 2];
-  gf locator[SYS_T + 1];
-  gf images[SYS_N];
-  gf t;
-
-  for (i = 0; i < SYND_BYTES; i++)
-    r[i] = pke_ct[i];
-  for (i = SYND_BYTES; i < SYS_N / 8; i++)
-    r[i] = 0;
-
-  for (i = 0; i < SYS_T; i++) {
-    g[i] = load_gf(pke_sk);
-    pke_sk += 2;
-  }
-  g[SYS_T] = 1;
-
-  support_gen(L, pke_sk);
-  synd(s, g, L, r);
-  bm(locator, s);
-  root(images, locator, L);
-
-  for (i = 0; i < SYS_N / 8; i++)
-    pke_pt[i] = 0;
-
-  for (i = 0; i < SYS_N; i++) {
-    t = gf_iszero(images[i]) & 1;
-
-    pke_pt[i / 8] |= t << (i % 8);
-  }
-}
-
 #elif defined(PKE_MCELIECE6688128)
 #include "easy-mceliece/mceliece6688128/benes.h"
 #include "easy-mceliece/mceliece6688128/bm.h"
@@ -159,57 +64,6 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
 #include "easy-mceliece/mceliece6688128/root.h"
 #include "easy-mceliece/mceliece6688128/synd.h"
 #include "easy-mceliece/mceliece6688128/util.h"
-
-void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
-  crypto_kem_keypair(pke_pk, pke_sk);
-}
-
-void sample_pke_pt(uint8_t *pke_pt, const uint8_t *coins) { gen_e(pke_pt); }
-
-void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
-             const uint8_t *coins) {
-  syndrome(pke_ct, pke_pk, pke_pt);
-}
-
-void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
-  // NOTE: all levels of McEliece prepends 40-bytes of pseudorandom seed to
-  // secret key, see crypto_kem_dec in operations.c
-  pke_sk += 40;
-
-  int i = 0;
-  unsigned char r[SYS_N / 8];
-  gf g[SYS_T + 1];
-  gf L[SYS_N];
-  gf s[SYS_T * 2];
-  gf locator[SYS_T + 1];
-  gf images[SYS_N];
-  gf t;
-
-  for (i = 0; i < SYND_BYTES; i++)
-    r[i] = pke_ct[i];
-  for (i = SYND_BYTES; i < SYS_N / 8; i++)
-    r[i] = 0;
-
-  for (i = 0; i < SYS_T; i++) {
-    g[i] = load_gf(pke_sk);
-    pke_sk += 2;
-  }
-  g[SYS_T] = 1;
-
-  support_gen(L, pke_sk);
-  synd(s, g, L, r);
-  bm(locator, s);
-  root(images, locator, L);
-
-  for (i = 0; i < SYS_N / 8; i++)
-    pke_pt[i] = 0;
-
-  for (i = 0; i < SYS_N; i++) {
-    t = gf_iszero(images[i]) & 1;
-
-    pke_pt[i / 8] |= t << (i % 8);
-  }
-}
 
 #elif defined(PKE_MCELIECE6960119)
 #include "easy-mceliece/mceliece6960119/benes.h"
@@ -222,57 +76,6 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
 #include "easy-mceliece/mceliece6960119/synd.h"
 #include "easy-mceliece/mceliece6960119/util.h"
 
-void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
-  crypto_kem_keypair(pke_pk, pke_sk);
-}
-
-void sample_pke_pt(uint8_t *pke_pt, const uint8_t *coins) { gen_e(pke_pt); }
-
-void pke_enc(uint8_t *pke_ct, const uint8_t *pke_pt, const uint8_t *pke_pk,
-             const uint8_t *coins) {
-  syndrome(pke_ct, pke_pk, pke_pt);
-}
-
-void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
-  // NOTE: all levels of McEliece prepends 40-bytes of pseudorandom seed to
-  // secret key, see crypto_kem_dec in operations.c
-  pke_sk += 40;
-
-  int i = 0;
-  unsigned char r[SYS_N / 8];
-  gf g[SYS_T + 1];
-  gf L[SYS_N];
-  gf s[SYS_T * 2];
-  gf locator[SYS_T + 1];
-  gf images[SYS_N];
-  gf t;
-
-  for (i = 0; i < SYND_BYTES; i++)
-    r[i] = pke_ct[i];
-  for (i = SYND_BYTES; i < SYS_N / 8; i++)
-    r[i] = 0;
-
-  for (i = 0; i < SYS_T; i++) {
-    g[i] = load_gf(pke_sk);
-    pke_sk += 2;
-  }
-  g[SYS_T] = 1;
-
-  support_gen(L, pke_sk);
-  synd(s, g, L, r);
-  bm(locator, s);
-  root(images, locator, L);
-
-  for (i = 0; i < SYS_N / 8; i++)
-    pke_pt[i] = 0;
-
-  for (i = 0; i < SYS_N; i++) {
-    t = gf_iszero(images[i]) & 1;
-
-    pke_pt[i / 8] |= t << (i % 8);
-  }
-}
-
 #elif defined(PKE_MCELIECE8192128)
 #include "easy-mceliece/mceliece8192128/benes.h"
 #include "easy-mceliece/mceliece8192128/bm.h"
@@ -284,6 +87,11 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
 #include "easy-mceliece/mceliece8192128/synd.h"
 #include "easy-mceliece/mceliece8192128/util.h"
 
+#else
+#error                                                                         \
+    "Must define one of PKE_KYBER or PKE_MCELIECE[348864|460896|6688128|6960119|8192128]"
+#endif
+
 void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
   crypto_kem_keypair(pke_pk, pke_sk);
 }
@@ -334,8 +142,4 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
     pke_pt[i / 8] |= t << (i % 8);
   }
 }
-
-#else
-#error                                                                         \
-    "Must define one of PKE_KYBER or PKE_MCELIECE[348864|460896|6688128|6960119|8192128]"
 #endif
