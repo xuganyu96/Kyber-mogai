@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-// Number of batches
-#define BENCH_BATCH_COUNT 55
-// Number of function calls in each batch
-#define BENCH_BATCH_SIZE 32
+// Number of batches, preferably odd
+#define BENCH_BATCH_COUNT 9
+// Number of function calls in each batch, preferable power of 2
+#define BENCH_BATCH_SIZE 8
 
 uint64_t get_clock_cpu(void);
 uint64_t get_clock_ns(void);

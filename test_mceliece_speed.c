@@ -1,28 +1,8 @@
 /**
  * Performance benchmark for ML-KEM
  */
-#if defined(PKE_MCELIECE348864)
-#include "easy-mceliece/mceliece348864/api.h"
-#include "easy-mceliece/mceliece348864/crypto_kem.h"
-
-#elif defined(PKE_MCELIECE460896)
-#include "easy-mceliece/mceliece460896/api.h"
-#include "easy-mceliece/mceliece460896/crypto_kem.h"
-
-#elif defined(PKE_MCELIECE6688128)
-#include "easy-mceliece/mceliece6688128/api.h"
-#include "easy-mceliece/mceliece6688128/crypto_kem.h"
-
-#elif defined(PKE_MCELIECE6960119)
-#include "easy-mceliece/mceliece6960119/api.h"
-#include "easy-mceliece/mceliece6960119/crypto_kem.h"
-
-#elif defined(PKE_MCELIECE8192128)
-#include "easy-mceliece/mceliece8192128/api.h"
-#include "easy-mceliece/mceliece8192128/crypto_kem.h"
-
-#endif
-
+#include "easy-mceliece/easy-mceliece/api.h"
+#include "easy-mceliece/easy-mceliece/crypto_kem.h"
 #include "speed.h"
 #include <stdio.h>
 #include <stdlib.h>

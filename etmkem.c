@@ -1,7 +1,16 @@
 #include "etmkem.h"
 #include "authenticators.h"
+#if defined(PKE_KYBER)
 #include "kyber/ref/fips202.h"
 #include "kyber/ref/randombytes.h"
+
+#elif defined(PKE_MCELIECE)
+#include "easy-mceliece/easy-mceliece/keccak.h"
+#include "easy-mceliece/easy-mceliece/randombytes.h"
+
+#else
+#error "Must define PKE_KYBER or PKE_MCELIECE"
+#endif
 #include "pke.h"
 #include <string.h>
 

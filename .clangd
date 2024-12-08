@@ -14,5 +14,5 @@ CompileFlags:
     "-O3", 
     "-fomit-frame-pointer",
     "-DMAC_GMAC",
-    "-DPKE_MCELIECE348864"
+    "-DPKE_MCELIECE"
   ]
