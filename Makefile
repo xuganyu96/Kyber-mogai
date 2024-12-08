@@ -76,7 +76,7 @@ CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers # -Wall -Wextr
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY = main tests speed speed_mlkem speed_mceliece speed_etmkem
+.PHONY: main tests speed speed_mlkem speed_mceliece speed_etmkem
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) main.c -o target/$@
