@@ -79,7 +79,7 @@ LDFLAGS += -lcrypto
 .PHONY = main tests speed speed_mlkem speed_mceliece speed_etmkem
 
 main: $(SOURCES) $(HEADERS) main.c
-	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) $(SOURCES) -DPKE_KYBER -DMAC_POLY1305 main.c -o target/$@
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) main.c -o target/$@
 	./target/$@
 
 all: tests speed
