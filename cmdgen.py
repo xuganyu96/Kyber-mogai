@@ -21,7 +21,25 @@ MAC_OPTIONS = [
     ("-DMAC_KMAC256", "kmac256"),
 ]
 
+# authentication modes
+AUTHMODES_OPTIONS = [
+    "none", "server", "client", "all"
+]
 
+def gen_kex_server_command(first_port: int = 8000):
+    """generate shell commands using every combination of pke, mac, and authmode"""
+    offset = 0
+    cmds = []
+    for authmode in AUTHMODES_OPTIONS:
+        for _, pke_name, _ in PKE_OPTIONS:
+            # add the option of using vanilla KEM, not ETM-KEM
+            for _, mac_name in [("", "")] + MAC_OPTIONS:
+                target = f"./target/kex_server_{pke_name}{mac_name}"
+                cmd = f"{target} {authmode} 127.0.0.1 {first_port + offset}"
+                cmds.append(cmd)
+                offset += 1
+        print()
+    return cmds
 
 def gen_test_etmkem_speed_cmds():
     cmdtemplate = "$(CC) $(CFLAGS) $(LDFLAGS) {pke_cflags} {mac_cflags} " \
@@ -64,6 +82,6 @@ def gen_test_etmkem_correctness_cmds():
     return build_cmds + run_cmds
 
 if __name__ == "__main__":
-    cmds = gen_test_etmkem_speed_cmds()
+    cmds = gen_kex_server_command()
     for cmd in cmds:
         print(cmd)

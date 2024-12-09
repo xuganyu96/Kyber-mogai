@@ -11,6 +11,7 @@
 uint64_t timestamps[KEX_ROUNDS + 1];
 
 int main(int argc, char *argv[]) {
+  printf("%s\n", argv[0]);
   int auth_mode, port;
   char host[MAX_HOSTNAME_LEN];
   if (0 != parse_args(argc, argv, &auth_mode, host, &port)) {

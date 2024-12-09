@@ -1,0 +1,177 @@
+#!/bin/bash
+#
+# usage: ./run_all_kex_client.sh <server_hostname>
+
+# Check if the first argument ($1) is provided
+if [ -z "$1" ]; then
+  echo "Error: HOSTNAME is not provided. Please specify it as the first argument."
+  exit 1
+fi
+
+# Assign $1 to the HOSTNAME variable
+HOSTNAME="$1"
+
+# Optional: Print the HOSTNAME
+echo "HOSTNAME is set to: $HOSTNAME"
+
+# client needs to wait for server to be ready first
+sleep 0 && ./target/kex_client_kyber512 none 127.0.0.1 8000
+sleep 0 && ./target/kex_client_kyber512poly1305 none 127.0.0.1 8001
+sleep 0 && ./target/kex_client_kyber512gmac none 127.0.0.1 8002
+sleep 0 && ./target/kex_client_kyber512cmac none 127.0.0.1 8003
+sleep 0 && ./target/kex_client_kyber512kmac256 none 127.0.0.1 8004
+sleep 0 && ./target/kex_client_kyber768 none 127.0.0.1 8005
+sleep 0 && ./target/kex_client_kyber768poly1305 none 127.0.0.1 8006
+sleep 0 && ./target/kex_client_kyber768gmac none 127.0.0.1 8007
+sleep 0 && ./target/kex_client_kyber768cmac none 127.0.0.1 8008
+sleep 0 && ./target/kex_client_kyber768kmac256 none 127.0.0.1 8009
+sleep 0 && ./target/kex_client_kyber1024 none 127.0.0.1 8010
+sleep 0 && ./target/kex_client_kyber1024poly1305 none 127.0.0.1 8011
+sleep 0 && ./target/kex_client_kyber1024gmac none 127.0.0.1 8012
+sleep 0 && ./target/kex_client_kyber1024cmac none 127.0.0.1 8013
+sleep 0 && ./target/kex_client_kyber1024kmac256 none 127.0.0.1 8014
+sleep 0 && ./target/kex_client_mceliece348864 none 127.0.0.1 8015
+sleep 0 && ./target/kex_client_mceliece348864poly1305 none 127.0.0.1 8016
+sleep 0 && ./target/kex_client_mceliece348864gmac none 127.0.0.1 8017
+sleep 0 && ./target/kex_client_mceliece348864cmac none 127.0.0.1 8018
+sleep 0 && ./target/kex_client_mceliece348864kmac256 none 127.0.0.1 8019
+sleep 0 && ./target/kex_client_mceliece460896 none 127.0.0.1 8020
+sleep 0 && ./target/kex_client_mceliece460896poly1305 none 127.0.0.1 8021
+sleep 0 && ./target/kex_client_mceliece460896gmac none 127.0.0.1 8022
+sleep 0 && ./target/kex_client_mceliece460896cmac none 127.0.0.1 8023
+sleep 0 && ./target/kex_client_mceliece460896kmac256 none 127.0.0.1 8024
+sleep 0 && ./target/kex_client_mceliece6688128 none 127.0.0.1 8025
+sleep 0 && ./target/kex_client_mceliece6688128poly1305 none 127.0.0.1 8026
+sleep 0 && ./target/kex_client_mceliece6688128gmac none 127.0.0.1 8027
+sleep 0 && ./target/kex_client_mceliece6688128cmac none 127.0.0.1 8028
+sleep 0 && ./target/kex_client_mceliece6688128kmac256 none 127.0.0.1 8029
+sleep 0 && ./target/kex_client_mceliece6960119 none 127.0.0.1 8030
+sleep 0 && ./target/kex_client_mceliece6960119poly1305 none 127.0.0.1 8031
+sleep 0 && ./target/kex_client_mceliece6960119gmac none 127.0.0.1 8032
+sleep 0 && ./target/kex_client_mceliece6960119cmac none 127.0.0.1 8033
+sleep 0 && ./target/kex_client_mceliece6960119kmac256 none 127.0.0.1 8034
+sleep 0 && ./target/kex_client_mceliece8192128 none 127.0.0.1 8035
+sleep 0 && ./target/kex_client_mceliece8192128poly1305 none 127.0.0.1 8036
+sleep 0 && ./target/kex_client_mceliece8192128gmac none 127.0.0.1 8037
+sleep 0 && ./target/kex_client_mceliece8192128cmac none 127.0.0.1 8038
+sleep 0 && ./target/kex_client_mceliece8192128kmac256 none 127.0.0.1 8039
+sleep 0 && ./target/kex_client_kyber512 server 127.0.0.1 8040
+sleep 0 && ./target/kex_client_kyber512poly1305 server 127.0.0.1 8041
+sleep 0 && ./target/kex_client_kyber512gmac server 127.0.0.1 8042
+sleep 0 && ./target/kex_client_kyber512cmac server 127.0.0.1 8043
+sleep 0 && ./target/kex_client_kyber512kmac256 server 127.0.0.1 8044
+sleep 0 && ./target/kex_client_kyber768 server 127.0.0.1 8045
+sleep 0 && ./target/kex_client_kyber768poly1305 server 127.0.0.1 8046
+sleep 0 && ./target/kex_client_kyber768gmac server 127.0.0.1 8047
+sleep 0 && ./target/kex_client_kyber768cmac server 127.0.0.1 8048
+sleep 0 && ./target/kex_client_kyber768kmac256 server 127.0.0.1 8049
+sleep 0 && ./target/kex_client_kyber1024 server 127.0.0.1 8050
+sleep 0 && ./target/kex_client_kyber1024poly1305 server 127.0.0.1 8051
+sleep 0 && ./target/kex_client_kyber1024gmac server 127.0.0.1 8052
+sleep 0 && ./target/kex_client_kyber1024cmac server 127.0.0.1 8053
+sleep 0 && ./target/kex_client_kyber1024kmac256 server 127.0.0.1 8054
+sleep 0 && ./target/kex_client_mceliece348864 server 127.0.0.1 8055
+sleep 0 && ./target/kex_client_mceliece348864poly1305 server 127.0.0.1 8056
+sleep 0 && ./target/kex_client_mceliece348864gmac server 127.0.0.1 8057
+sleep 0 && ./target/kex_client_mceliece348864cmac server 127.0.0.1 8058
+sleep 0 && ./target/kex_client_mceliece348864kmac256 server 127.0.0.1 8059
+sleep 0 && ./target/kex_client_mceliece460896 server 127.0.0.1 8060
+sleep 0 && ./target/kex_client_mceliece460896poly1305 server 127.0.0.1 8061
+sleep 0 && ./target/kex_client_mceliece460896gmac server 127.0.0.1 8062
+sleep 0 && ./target/kex_client_mceliece460896cmac server 127.0.0.1 8063
+sleep 0 && ./target/kex_client_mceliece460896kmac256 server 127.0.0.1 8064
+sleep 0 && ./target/kex_client_mceliece6688128 server 127.0.0.1 8065
+sleep 0 && ./target/kex_client_mceliece6688128poly1305 server 127.0.0.1 8066
+sleep 0 && ./target/kex_client_mceliece6688128gmac server 127.0.0.1 8067
+sleep 0 && ./target/kex_client_mceliece6688128cmac server 127.0.0.1 8068
+sleep 0 && ./target/kex_client_mceliece6688128kmac256 server 127.0.0.1 8069
+sleep 0 && ./target/kex_client_mceliece6960119 server 127.0.0.1 8070
+sleep 0 && ./target/kex_client_mceliece6960119poly1305 server 127.0.0.1 8071
+sleep 0 && ./target/kex_client_mceliece6960119gmac server 127.0.0.1 8072
+sleep 0 && ./target/kex_client_mceliece6960119cmac server 127.0.0.1 8073
+sleep 0 && ./target/kex_client_mceliece6960119kmac256 server 127.0.0.1 8074
+sleep 0 && ./target/kex_client_mceliece8192128 server 127.0.0.1 8075
+sleep 0 && ./target/kex_client_mceliece8192128poly1305 server 127.0.0.1 8076
+sleep 0 && ./target/kex_client_mceliece8192128gmac server 127.0.0.1 8077
+sleep 0 && ./target/kex_client_mceliece8192128cmac server 127.0.0.1 8078
+sleep 0 && ./target/kex_client_mceliece8192128kmac256 server 127.0.0.1 8079
+sleep 0 && ./target/kex_client_kyber512 client 127.0.0.1 8080
+sleep 0 && ./target/kex_client_kyber512poly1305 client 127.0.0.1 8081
+sleep 0 && ./target/kex_client_kyber512gmac client 127.0.0.1 8082
+sleep 0 && ./target/kex_client_kyber512cmac client 127.0.0.1 8083
+sleep 0 && ./target/kex_client_kyber512kmac256 client 127.0.0.1 8084
+sleep 0 && ./target/kex_client_kyber768 client 127.0.0.1 8085
+sleep 0 && ./target/kex_client_kyber768poly1305 client 127.0.0.1 8086
+sleep 0 && ./target/kex_client_kyber768gmac client 127.0.0.1 8087
+sleep 0 && ./target/kex_client_kyber768cmac client 127.0.0.1 8088
+sleep 0 && ./target/kex_client_kyber768kmac256 client 127.0.0.1 8089
+sleep 0 && ./target/kex_client_kyber1024 client 127.0.0.1 8090
+sleep 0 && ./target/kex_client_kyber1024poly1305 client 127.0.0.1 8091
+sleep 0 && ./target/kex_client_kyber1024gmac client 127.0.0.1 8092
+sleep 0 && ./target/kex_client_kyber1024cmac client 127.0.0.1 8093
+sleep 0 && ./target/kex_client_kyber1024kmac256 client 127.0.0.1 8094
+sleep 0 && ./target/kex_client_mceliece348864 client 127.0.0.1 8095
+sleep 0 && ./target/kex_client_mceliece348864poly1305 client 127.0.0.1 8096
+sleep 0 && ./target/kex_client_mceliece348864gmac client 127.0.0.1 8097
+sleep 0 && ./target/kex_client_mceliece348864cmac client 127.0.0.1 8098
+sleep 0 && ./target/kex_client_mceliece348864kmac256 client 127.0.0.1 8099
+sleep 0 && ./target/kex_client_mceliece460896 client 127.0.0.1 8100
+sleep 0 && ./target/kex_client_mceliece460896poly1305 client 127.0.0.1 8101
+sleep 0 && ./target/kex_client_mceliece460896gmac client 127.0.0.1 8102
+sleep 0 && ./target/kex_client_mceliece460896cmac client 127.0.0.1 8103
+sleep 0 && ./target/kex_client_mceliece460896kmac256 client 127.0.0.1 8104
+sleep 0 && ./target/kex_client_mceliece6688128 client 127.0.0.1 8105
+sleep 0 && ./target/kex_client_mceliece6688128poly1305 client 127.0.0.1 8106
+sleep 0 && ./target/kex_client_mceliece6688128gmac client 127.0.0.1 8107
+sleep 0 && ./target/kex_client_mceliece6688128cmac client 127.0.0.1 8108
+sleep 0 && ./target/kex_client_mceliece6688128kmac256 client 127.0.0.1 8109
+sleep 0 && ./target/kex_client_mceliece6960119 client 127.0.0.1 8110
+sleep 0 && ./target/kex_client_mceliece6960119poly1305 client 127.0.0.1 8111
+sleep 0 && ./target/kex_client_mceliece6960119gmac client 127.0.0.1 8112
+sleep 0 && ./target/kex_client_mceliece6960119cmac client 127.0.0.1 8113
+sleep 0 && ./target/kex_client_mceliece6960119kmac256 client 127.0.0.1 8114
+sleep 0 && ./target/kex_client_mceliece8192128 client 127.0.0.1 8115
+sleep 0 && ./target/kex_client_mceliece8192128poly1305 client 127.0.0.1 8116
+sleep 0 && ./target/kex_client_mceliece8192128gmac client 127.0.0.1 8117
+sleep 0 && ./target/kex_client_mceliece8192128cmac client 127.0.0.1 8118
+sleep 0 && ./target/kex_client_mceliece8192128kmac256 client 127.0.0.1 8119
+sleep 0 && ./target/kex_client_kyber512 all 127.0.0.1 8120
+sleep 0 && ./target/kex_client_kyber512poly1305 all 127.0.0.1 8121
+sleep 0 && ./target/kex_client_kyber512gmac all 127.0.0.1 8122
+sleep 0 && ./target/kex_client_kyber512cmac all 127.0.0.1 8123
+sleep 0 && ./target/kex_client_kyber512kmac256 all 127.0.0.1 8124
+sleep 0 && ./target/kex_client_kyber768 all 127.0.0.1 8125
+sleep 0 && ./target/kex_client_kyber768poly1305 all 127.0.0.1 8126
+sleep 0 && ./target/kex_client_kyber768gmac all 127.0.0.1 8127
+sleep 0 && ./target/kex_client_kyber768cmac all 127.0.0.1 8128
+sleep 0 && ./target/kex_client_kyber768kmac256 all 127.0.0.1 8129
+sleep 0 && ./target/kex_client_kyber1024 all 127.0.0.1 8130
+sleep 0 && ./target/kex_client_kyber1024poly1305 all 127.0.0.1 8131
+sleep 0 && ./target/kex_client_kyber1024gmac all 127.0.0.1 8132
+sleep 0 && ./target/kex_client_kyber1024cmac all 127.0.0.1 8133
+sleep 0 && ./target/kex_client_kyber1024kmac256 all 127.0.0.1 8134
+sleep 0 && ./target/kex_client_mceliece348864 all 127.0.0.1 8135
+sleep 0 && ./target/kex_client_mceliece348864poly1305 all 127.0.0.1 8136
+sleep 0 && ./target/kex_client_mceliece348864gmac all 127.0.0.1 8137
+sleep 0 && ./target/kex_client_mceliece348864cmac all 127.0.0.1 8138
+sleep 0 && ./target/kex_client_mceliece348864kmac256 all 127.0.0.1 8139
+sleep 0 && ./target/kex_client_mceliece460896 all 127.0.0.1 8140
+sleep 0 && ./target/kex_client_mceliece460896poly1305 all 127.0.0.1 8141
+sleep 0 && ./target/kex_client_mceliece460896gmac all 127.0.0.1 8142
+sleep 0 && ./target/kex_client_mceliece460896cmac all 127.0.0.1 8143
+sleep 0 && ./target/kex_client_mceliece460896kmac256 all 127.0.0.1 8144
+sleep 0 && ./target/kex_client_mceliece6688128 all 127.0.0.1 8145
+sleep 0 && ./target/kex_client_mceliece6688128poly1305 all 127.0.0.1 8146
+sleep 0 && ./target/kex_client_mceliece6688128gmac all 127.0.0.1 8147
+sleep 0 && ./target/kex_client_mceliece6688128cmac all 127.0.0.1 8148
+sleep 0 && ./target/kex_client_mceliece6688128kmac256 all 127.0.0.1 8149
+sleep 0 && ./target/kex_client_mceliece6960119 all 127.0.0.1 8150
+sleep 0 && ./target/kex_client_mceliece6960119poly1305 all 127.0.0.1 8151
+sleep 0 && ./target/kex_client_mceliece6960119gmac all 127.0.0.1 8152
+sleep 0 && ./target/kex_client_mceliece6960119cmac all 127.0.0.1 8153
+sleep 0 && ./target/kex_client_mceliece6960119kmac256 all 127.0.0.1 8154
+sleep 0 && ./target/kex_client_mceliece8192128 all 127.0.0.1 8155
+sleep 0 && ./target/kex_client_mceliece8192128poly1305 all 127.0.0.1 8156
+sleep 0 && ./target/kex_client_mceliece8192128gmac all 127.0.0.1 8157
+sleep 0 && ./target/kex_client_mceliece8192128cmac all 127.0.0.1 8158
+sleep 0 && ./target/kex_client_mceliece8192128kmac256 all 127.0.0.1 8159
