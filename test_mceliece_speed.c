@@ -8,16 +8,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-static int uint64_t_cmp(const void *a, const void *b) {
-  if (*(uint64_t *)a < *(uint64_t *)b) {
-    return -1;
-  }
-  if (*(uint64_t *)a > *(uint64_t *)b) {
-    return 1;
-  }
-  return 0;
-}
-
 /**
  * Compute the number of CPU cycles used to perform encapsulation
  */

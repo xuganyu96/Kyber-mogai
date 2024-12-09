@@ -13,6 +13,8 @@ CompileFlags:
     "-Wno-incompatible-pointer-types-discards-qualifiers",
     "-O3", 
     "-fomit-frame-pointer",
+    "-D__DEBUG__",
     "-DMAC_GMAC",
     "-DPKE_MCELIECE"
+    # "-DPKE_KYBER"
   ]

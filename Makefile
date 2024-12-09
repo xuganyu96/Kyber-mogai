@@ -65,18 +65,18 @@ EASYMCELIECESOURCES = easy-mceliece/easy-mceliece/benes.c \
 					  easy-mceliece/easy-mceliece/transpose.c \
 					  easy-mceliece/easy-mceliece/util.c
 
-SOURCES = authenticators.c etmkem.c pke.c speed.c
-HEADERS = authenticators.h etmkem.h pke.h speed.h
+SOURCES = authenticators.c etmkem.c pke.c speed.c kex.c
+HEADERS = authenticators.h etmkem.h pke.h speed.h kex.h
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
 # for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`
-CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers # -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls -Wshadow -Wpointer-arith -fomit-frame-pointer -Wno-incompatible-pointer-types
+CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types # -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls -Wshadow -Wpointer-arith -fomit-frame-pointer
 # OpenSSL library files are included using the LDFLAGS environment variable:
 # `export LDFLAGS="-L/path/to/opensl/lib $LDFLAGS"
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY: main tests test_allkems_correctness speed speed_mlkem speed_mceliece speed_etmkem
+.PHONY: main tests test_allkems_correctness speed speed_mlkem speed_mceliece speed_etmkem kex_client kex_server kex
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) main.c -o target/$@
@@ -87,6 +87,98 @@ all: tests speed
 tests: test_pke_correctness test_etmkem_correctness test_allkems_correctness
 
 speed: speed_mlkem speed_mceliece speed_etmkem
+
+kex: kex_client kex_server
+
+kex_client: $(SOURCES) $(HEADERS) kex_client.c
+	# Vanilla Kyber/ML-KEM
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 $(KYBERSOURCES) speed.c kex.c kex_client.c -o target/kex_client_kyber512
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 $(KYBERSOURCES) speed.c kex.c kex_client.c -o target/kex_client_kyber768
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 $(KYBERSOURCES) speed.c kex.c kex_client.c -o target/kex_client_kyber1024
+	# Vanilla McEliece
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 $(EASYMCELIECESOURCES) speed.c kex.c kex_client.c -o target/kex_client_mceliece348864
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 $(EASYMCELIECESOURCES) speed.c kex.c kex_client.c -o target/kex_client_mceliece460896
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 $(EASYMCELIECESOURCES) speed.c kex.c kex_client.c -o target/kex_client_mceliece6688128
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 $(EASYMCELIECESOURCES) speed.c kex.c kex_client.c -o target/kex_client_mceliece6960119
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 $(EASYMCELIECESOURCES) speed.c kex.c kex_client.c -o target/kex_client_mceliece8192128
+	# ETM-KEM
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber512poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber512gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber512cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber512kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber768poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber768gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber768cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber768kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber1024poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber1024gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber1024cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) kex_client.c -o target/kex_client_kyber1024kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece348864poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece348864gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece348864cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece348864kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece460896poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece460896gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece460896cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece460896kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6688128poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6688128gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6688128cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6688128kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6960119poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6960119gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6960119cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece6960119kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece8192128poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece8192128gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece8192128cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_client.c -o target/kex_client_mceliece8192128kmac256
+
+kex_server: $(SOURCES) $(HEADERS) kex_server.c
+	# Vanilla Kyber/ML-KEM
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 $(KYBERSOURCES) speed.c kex.c kex_server.c -o target/kex_server_kyber512
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 $(KYBERSOURCES) speed.c kex.c kex_server.c -o target/kex_server_kyber768
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 $(KYBERSOURCES) speed.c kex.c kex_server.c -o target/kex_server_kyber1024
+	# Vanilla McEliece
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 $(EASYMCELIECESOURCES) speed.c kex.c kex_server.c -o target/kex_server_mceliece348864
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 $(EASYMCELIECESOURCES) speed.c kex.c kex_server.c -o target/kex_server_mceliece460896
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 $(EASYMCELIECESOURCES) speed.c kex.c kex_server.c -o target/kex_server_mceliece6688128
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 $(EASYMCELIECESOURCES) speed.c kex.c kex_server.c -o target/kex_server_mceliece6960119
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 $(EASYMCELIECESOURCES) speed.c kex.c kex_server.c -o target/kex_server_mceliece8192128
+	# ETM-KEM
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber512poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber512gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber512cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber512kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber768poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber768gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber768cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber768kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_POLY1305 $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber1024poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_GMAC $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber1024gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_CMAC $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber1024cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 -DMAC_KMAC256 $(KYBERSOURCES) $(SOURCES) kex_server.c -o target/kex_server_kyber1024kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece348864poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece348864gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece348864cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece348864kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece460896poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece460896gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece460896cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=4608 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece460896kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6688128poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6688128gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6688128cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6688 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6688128kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6960119poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6960119gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6960119cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=6960 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece6960119kmac256
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_POLY1305 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece8192128poly1305
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece8192128gmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_CMAC $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece8192128cmac
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_KMAC256 $(EASYMCELIECESOURCES) $(SOURCES) kex_server.c -o target/kex_server_mceliece8192128kmac256
 
 # TODO: this only contains spot checks
 test_allkems_correctness: test_allkems_correctness.c
