@@ -76,7 +76,7 @@ CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers # -Wall -Wextr
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY: main tests speed speed_mlkem speed_mceliece speed_etmkem
+.PHONY: main tests test_allkems_correctness speed speed_mlkem speed_mceliece speed_etmkem
 
 main: $(SOURCES) $(HEADERS) main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) main.c -o target/$@
@@ -84,9 +84,22 @@ main: $(SOURCES) $(HEADERS) main.c
 
 all: tests speed
 
-tests: test_pke_correctness test_etmkem_correctness
+tests: test_pke_correctness test_etmkem_correctness test_allkems_correctness
 
 speed: speed_mlkem speed_mceliece speed_etmkem
+
+# TODO: this only contains spot checks
+test_allkems_correctness: test_allkems_correctness.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=2 $(KYBERSOURCES) test_allkems_correctness.c -o target/test_kyber512_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=3 $(KYBERSOURCES) test_allkems_correctness.c -o target/test_kyber768_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_KYBER -DKYBER_K=4 $(KYBERSOURCES) test_allkems_correctness.c -o target/test_kyber1024_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=3488 $(EASYMCELIECESOURCES) test_allkems_correctness.c -o target/test_mceliece348864_correctness
+	$(CC) $(CFLAGS) $(LDFLAGS) -DPKE_MCELIECE -DMCELIECE_N=8192 -DMAC_GMAC $(EASYMCELIECESOURCES) $(SOURCES) test_allkems_correctness.c -o target/test_mceliece8192128gmac_correctness
+	./target/test_kyber512_correctness
+	./target/test_kyber768_correctness
+	./target/test_kyber1024_correctness
+	./target/test_mceliece348864_correctness
+	./target/test_mceliece8192128gmac_correctness
 
 test_pke_correctness: $(SOURCES) $(HEADERS) test_pke_correctness.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(KYBERSOURCES) pke.c -DPKE_KYBER -DKYBER_K=2 test_pke_correctness.c -o target/test_pke_kyber512_correctness
