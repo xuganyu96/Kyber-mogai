@@ -1,5 +1,6 @@
 #include "kex.h"
 #include "allkems.h"
+#include "speed.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdint.h>
@@ -18,7 +19,7 @@
 size_t read_exact(int stream, uint8_t *buf, size_t buflen) {
   size_t received = 0;
   while (received < buflen) {
-    size_t rxlen = read(stream, buf, buflen - received);
+    size_t rxlen = read(stream, buf + received, buflen - received);
     if (rxlen == 0) {
       fprintf(stderr, "Connection dropped unexpectedly\n");
       exit(EXIT_FAILURE);
@@ -135,11 +136,23 @@ int server_handle(int stream, uint8_t *sk_server, uint8_t *pk_client,
   keccak_state state;
   shake256_init(&state);
   shake256_absorb(&state, ss_e, KEM_BYTES);
+#ifdef __DEBUG__
+  printf("ss_e: ");
+  println_hexstr(ss_e, KEM_BYTES);
+#endif
   if (ss_server_auth_len == KEM_BYTES) {
     shake256_absorb(&state, ss_server_auth, KEM_BYTES);
+#ifdef __DEBUG__
+    printf("ss_server_auth: ");
+    println_hexstr(ss_server_auth, KEM_BYTES);
+#endif
   }
   if (ss_client_auth_len == KEM_BYTES) {
     shake256_absorb(&state, ss_client_auth, KEM_BYTES);
+#ifdef __DEBUG__
+    printf("ss_client_auth: ");
+    println_hexstr(ss_client_auth, KEM_BYTES);
+#endif
   }
   shake256_finalize(&state);
   shake256_squeeze(session_key, session_key_len, &state);
@@ -218,7 +231,7 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
 
   // Process server response
   kem_dec(ss_e, ct_e, sk_e);
-  if (ct_client_auth_len == KEM_CIPHERTEXTBYTES) {
+  if (sk_client) {
     kem_dec(ss_client_auth, ct_client_auth, sk_client);
     ss_client_auth_len = KEM_BYTES;
   }
@@ -227,11 +240,23 @@ int client_handle(int stream, uint8_t *sk_client, uint8_t *pk_server,
   keccak_state state;
   shake256_init(&state);
   shake256_absorb(&state, ss_e, KEM_BYTES);
+#ifdef __DEBUG__
+  printf("ss_e: ");
+  println_hexstr(ss_e, KEM_BYTES);
+#endif
   if (ss_server_auth_len == KEM_BYTES) {
     shake256_absorb(&state, ss_server_auth, KEM_BYTES);
+#ifdef __DEBUG__
+    printf("ss_server_auth: ");
+    println_hexstr(ss_server_auth, KEM_BYTES);
+#endif
   }
   if (ss_client_auth_len == KEM_BYTES) {
     shake256_absorb(&state, ss_client_auth, KEM_BYTES);
+#ifdef __DEBUG__
+    printf("ss_client_auth: ");
+    println_hexstr(ss_client_auth, KEM_BYTES);
+#endif
   }
   shake256_finalize(&state);
   shake256_squeeze(session_key, session_key_len, &state);
