@@ -70,7 +70,7 @@ HEADERS = authenticators.h etmkem.h pke.h speed.h kex.h
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
 # for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`
-CFLAGS += -D__DEBUG__ -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types # -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls -Wshadow -Wpointer-arith -fomit-frame-pointer
+CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types # -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls -Wshadow -Wpointer-arith -fomit-frame-pointer
 # OpenSSL library files are included using the LDFLAGS environment variable:
 # `export LDFLAGS="-L/path/to/opensl/lib $LDFLAGS"
 LDFLAGS += -lcrypto

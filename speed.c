@@ -78,7 +78,7 @@ void println_medium_from_timestamps(char *prefix, uint64_t *tsarr,
     medium = (durs[durslen / 2 - 1] + durs[durslen / 2]) / 2;
   }
 
-  printf("%32s medium: %16llu\n", prefix, medium);
+  printf("%-32s medium: %16llu\n", prefix, medium);
 }
 
 void println_hexstr(uint8_t *bytes, size_t byteslen) {
