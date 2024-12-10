@@ -82,7 +82,7 @@ CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompati
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY: tests test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness test_pke_speed test_kem_speed test_kyber_kem_speed test_mceliece_kem_speed test_etmkem_speed kex run_all_kex_clients run_all_kex_servers
+.PHONY: tests test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness speed test_pke_speed test_kem_speed test_kyber_kem_speed test_mceliece_kem_speed test_etmkem_speed kex run_all_kex_clients run_all_kex_servers 
 
 tests: test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness
 
@@ -483,6 +483,8 @@ target/test_mceliece6960119fkmac256_kem_correctness: $(MCELIECESOURCES) $(MCELIE
 
 target/test_mceliece8192128fkmac256_kem_correctness: $(MCELIECESOURCES) $(MCELIECEHEADERS) $(ETMKEMSOURCES) $(ETMKEMHEADERS) test_kem_correctness.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN $(MCELIECESOURCES) $(ETMKEMSOURCES) test_kem_correctness.c -o $@
+
+speed: test_pke_speed test_kem_speed
 
 test_pke_speed: \
 	target/test_kyber512_pke_speed \
