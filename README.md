@@ -3,6 +3,7 @@ TODO:
     - test PKE, KEM correctness
     - test PKE, KEM speed
     - build kex and run kex in Makefile, not separate shell script
+- write a modified ETM-KEM in which the KEM public key additionally contains a hash of the PKE public key
 
 # Faster generic IND-CCA secure KEM using encrypt-then-MAC
 This is the accompanying source code for the paper titled _Faster generic IND-CCA secure KEM using encrypt-then-MAC_.
