@@ -1,3 +1,9 @@
+TODO:
+- write a script `makefilegen.py` that generates the Makefile
+    - test PKE, KEM correctness
+    - test PKE, KEM speed
+    - build kex and run kex in Makefile, not separate shell script
+
 # Faster generic IND-CCA secure KEM using encrypt-then-MAC
 This is the accompanying source code for the paper titled _Faster generic IND-CCA secure KEM using encrypt-then-MAC_.
 
