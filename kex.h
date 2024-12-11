@@ -3,7 +3,7 @@
  */
 #include "allkems.h"
 
-#define KEX_ROUNDS 5
+#define KEX_ROUNDS 100
 #define MAX_HOSTNAME_LEN 256
 #define AUTH_NONE 0
 #define AUTH_SERVER 1
