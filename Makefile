@@ -82,7 +82,7 @@ CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompati
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY: tests test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness speed test_pke_speed test_kem_speed test_kyber_kem_speed test_mceliece_kem_speed test_etmkem_speed kex run_kex_cients_all run_kex_clients_auth_none run_kex_clients_auth_server run_kex_clients_auth_all run_kex_servers_all run_kex_servers_auth_none run_kex_servers_auth_server run_kex_servers_auth_all
+.PHONY: tests test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness speed test_pke_speed test_kem_speed test_kyber_kem_speed test_mceliece_kem_speed test_etmkem_speed kex run_kex_clients_all run_kex_clients_auth_none run_kex_clients_auth_server run_kex_clients_auth_all run_kex_servers_all run_kex_servers_auth_none run_kex_servers_auth_server run_kex_servers_auth_all
 
 tests: test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness
 
@@ -892,7 +892,7 @@ target/test_mceliece8192128fkmac256_kem_speed: $(MCELIECESOURCES) $(MCELIECEHEAD
 
 # key exchange clients need to know where the server is:
 server_name := 127.0.0.1
-run_kex_cients_all: run_kex_clients_auth_none run_kex_clients_auth_server run_kex_clients_auth_all
+run_kex_clients_all: run_kex_clients_auth_none run_kex_clients_auth_server run_kex_clients_auth_all
 
 run_kex_clients_auth_none: kex
 	sleep 1 && ./target/kex_kyber512_client none $(server_name) 8000
