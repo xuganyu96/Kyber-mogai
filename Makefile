@@ -82,7 +82,7 @@ CFLAGS += -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompati
 LDFLAGS += -lcrypto
 
 # phony targets will be rerun everytime even if the input files did not change
-.PHONY: tests test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness speed test_pke_speed test_kem_speed test_kyber_kem_speed test_mceliece_kem_speed test_etmkem_speed kex run_all_kex_clients run_all_kex_servers 
+.PHONY: tests test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness speed test_pke_speed test_kem_speed test_kyber_kem_speed test_mceliece_kem_speed test_etmkem_speed kex run_kex_cients_all run_kex_clients_auth_none run_kex_clients_auth_server run_kex_clients_auth_all run_kex_servers_all run_kex_servers_auth_none run_kex_servers_auth_server run_kex_servers_auth_all
 
 tests: test_pke_correctness test_kyber_kem_correctness test_mceliece_kem_correctness test_etmkem_correctness
 
@@ -892,8 +892,9 @@ target/test_mceliece8192128fkmac256_kem_speed: $(MCELIECESOURCES) $(MCELIECEHEAD
 
 # key exchange clients need to know where the server is:
 server_name := 127.0.0.1
-run_all_kex_clients: kex
-	@echo key exchange clients will connect to $(server_name)
+run_kex_cients_all: run_kex_clients_auth_none run_kex_clients_auth_server run_kex_clients_auth_all
+
+run_kex_clients_auth_none: kex
 	sleep 1 && ./target/kex_kyber512_client none $(server_name) 8000
 	sleep 1 && ./target/kex_kyber768_client none $(server_name) 8001
 	sleep 1 && ./target/kex_kyber1024_client none $(server_name) 8002
@@ -959,71 +960,75 @@ run_all_kex_clients: kex
 	sleep 1 && ./target/kex_mceliece6688128fkmac256_client none $(server_name) 8062
 	sleep 1 && ./target/kex_mceliece6960119fkmac256_client none $(server_name) 8063
 	sleep 1 && ./target/kex_mceliece8192128fkmac256_client none $(server_name) 8064
-	sleep 1 && ./target/kex_kyber512_client client $(server_name) 8065
-	sleep 1 && ./target/kex_kyber768_client client $(server_name) 8066
-	sleep 1 && ./target/kex_kyber1024_client client $(server_name) 8067
-	sleep 1 && ./target/kex_mceliece348864_client client $(server_name) 8068
-	sleep 1 && ./target/kex_mceliece460896_client client $(server_name) 8069
-	sleep 1 && ./target/kex_mceliece6688128_client client $(server_name) 8070
-	sleep 1 && ./target/kex_mceliece6960119_client client $(server_name) 8071
-	sleep 1 && ./target/kex_mceliece8192128_client client $(server_name) 8072
-	sleep 1 && ./target/kex_mceliece348864f_client client $(server_name) 8073
-	sleep 1 && ./target/kex_mceliece460896f_client client $(server_name) 8074
-	sleep 1 && ./target/kex_mceliece6688128f_client client $(server_name) 8075
-	sleep 1 && ./target/kex_mceliece6960119f_client client $(server_name) 8076
-	sleep 1 && ./target/kex_mceliece8192128f_client client $(server_name) 8077
-	sleep 1 && ./target/kex_kyber512poly1305_client client $(server_name) 8078
-	sleep 1 && ./target/kex_kyber768poly1305_client client $(server_name) 8079
-	sleep 1 && ./target/kex_kyber1024poly1305_client client $(server_name) 8080
-	sleep 1 && ./target/kex_mceliece348864poly1305_client client $(server_name) 8081
-	sleep 1 && ./target/kex_mceliece460896poly1305_client client $(server_name) 8082
-	sleep 1 && ./target/kex_mceliece6688128poly1305_client client $(server_name) 8083
-	sleep 1 && ./target/kex_mceliece6960119poly1305_client client $(server_name) 8084
-	sleep 1 && ./target/kex_mceliece8192128poly1305_client client $(server_name) 8085
-	sleep 1 && ./target/kex_mceliece348864fpoly1305_client client $(server_name) 8086
-	sleep 1 && ./target/kex_mceliece460896fpoly1305_client client $(server_name) 8087
-	sleep 1 && ./target/kex_mceliece6688128fpoly1305_client client $(server_name) 8088
-	sleep 1 && ./target/kex_mceliece6960119fpoly1305_client client $(server_name) 8089
-	sleep 1 && ./target/kex_mceliece8192128fpoly1305_client client $(server_name) 8090
-	sleep 1 && ./target/kex_kyber512gmac_client client $(server_name) 8091
-	sleep 1 && ./target/kex_kyber768gmac_client client $(server_name) 8092
-	sleep 1 && ./target/kex_kyber1024gmac_client client $(server_name) 8093
-	sleep 1 && ./target/kex_mceliece348864gmac_client client $(server_name) 8094
-	sleep 1 && ./target/kex_mceliece460896gmac_client client $(server_name) 8095
-	sleep 1 && ./target/kex_mceliece6688128gmac_client client $(server_name) 8096
-	sleep 1 && ./target/kex_mceliece6960119gmac_client client $(server_name) 8097
-	sleep 1 && ./target/kex_mceliece8192128gmac_client client $(server_name) 8098
-	sleep 1 && ./target/kex_mceliece348864fgmac_client client $(server_name) 8099
-	sleep 1 && ./target/kex_mceliece460896fgmac_client client $(server_name) 8100
-	sleep 1 && ./target/kex_mceliece6688128fgmac_client client $(server_name) 8101
-	sleep 1 && ./target/kex_mceliece6960119fgmac_client client $(server_name) 8102
-	sleep 1 && ./target/kex_mceliece8192128fgmac_client client $(server_name) 8103
-	sleep 1 && ./target/kex_kyber512cmac_client client $(server_name) 8104
-	sleep 1 && ./target/kex_kyber768cmac_client client $(server_name) 8105
-	sleep 1 && ./target/kex_kyber1024cmac_client client $(server_name) 8106
-	sleep 1 && ./target/kex_mceliece348864cmac_client client $(server_name) 8107
-	sleep 1 && ./target/kex_mceliece460896cmac_client client $(server_name) 8108
-	sleep 1 && ./target/kex_mceliece6688128cmac_client client $(server_name) 8109
-	sleep 1 && ./target/kex_mceliece6960119cmac_client client $(server_name) 8110
-	sleep 1 && ./target/kex_mceliece8192128cmac_client client $(server_name) 8111
-	sleep 1 && ./target/kex_mceliece348864fcmac_client client $(server_name) 8112
-	sleep 1 && ./target/kex_mceliece460896fcmac_client client $(server_name) 8113
-	sleep 1 && ./target/kex_mceliece6688128fcmac_client client $(server_name) 8114
-	sleep 1 && ./target/kex_mceliece6960119fcmac_client client $(server_name) 8115
-	sleep 1 && ./target/kex_mceliece8192128fcmac_client client $(server_name) 8116
-	sleep 1 && ./target/kex_kyber512kmac256_client client $(server_name) 8117
-	sleep 1 && ./target/kex_kyber768kmac256_client client $(server_name) 8118
-	sleep 1 && ./target/kex_kyber1024kmac256_client client $(server_name) 8119
-	sleep 1 && ./target/kex_mceliece348864kmac256_client client $(server_name) 8120
-	sleep 1 && ./target/kex_mceliece460896kmac256_client client $(server_name) 8121
-	sleep 1 && ./target/kex_mceliece6688128kmac256_client client $(server_name) 8122
-	sleep 1 && ./target/kex_mceliece6960119kmac256_client client $(server_name) 8123
-	sleep 1 && ./target/kex_mceliece8192128kmac256_client client $(server_name) 8124
-	sleep 1 && ./target/kex_mceliece348864fkmac256_client client $(server_name) 8125
-	sleep 1 && ./target/kex_mceliece460896fkmac256_client client $(server_name) 8126
-	sleep 1 && ./target/kex_mceliece6688128fkmac256_client client $(server_name) 8127
-	sleep 1 && ./target/kex_mceliece6960119fkmac256_client client $(server_name) 8128
-	sleep 1 && ./target/kex_mceliece8192128fkmac256_client client $(server_name) 8129
+
+run_kex_clients_auth_server: kex
+	sleep 1 && ./target/kex_kyber512_client server $(server_name) 8065
+	sleep 1 && ./target/kex_kyber768_client server $(server_name) 8066
+	sleep 1 && ./target/kex_kyber1024_client server $(server_name) 8067
+	sleep 1 && ./target/kex_mceliece348864_client server $(server_name) 8068
+	sleep 1 && ./target/kex_mceliece460896_client server $(server_name) 8069
+	sleep 1 && ./target/kex_mceliece6688128_client server $(server_name) 8070
+	sleep 1 && ./target/kex_mceliece6960119_client server $(server_name) 8071
+	sleep 1 && ./target/kex_mceliece8192128_client server $(server_name) 8072
+	sleep 1 && ./target/kex_mceliece348864f_client server $(server_name) 8073
+	sleep 1 && ./target/kex_mceliece460896f_client server $(server_name) 8074
+	sleep 1 && ./target/kex_mceliece6688128f_client server $(server_name) 8075
+	sleep 1 && ./target/kex_mceliece6960119f_client server $(server_name) 8076
+	sleep 1 && ./target/kex_mceliece8192128f_client server $(server_name) 8077
+	sleep 1 && ./target/kex_kyber512poly1305_client server $(server_name) 8078
+	sleep 1 && ./target/kex_kyber768poly1305_client server $(server_name) 8079
+	sleep 1 && ./target/kex_kyber1024poly1305_client server $(server_name) 8080
+	sleep 1 && ./target/kex_mceliece348864poly1305_client server $(server_name) 8081
+	sleep 1 && ./target/kex_mceliece460896poly1305_client server $(server_name) 8082
+	sleep 1 && ./target/kex_mceliece6688128poly1305_client server $(server_name) 8083
+	sleep 1 && ./target/kex_mceliece6960119poly1305_client server $(server_name) 8084
+	sleep 1 && ./target/kex_mceliece8192128poly1305_client server $(server_name) 8085
+	sleep 1 && ./target/kex_mceliece348864fpoly1305_client server $(server_name) 8086
+	sleep 1 && ./target/kex_mceliece460896fpoly1305_client server $(server_name) 8087
+	sleep 1 && ./target/kex_mceliece6688128fpoly1305_client server $(server_name) 8088
+	sleep 1 && ./target/kex_mceliece6960119fpoly1305_client server $(server_name) 8089
+	sleep 1 && ./target/kex_mceliece8192128fpoly1305_client server $(server_name) 8090
+	sleep 1 && ./target/kex_kyber512gmac_client server $(server_name) 8091
+	sleep 1 && ./target/kex_kyber768gmac_client server $(server_name) 8092
+	sleep 1 && ./target/kex_kyber1024gmac_client server $(server_name) 8093
+	sleep 1 && ./target/kex_mceliece348864gmac_client server $(server_name) 8094
+	sleep 1 && ./target/kex_mceliece460896gmac_client server $(server_name) 8095
+	sleep 1 && ./target/kex_mceliece6688128gmac_client server $(server_name) 8096
+	sleep 1 && ./target/kex_mceliece6960119gmac_client server $(server_name) 8097
+	sleep 1 && ./target/kex_mceliece8192128gmac_client server $(server_name) 8098
+	sleep 1 && ./target/kex_mceliece348864fgmac_client server $(server_name) 8099
+	sleep 1 && ./target/kex_mceliece460896fgmac_client server $(server_name) 8100
+	sleep 1 && ./target/kex_mceliece6688128fgmac_client server $(server_name) 8101
+	sleep 1 && ./target/kex_mceliece6960119fgmac_client server $(server_name) 8102
+	sleep 1 && ./target/kex_mceliece8192128fgmac_client server $(server_name) 8103
+	sleep 1 && ./target/kex_kyber512cmac_client server $(server_name) 8104
+	sleep 1 && ./target/kex_kyber768cmac_client server $(server_name) 8105
+	sleep 1 && ./target/kex_kyber1024cmac_client server $(server_name) 8106
+	sleep 1 && ./target/kex_mceliece348864cmac_client server $(server_name) 8107
+	sleep 1 && ./target/kex_mceliece460896cmac_client server $(server_name) 8108
+	sleep 1 && ./target/kex_mceliece6688128cmac_client server $(server_name) 8109
+	sleep 1 && ./target/kex_mceliece6960119cmac_client server $(server_name) 8110
+	sleep 1 && ./target/kex_mceliece8192128cmac_client server $(server_name) 8111
+	sleep 1 && ./target/kex_mceliece348864fcmac_client server $(server_name) 8112
+	sleep 1 && ./target/kex_mceliece460896fcmac_client server $(server_name) 8113
+	sleep 1 && ./target/kex_mceliece6688128fcmac_client server $(server_name) 8114
+	sleep 1 && ./target/kex_mceliece6960119fcmac_client server $(server_name) 8115
+	sleep 1 && ./target/kex_mceliece8192128fcmac_client server $(server_name) 8116
+	sleep 1 && ./target/kex_kyber512kmac256_client server $(server_name) 8117
+	sleep 1 && ./target/kex_kyber768kmac256_client server $(server_name) 8118
+	sleep 1 && ./target/kex_kyber1024kmac256_client server $(server_name) 8119
+	sleep 1 && ./target/kex_mceliece348864kmac256_client server $(server_name) 8120
+	sleep 1 && ./target/kex_mceliece460896kmac256_client server $(server_name) 8121
+	sleep 1 && ./target/kex_mceliece6688128kmac256_client server $(server_name) 8122
+	sleep 1 && ./target/kex_mceliece6960119kmac256_client server $(server_name) 8123
+	sleep 1 && ./target/kex_mceliece8192128kmac256_client server $(server_name) 8124
+	sleep 1 && ./target/kex_mceliece348864fkmac256_client server $(server_name) 8125
+	sleep 1 && ./target/kex_mceliece460896fkmac256_client server $(server_name) 8126
+	sleep 1 && ./target/kex_mceliece6688128fkmac256_client server $(server_name) 8127
+	sleep 1 && ./target/kex_mceliece6960119fkmac256_client server $(server_name) 8128
+	sleep 1 && ./target/kex_mceliece8192128fkmac256_client server $(server_name) 8129
+
+run_kex_clients_auth_all: kex
 	sleep 1 && ./target/kex_kyber512_client all $(server_name) 8130
 	sleep 1 && ./target/kex_kyber768_client all $(server_name) 8131
 	sleep 1 && ./target/kex_kyber1024_client all $(server_name) 8132
@@ -1090,7 +1095,9 @@ run_all_kex_clients: kex
 	sleep 1 && ./target/kex_mceliece6960119fkmac256_client all $(server_name) 8193
 	sleep 1 && ./target/kex_mceliece8192128fkmac256_client all $(server_name) 8194
 
-run_all_kex_servers: kex
+run_kex_servers_all: run_kex_servers_auth_none run_kex_servers_auth_server run_kex_servers_auth_all
+
+run_kex_servers_auth_none: kex
 	target/kex_kyber512_server none 127.0.0.1 8000
 	target/kex_kyber768_server none 127.0.0.1 8001
 	target/kex_kyber1024_server none 127.0.0.1 8002
@@ -1156,6 +1163,8 @@ run_all_kex_servers: kex
 	target/kex_mceliece6688128fkmac256_server none 127.0.0.1 8062
 	target/kex_mceliece6960119fkmac256_server none 127.0.0.1 8063
 	target/kex_mceliece8192128fkmac256_server none 127.0.0.1 8064
+
+run_kex_servers_auth_server: kex
 	target/kex_kyber512_server server 127.0.0.1 8065
 	target/kex_kyber768_server server 127.0.0.1 8066
 	target/kex_kyber1024_server server 127.0.0.1 8067
@@ -1221,6 +1230,8 @@ run_all_kex_servers: kex
 	target/kex_mceliece6688128fkmac256_server server 127.0.0.1 8127
 	target/kex_mceliece6960119fkmac256_server server 127.0.0.1 8128
 	target/kex_mceliece8192128fkmac256_server server 127.0.0.1 8129
+
+run_kex_servers_auth_all: kex
 	target/kex_kyber512_server all 127.0.0.1 8130
 	target/kex_kyber768_server all 127.0.0.1 8131
 	target/kex_kyber1024_server all 127.0.0.1 8132
