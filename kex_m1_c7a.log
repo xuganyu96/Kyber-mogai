@@ -1,0 +1,394 @@
+key exchange clients will connect to 35.90.207.39
+sleep 1 && ./target/kex_kyber512_client none 35.90.207.39 8000
+./target/kex_kyber512_client
+Connected to 35.90.207.39:8000
+Client kex:                      medium:            99211
+Client finished key exchange
+Session key: 0x7EE347CC11B2C7072FB7EC34386089095EAC5DD915E8AF2BE396AAAF709FE5A3
+sleep 1 && ./target/kex_kyber768_client none 35.90.207.39 8001
+./target/kex_kyber768_client
+Connected to 35.90.207.39:8001
+Client kex:                      medium:            90388
+Client finished key exchange
+Session key: 0x66B15AAC7528088F3BEED5A7B3A2A13E7052D6303777C58CDC9AB05184864258
+sleep 1 && ./target/kex_kyber1024_client none 35.90.207.39 8002
+./target/kex_kyber1024_client
+Connected to 35.90.207.39:8002
+Client kex:                      medium:            79104
+Client finished key exchange
+Session key: 0x7715A43B5BCDC409D10C482F5F953C32F299DDACCF4AAF077310F62FD6A931F4
+sleep 1 && ./target/kex_mceliece348864_client none 35.90.207.39 8003
+./target/kex_mceliece348864_client
+Connected to 35.90.207.39:8003
+Client kex:                      medium:           194915
+Client finished key exchange
+Session key: 0x270EEC4B5DA8A21AC2F58C77C4ECDF296AA918614A1B2A97556B1930A6E1CE34
+sleep 1 && ./target/kex_mceliece460896_client none 35.90.207.39 8004
+./target/kex_mceliece460896_client
+Connected to 35.90.207.39:8004
+Client kex:                      medium:           317645
+Client finished key exchange
+Session key: 0x8A2660CBCE07220428667A5C8DAF3010DCCC36F9A5DE3A992840AE6D20656D35
+sleep 1 && ./target/kex_mceliece6688128_client none 35.90.207.39 8005
+./target/kex_mceliece6688128_client
+Connected to 35.90.207.39:8005
+Client kex:                      medium:           655562
+Client finished key exchange
+Session key: 0x6A5081FEABE71D3432ECF482B928A645F7DBC8CB365524E7073BB646DE154E22
+sleep 1 && ./target/kex_mceliece6960119_client none 35.90.207.39 8006
+./target/kex_mceliece6960119_client
+Connected to 35.90.207.39:8006
+Client kex:                      medium:           627078
+Client finished key exchange
+Session key: 0x4711BDB0B3ADD3B3B327B69074C04BC1BBDFE77D229C5DF59B4F1A3CD1453F07
+sleep 1 && ./target/kex_mceliece8192128_client none 35.90.207.39 8007
+./target/kex_mceliece8192128_client
+Connected to 35.90.207.39:8007
+Client kex:                      medium:           762424
+Client finished key exchange
+Session key: 0x53B76A583518FB6576B65CDC0E29B7B22DD8D836D83FC0221DEE772D7CBE1B2C
+sleep 1 && ./target/kex_mceliece348864f_client none 35.90.207.39 8008
+./target/kex_mceliece348864f_client
+Connected to 35.90.207.39:8008
+Client kex:                      medium:           163860
+Client finished key exchange
+Session key: 0x2DF2D2CB260F99EBDA0625CBEB0D6B1B4EB0E2494ECAA14C817C8E14C4AEDF37
+sleep 1 && ./target/kex_mceliece460896f_client none 35.90.207.39 8009
+./target/kex_mceliece460896f_client
+Connected to 35.90.207.39:8009
+Client kex:                      medium:           257839
+Client finished key exchange
+Session key: 0xBB65AD3CAA8BD2625B680F07E837685EEDDC908FEE9277AEB7DC7EE1EB419562
+sleep 1 && ./target/kex_mceliece6688128f_client none 35.90.207.39 8010
+./target/kex_mceliece6688128f_client
+Connected to 35.90.207.39:8010
+Client kex:                      medium:           523513
+Client finished key exchange
+Session key: 0x377CB6BD31B083B336A7FDFF4D94C27C16EAD70CF54033BD99894F308CC1E221
+sleep 1 && ./target/kex_mceliece6960119f_client none 35.90.207.39 8011
+./target/kex_mceliece6960119f_client
+Connected to 35.90.207.39:8011
+Client kex:                      medium:           454101
+Client finished key exchange
+Session key: 0x724E678442161BD070244B66AF4A45D06ED5C2059C96D97AC2202CEC0268F2FC
+sleep 1 && ./target/kex_mceliece8192128f_client none 35.90.207.39 8012
+./target/kex_mceliece8192128f_client
+Connected to 35.90.207.39:8012
+Client kex:                      medium:           525928
+Client finished key exchange
+Session key: 0x48A8E51B491E64B2C50EB6DEEA7D9E2489B59991970E0264FE4B41B2CB58DF76
+sleep 1 && ./target/kex_kyber512poly1305_client none 35.90.207.39 8013
+./target/kex_kyber512poly1305_client
+Connected to 35.90.207.39:8013
+Client kex:                      medium:            81054
+Client finished key exchange
+Session key: 0x770C33C09F358A4897E44FAA0E81B743179ED55E29606C243E1F789E9C81BA0B
+sleep 1 && ./target/kex_kyber768poly1305_client none 35.90.207.39 8014
+./target/kex_kyber768poly1305_client
+Connected to 35.90.207.39:8014
+Client kex:                      medium:            80943
+Client finished key exchange
+Session key: 0xEB2A5F25C791A247D3C562222E9E858EDA66C823EFFAD32BE5E13998BAD7DE10
+sleep 1 && ./target/kex_kyber1024poly1305_client none 35.90.207.39 8015
+./target/kex_kyber1024poly1305_client
+Connected to 35.90.207.39:8015
+Client kex:                      medium:            77293
+Client finished key exchange
+Session key: 0x0DB5F42C09D41F2B96D0E5844C787F1BFE6B9F54E1DFEA283A23C9195BB2BD9A
+sleep 1 && ./target/kex_mceliece348864poly1305_client none 35.90.207.39 8016
+./target/kex_mceliece348864poly1305_client
+Connected to 35.90.207.39:8016
+Client kex:                      medium:           208243
+Client finished key exchange
+Session key: 0x700C1B316D9464A5BD2E157964DCD668C7940286E3B55453D7F1D29F52A49334
+sleep 1 && ./target/kex_mceliece460896poly1305_client none 35.90.207.39 8017
+./target/kex_mceliece460896poly1305_client
+Connected to 35.90.207.39:8017
+Client kex:                      medium:           363680
+Client finished key exchange
+Session key: 0x2ED53F6E4947CD8698C233F9C6E7ED76DDD0D091A8084ADE428D923D008ACC47
+sleep 1 && ./target/kex_mceliece6688128poly1305_client none 35.90.207.39 8018
+./target/kex_mceliece6688128poly1305_client
+Connected to 35.90.207.39:8018
+Client kex:                      medium:           638541
+Client finished key exchange
+Session key: 0x5687F040BCC51DAE48829C8CD8F3595BE8D1C11FB7353620728F5088344F8389
+sleep 1 && ./target/kex_mceliece6960119poly1305_client none 35.90.207.39 8019
+./target/kex_mceliece6960119poly1305_client
+Connected to 35.90.207.39:8019
+Client kex:                      medium:           601271
+Client finished key exchange
+Session key: 0x36A9720FA68454F73B098B04D1293D9B8AC148825882C3B8AAC861C9C2DE038E
+sleep 1 && ./target/kex_mceliece8192128poly1305_client none 35.90.207.39 8020
+./target/kex_mceliece8192128poly1305_client
+Connected to 35.90.207.39:8020
+Client kex:                      medium:           729128
+Client finished key exchange
+Session key: 0xB7EBE2BCD849AB386E58BD7B35247DBBDEDE25E06ACB9FE7F5A6672041DF0A11
+sleep 1 && ./target/kex_mceliece348864fpoly1305_client none 35.90.207.39 8021
+./target/kex_mceliece348864fpoly1305_client
+Connected to 35.90.207.39:8021
+Client kex:                      medium:           158594
+Client finished key exchange
+Session key: 0xF4996391687F8A997477D4B28E3FE1A06F176C3241095A166FB715C7A7C1BDAA
+sleep 1 && ./target/kex_mceliece460896fpoly1305_client none 35.90.207.39 8022
+./target/kex_mceliece460896fpoly1305_client
+Connected to 35.90.207.39:8022
+Client kex:                      medium:           252736
+Client finished key exchange
+Session key: 0x66FD57A0EE869EF37D3DBACBE3A3202001C5092D0BEC3C6020DCCE9090BDFB85
+sleep 1 && ./target/kex_mceliece6688128fpoly1305_client none 35.90.207.39 8023
+./target/kex_mceliece6688128fpoly1305_client
+Connected to 35.90.207.39:8023
+Client kex:                      medium:           401521
+Client finished key exchange
+Session key: 0x73B247BE0156C30C73AD1B1982DA8F90BE7E87F6FA3A50EB981319787B614FE4
+sleep 1 && ./target/kex_mceliece6960119fpoly1305_client none 35.90.207.39 8024
+./target/kex_mceliece6960119fpoly1305_client
+Connected to 35.90.207.39:8024
+Client kex:                      medium:           396966
+Client finished key exchange
+Session key: 0x95B81C82334DF2EABCAA94AA232465346897581EB8DFD7AB2D344DF5331597E9
+sleep 1 && ./target/kex_mceliece8192128fpoly1305_client none 35.90.207.39 8025
+./target/kex_mceliece8192128fpoly1305_client
+Connected to 35.90.207.39:8025
+Client kex:                      medium:           521873
+Client finished key exchange
+Session key: 0xD8274687ABB0CEAF41FEE81CE4714E8F72946634EC9EB593A630B541BFC5FDCB
+sleep 1 && ./target/kex_kyber512gmac_client none 35.90.207.39 8026
+./target/kex_kyber512gmac_client
+Connected to 35.90.207.39:8026
+Client kex:                      medium:            77036
+Client finished key exchange
+Session key: 0x815E6C7377FFEE6C266B09909796D767BA4B8287E62BCD49907FCE788E5C1A7C
+sleep 1 && ./target/kex_kyber768gmac_client none 35.90.207.39 8027
+./target/kex_kyber768gmac_client
+Connected to 35.90.207.39:8027
+Client kex:                      medium:            82998
+Client finished key exchange
+Session key: 0xF426CD0EC3601616B7E3E81A95DE5C4FC86D5212CEC97869BB0283A5F928ABF9
+sleep 1 && ./target/kex_kyber1024gmac_client none 35.90.207.39 8028
+./target/kex_kyber1024gmac_client
+Connected to 35.90.207.39:8028
+Client kex:                      medium:            81358
+Client finished key exchange
+Session key: 0xC7E304FC9E9EFA379C50A1F136EE07B50501F63F8C6694DFB277AFA54D0C2E49
+sleep 1 && ./target/kex_mceliece348864gmac_client none 35.90.207.39 8029
+./target/kex_mceliece348864gmac_client
+Connected to 35.90.207.39:8029
+Client kex:                      medium:           199997
+Client finished key exchange
+Session key: 0x1CCFD6C8782DFA7E101901A073B084EC14BD644131591232052F0D663F974F71
+sleep 1 && ./target/kex_mceliece460896gmac_client none 35.90.207.39 8030
+./target/kex_mceliece460896gmac_client
+Connected to 35.90.207.39:8030
+Client kex:                      medium:           323439
+Client finished key exchange
+Session key: 0x9E99A9ADB1889769D14292F2ABF3339CC34853925841E110C93E4ABCEF25ABC7
+sleep 1 && ./target/kex_mceliece6688128gmac_client none 35.90.207.39 8031
+./target/kex_mceliece6688128gmac_client
+Connected to 35.90.207.39:8031
+Client kex:                      medium:           630768
+Client finished key exchange
+Session key: 0x50FF5B230B8B343E1818446B5465D26B9891043ABA0E7C42E982F4C8FB171502
+sleep 1 && ./target/kex_mceliece6960119gmac_client none 35.90.207.39 8032
+./target/kex_mceliece6960119gmac_client
+Connected to 35.90.207.39:8032
+Client kex:                      medium:           595648
+Client finished key exchange
+Session key: 0x2B4EAEF30D838333D57661C9D4C08A3C83BE8FD436448C199571F2B73CDD8133
+sleep 1 && ./target/kex_mceliece8192128gmac_client none 35.90.207.39 8033
+./target/kex_mceliece8192128gmac_client
+Connected to 35.90.207.39:8033
+Client kex:                      medium:           721446
+Client finished key exchange
+Session key: 0x4ABC1DE4B822C2724B185BD951FD9DC5CC42C874E8A931B5158FCFD70A3D6F46
+sleep 1 && ./target/kex_mceliece348864fgmac_client none 35.90.207.39 8034
+./target/kex_mceliece348864fgmac_client
+Connected to 35.90.207.39:8034
+Client kex:                      medium:           161167
+Client finished key exchange
+Session key: 0x17A2629AF5032FCA701801D187E319EFA99E3B4B2D53B82B45DC54937E28A973
+sleep 1 && ./target/kex_mceliece460896fgmac_client none 35.90.207.39 8035
+./target/kex_mceliece460896fgmac_client
+Connected to 35.90.207.39:8035
+Client kex:                      medium:           259882
+Client finished key exchange
+Session key: 0x5CEF63EFA3690F1DA9217C181C92C7BCB5C76BD16C6BACE43F83903DE9D40780
+sleep 1 && ./target/kex_mceliece6688128fgmac_client none 35.90.207.39 8036
+./target/kex_mceliece6688128fgmac_client
+Connected to 35.90.207.39:8036
+Client kex:                      medium:           401810
+Client finished key exchange
+Session key: 0x37FA4FF255C0E7546FE9A6BD5F47F895FBF283A93F280839B4ECA4B57B2B6D33
+sleep 1 && ./target/kex_mceliece6960119fgmac_client none 35.90.207.39 8037
+./target/kex_mceliece6960119fgmac_client
+Connected to 35.90.207.39:8037
+Client kex:                      medium:           491355
+Client finished key exchange
+Session key: 0xB11C1D663BFEB8246DC0A0C647401F0203E622BF4223558EC655BF9B2DF218D3
+sleep 1 && ./target/kex_mceliece8192128fgmac_client none 35.90.207.39 8038
+./target/kex_mceliece8192128fgmac_client
+Connected to 35.90.207.39:8038
+Client kex:                      medium:           522191
+Client finished key exchange
+Session key: 0xE7A333DC2D9D3C345975A971FF1001896F2ACB6DB8E80CEF0155F5336F232CD1
+sleep 1 && ./target/kex_kyber512cmac_client none 35.90.207.39 8039
+./target/kex_kyber512cmac_client
+Connected to 35.90.207.39:8039
+Client kex:                      medium:            77315
+Client finished key exchange
+Session key: 0xCA3149C8D4A411B3A42BA6F546BAD49FE37AA13F6B4EE3F533A7DB5B68B55AD3
+sleep 1 && ./target/kex_kyber768cmac_client none 35.90.207.39 8040
+./target/kex_kyber768cmac_client
+Connected to 35.90.207.39:8040
+Client kex:                      medium:            81651
+Client finished key exchange
+Session key: 0xED3509F3389DED15C814ECEC2AA34312A2DEA033D07A1731DFDAFA69D0B7F5B1
+sleep 1 && ./target/kex_kyber1024cmac_client none 35.90.207.39 8041
+./target/kex_kyber1024cmac_client
+Connected to 35.90.207.39:8041
+Client kex:                      medium:            77679
+Client finished key exchange
+Session key: 0x0FFF5E66EA2D617698EFB9607024E360364BC635597E90C8D1607C872F650764
+sleep 1 && ./target/kex_mceliece348864cmac_client none 35.90.207.39 8042
+./target/kex_mceliece348864cmac_client
+Connected to 35.90.207.39:8042
+Client kex:                      medium:           209097
+Client finished key exchange
+Session key: 0xC286B319F4CC24F7039128B91982C21230F1295E62F55305FD647A25CAE1393A
+sleep 1 && ./target/kex_mceliece460896cmac_client none 35.90.207.39 8043
+./target/kex_mceliece460896cmac_client
+Connected to 35.90.207.39:8043
+Client kex:                      medium:           336164
+Client finished key exchange
+Session key: 0xCD6D367481F24F84B5964044C37956236FF828603E27B1EC41A66C82E64927C7
+sleep 1 && ./target/kex_mceliece6688128cmac_client none 35.90.207.39 8044
+./target/kex_mceliece6688128cmac_client
+Connected to 35.90.207.39:8044
+Client kex:                      medium:           545956
+Client finished key exchange
+Session key: 0xEE8E307F3528538AC11CE341CFADB40F67084666CF8B52274FC4EA6134F31EFB
+sleep 1 && ./target/kex_mceliece6960119cmac_client none 35.90.207.39 8045
+./target/kex_mceliece6960119cmac_client
+Connected to 35.90.207.39:8045
+Client kex:                      medium:           617215
+Client finished key exchange
+Session key: 0xE119F040C0B3925B3403216E1E1C1A2ADC0E57E3C24E91869C46F8D20CE432CD
+sleep 1 && ./target/kex_mceliece8192128cmac_client none 35.90.207.39 8046
+./target/kex_mceliece8192128cmac_client
+Connected to 35.90.207.39:8046
+Client kex:                      medium:           730077
+Client finished key exchange
+Session key: 0x314B6BB9F7C819F49483151722FCA54466B1FEBEC05D65A92A5635C8FB692F9F
+sleep 1 && ./target/kex_mceliece348864fcmac_client none 35.90.207.39 8047
+./target/kex_mceliece348864fcmac_client
+Connected to 35.90.207.39:8047
+Client kex:                      medium:           163362
+Client finished key exchange
+Session key: 0xF9FF61E5CA922B1319886ED168C18E0F00575F7EB96A3688B2A560DF2B03EBEC
+sleep 1 && ./target/kex_mceliece460896fcmac_client none 35.90.207.39 8048
+./target/kex_mceliece460896fcmac_client
+Connected to 35.90.207.39:8048
+Client kex:                      medium:           257934
+Client finished key exchange
+Session key: 0x33B390EACB3A114BD137F7A41D0D53BD98CE6F7D93DCC010257D065CEDDA6E23
+sleep 1 && ./target/kex_mceliece6688128fcmac_client none 35.90.207.39 8049
+./target/kex_mceliece6688128fcmac_client
+Connected to 35.90.207.39:8049
+Client kex:                      medium:           396916
+Client finished key exchange
+Session key: 0x08775C4D2627BBE23E1A5CDF3843426A219B9E936BB3C382368C48D2218A381F
+sleep 1 && ./target/kex_mceliece6960119fcmac_client none 35.90.207.39 8050
+./target/kex_mceliece6960119fcmac_client
+Connected to 35.90.207.39:8050
+Client kex:                      medium:           402444
+Client finished key exchange
+Session key: 0xB95D2C60FF52D3BE1EEA29F05684E1D526C832D26704CF5E22279F448BCDC107
+sleep 1 && ./target/kex_mceliece8192128fcmac_client none 35.90.207.39 8051
+./target/kex_mceliece8192128fcmac_client
+Connected to 35.90.207.39:8051
+Client kex:                      medium:           522184
+Client finished key exchange
+Session key: 0x3CF927A2E6E1AF77CE1917E6AB93DA81140765B4F9A2EFEDA05E377F16AE915A
+sleep 1 && ./target/kex_kyber512kmac256_client none 35.90.207.39 8052
+./target/kex_kyber512kmac256_client
+Connected to 35.90.207.39:8052
+Client kex:                      medium:            80603
+Client finished key exchange
+Session key: 0x0D20EC2CC505E232324BBD659B224085DB3B581D3F9C7C541BD200BB0F41566C
+sleep 1 && ./target/kex_kyber768kmac256_client none 35.90.207.39 8053
+./target/kex_kyber768kmac256_client
+Connected to 35.90.207.39:8053
+Client kex:                      medium:            77860
+Client finished key exchange
+Session key: 0x10327AF1A7A3CBAF3BF67F1BD4AD246C76F4D0B4CC353E491027B4A6CABE92E7
+sleep 1 && ./target/kex_kyber1024kmac256_client none 35.90.207.39 8054
+./target/kex_kyber1024kmac256_client
+Connected to 35.90.207.39:8054
+Client kex:                      medium:            76770
+Client finished key exchange
+Session key: 0x12475568DFC4C50FDA37CCEE21D7F42A26821C42E4FFF43CF8DB796F39D2B016
+sleep 1 && ./target/kex_mceliece348864kmac256_client none 35.90.207.39 8055
+./target/kex_mceliece348864kmac256_client
+Connected to 35.90.207.39:8055
+Client kex:                      medium:           177661
+Client finished key exchange
+Session key: 0x118FD263F2A7BA434F9BB16366AFD5627AB316116A94BBC6DA11DB9A88B427B6
+sleep 1 && ./target/kex_mceliece460896kmac256_client none 35.90.207.39 8056
+./target/kex_mceliece460896kmac256_client
+Connected to 35.90.207.39:8056
+Client kex:                      medium:           326447
+Client finished key exchange
+Session key: 0xCEA6721452EA2E8D18BC780CF232E7AFF8D6129D806EC8206EED171DD7AF219D
+sleep 1 && ./target/kex_mceliece6688128kmac256_client none 35.90.207.39 8057
+./target/kex_mceliece6688128kmac256_client
+Connected to 35.90.207.39:8057
+Client kex:                      medium:           508904
+Client finished key exchange
+Session key: 0xC95AEF6F4FC32BB04516966F2316E507FA36B16F15CCF2B9C73FF53E82FF1F4A
+sleep 1 && ./target/kex_mceliece6960119kmac256_client none 35.90.207.39 8058
+./target/kex_mceliece6960119kmac256_client
+Connected to 35.90.207.39:8058
+Client kex:                      medium:           592443
+Client finished key exchange
+Session key: 0x27B4E29393493160E70D99C59C88AAF724749A0EB6FE063F8F41747422EFDD4D
+sleep 1 && ./target/kex_mceliece8192128kmac256_client none 35.90.207.39 8059
+./target/kex_mceliece8192128kmac256_client
+Connected to 35.90.207.39:8059
+Client kex:                      medium:           594381
+Client finished key exchange
+Session key: 0x4FF767CF964100E93067B8F9B6E43A9F36E28B7DF2C8292CC9E8C82A5D324465
+sleep 1 && ./target/kex_mceliece348864fkmac256_client none 35.90.207.39 8060
+./target/kex_mceliece348864fkmac256_client
+Connected to 35.90.207.39:8060
+Client kex:                      medium:           153287
+Client finished key exchange
+Session key: 0xAEBEA175A7A38F0D0E774C15084486568831B8EBCF23F923F51458499EBE8171
+sleep 1 && ./target/kex_mceliece460896fkmac256_client none 35.90.207.39 8061
+./target/kex_mceliece460896fkmac256_client
+Connected to 35.90.207.39:8061
+Client kex:                      medium:           245240
+Client finished key exchange
+Session key: 0x306D37B84C36118ECAEE77CDCF4F4504883308BE120DBA0D3E536970050C20AC
+sleep 1 && ./target/kex_mceliece6688128fkmac256_client none 35.90.207.39 8062
+./target/kex_mceliece6688128fkmac256_client
+Connected to 35.90.207.39:8062
+Client kex:                      medium:           388732
+Client finished key exchange
+Session key: 0xE7935409465CAAD6DCF88D3FA81CDD32A7F466AAF94B201FA1FD73A670945FE8
+sleep 1 && ./target/kex_mceliece6960119fkmac256_client none 35.90.207.39 8063
+./target/kex_mceliece6960119fkmac256_client
+Connected to 35.90.207.39:8063
+Client kex:                      medium:           375608
+Client finished key exchange
+Session key: 0x5D5416884835DA247FE8BF2558305A78FAD584F7521BE6815967DFC3F198FCD9
+sleep 1 && ./target/kex_mceliece8192128fkmac256_client none 35.90.207.39 8064
+./target/kex_mceliece8192128fkmac256_client
+Connected to 35.90.207.39:8064
+Client kex:                      medium:           438381
+Client finished key exchange
+Session key: 0x291E0A598DB4AB96A56A407631A7F5F3FF5504F3B3ADFB56BA7EE7F9FB7DBC74
+sleep 1 && ./target/kex_kyber512_client client 35.90.207.39 8065
+./target/kex_kyber512_client
+Connected to 35.90.207.39:8065
