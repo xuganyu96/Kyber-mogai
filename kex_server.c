@@ -12,7 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-uint64_t timestamps[KEX_ROUNDS];
+uint64_t timestamps[KEX_ROUNDS + 1];
 
 int main(int argc, char *argv[]) {
   printf("%s\n", argv[0]);
