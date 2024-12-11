@@ -28,8 +28,8 @@
 #define kem_dec crypto_kem_dec
 
 #elif defined(PKE_MCELIECE)
-#include "easy-mceliece/easy-mceliece/api.h"
-#include "easy-mceliece/easy-mceliece/crypto_kem.h"
+#include "easy-mceliece/ref/api.h"
+#include "easy-mceliece/ref/crypto_kem.h"
 #define KEM_PUBLICKEYBYTES CRYPTO_PUBLICKEYBYTES
 #define KEM_SECRETKEYBYTES CRYPTO_SECRETKEYBYTES
 #define KEM_CIPHERTEXTBYTES CRYPTO_CIPHERTEXTBYTES
@@ -46,7 +46,7 @@
 #if defined(PKE_KYBER)
 #include "kyber/ref/fips202.h"
 #elif defined(PKE_MCELIECE)
-#include "easy-mceliece/easy-mceliece/keccak.h"
+#include "easy-mceliece/ref/keccak.h"
 #endif
 #define kdf shake256
 

@@ -5,8 +5,8 @@
 #include "kyber/ref/randombytes.h"
 
 #elif defined(PKE_MCELIECE)
-#include "easy-mceliece/easy-mceliece/keccak.h"
-#include "easy-mceliece/easy-mceliece/randombytes.h"
+#include "easy-mceliece/ref/keccak.h"
+#include "easy-mceliece/ref/randombytes.h"
 
 #else
 #error "Must define PKE_KYBER or PKE_MCELIECE"

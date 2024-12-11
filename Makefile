@@ -22,49 +22,49 @@ KYBERHEADERS = kyber/ref/params.h \
 			   kyber/ref/symmetric.h \
 			   kyber/ref/fips202.h
 
-MCELIECEHEADERS = easy-mceliece/easy-mceliece/api.h \
-				  easy-mceliece/easy-mceliece/benes.h \
-				  easy-mceliece/easy-mceliece/bm.h \
-				  easy-mceliece/easy-mceliece/controlbits.h \
-				  easy-mceliece/easy-mceliece/crypto_hash.h \
-				  easy-mceliece/easy-mceliece/crypto_kem.h \
-				  easy-mceliece/easy-mceliece/decrypt.h \
-				  easy-mceliece/easy-mceliece/encrypt.h \
-				  easy-mceliece/easy-mceliece/gf.h \
-				  easy-mceliece/easy-mceliece/int32_sort.h \
-				  easy-mceliece/easy-mceliece/keccak.h \
-				  easy-mceliece/easy-mceliece/operations.h \
-				  easy-mceliece/easy-mceliece/params.h \
-				  easy-mceliece/easy-mceliece/pk_gen.h \
-				  easy-mceliece/easy-mceliece/randombytes.h \
-				  easy-mceliece/easy-mceliece/root.h \
-				  easy-mceliece/easy-mceliece/sk_gen.h \
-				  easy-mceliece/easy-mceliece/synd.h \
-				  easy-mceliece/easy-mceliece/transpose.h \
-				  easy-mceliece/easy-mceliece/uint64_sort.h \
-				  easy-mceliece/easy-mceliece/util.h \
-				  easy-mceliece/easy-mceliece/crypto_declassify.h \
-				  easy-mceliece/easy-mceliece/crypto_int16.h \
-				  easy-mceliece/easy-mceliece/crypto_int32.h \
-				  easy-mceliece/easy-mceliece/crypto_uint16.h \
-				  easy-mceliece/easy-mceliece/crypto_uint32.h \
-				  easy-mceliece/easy-mceliece/crypto_uint64.h
+MCELIECEHEADERS = easy-mceliece/ref/api.h \
+				  easy-mceliece/ref/benes.h \
+				  easy-mceliece/ref/bm.h \
+				  easy-mceliece/ref/controlbits.h \
+				  easy-mceliece/ref/crypto_hash.h \
+				  easy-mceliece/ref/crypto_kem.h \
+				  easy-mceliece/ref/decrypt.h \
+				  easy-mceliece/ref/encrypt.h \
+				  easy-mceliece/ref/gf.h \
+				  easy-mceliece/ref/int32_sort.h \
+				  easy-mceliece/ref/keccak.h \
+				  easy-mceliece/ref/operations.h \
+				  easy-mceliece/ref/params.h \
+				  easy-mceliece/ref/pk_gen.h \
+				  easy-mceliece/ref/randombytes.h \
+				  easy-mceliece/ref/root.h \
+				  easy-mceliece/ref/sk_gen.h \
+				  easy-mceliece/ref/synd.h \
+				  easy-mceliece/ref/transpose.h \
+				  easy-mceliece/ref/uint64_sort.h \
+				  easy-mceliece/ref/util.h \
+				  easy-mceliece/ref/crypto_declassify.h \
+				  easy-mceliece/ref/crypto_int16.h \
+				  easy-mceliece/ref/crypto_int32.h \
+				  easy-mceliece/ref/crypto_uint16.h \
+				  easy-mceliece/ref/crypto_uint32.h \
+				  easy-mceliece/ref/crypto_uint64.h
 
-MCELIECESOURCES = easy-mceliece/easy-mceliece/benes.c \
-				  easy-mceliece/easy-mceliece/bm.c \
-				  easy-mceliece/easy-mceliece/controlbits.c \
-				  easy-mceliece/easy-mceliece/decrypt.c \
-				  easy-mceliece/easy-mceliece/encrypt.c \
-				  easy-mceliece/easy-mceliece/gf.c \
-				  easy-mceliece/easy-mceliece/keccak.c \
-				  easy-mceliece/easy-mceliece/operations.c \
-				  easy-mceliece/easy-mceliece/pk_gen.c \
-				  easy-mceliece/easy-mceliece/randombytes.c \
-				  easy-mceliece/easy-mceliece/root.c \
-				  easy-mceliece/easy-mceliece/sk_gen.c \
-				  easy-mceliece/easy-mceliece/synd.c \
-				  easy-mceliece/easy-mceliece/transpose.c \
-				  easy-mceliece/easy-mceliece/util.c
+MCELIECESOURCES = easy-mceliece/ref/benes.c \
+				  easy-mceliece/ref/bm.c \
+				  easy-mceliece/ref/controlbits.c \
+				  easy-mceliece/ref/decrypt.c \
+				  easy-mceliece/ref/encrypt.c \
+				  easy-mceliece/ref/gf.c \
+				  easy-mceliece/ref/keccak.c \
+				  easy-mceliece/ref/operations.c \
+				  easy-mceliece/ref/pk_gen.c \
+				  easy-mceliece/ref/randombytes.c \
+				  easy-mceliece/ref/root.c \
+				  easy-mceliece/ref/sk_gen.c \
+				  easy-mceliece/ref/synd.c \
+				  easy-mceliece/ref/transpose.c \
+				  easy-mceliece/ref/util.c
 
 ETMKEMSOURCES = etmkem.c authenticators.c pke.c
 ETMKEMHEADERS = etmkem.h authenticators.h pke.h

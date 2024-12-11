@@ -1,7 +1,7 @@
 #if defined(PKE_KYBER)
 #include "kyber/ref/randombytes.h"
 #elif defined(PKE_MCELIECE)
-#include "easy-mceliece/easy-mceliece/randombytes.h"
+#include "easy-mceliece/ref/randombytes.h"
 #endif
 #include "pke.h"
 #include <stdio.h>

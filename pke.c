@@ -26,15 +26,15 @@ void pke_dec(uint8_t *pke_pt, const uint8_t *pke_ct, const uint8_t *pke_sk) {
 }
 
 #elif defined(PKE_MCELIECE)
-#include "easy-mceliece/easy-mceliece/benes.h"
-#include "easy-mceliece/easy-mceliece/bm.h"
-#include "easy-mceliece/easy-mceliece/crypto_kem.h"
-#include "easy-mceliece/easy-mceliece/encrypt.h"
-#include "easy-mceliece/easy-mceliece/gf.h"
-#include "easy-mceliece/easy-mceliece/params.h"
-#include "easy-mceliece/easy-mceliece/root.h"
-#include "easy-mceliece/easy-mceliece/synd.h"
-#include "easy-mceliece/easy-mceliece/util.h"
+#include "easy-mceliece/ref/benes.h"
+#include "easy-mceliece/ref/bm.h"
+#include "easy-mceliece/ref/crypto_kem.h"
+#include "easy-mceliece/ref/encrypt.h"
+#include "easy-mceliece/ref/gf.h"
+#include "easy-mceliece/ref/params.h"
+#include "easy-mceliece/ref/root.h"
+#include "easy-mceliece/ref/synd.h"
+#include "easy-mceliece/ref/util.h"
 
 void pke_keypair(uint8_t *pke_pk, uint8_t *pke_sk, const uint8_t *coins) {
   crypto_kem_keypair(pke_pk, pke_sk);
