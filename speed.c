@@ -1,10 +1,17 @@
 #include "speed.h"
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 #if defined(__APPLE__)
 #include <mach/mach_time.h>
 #endif
+
+static uint64_t get_percentile(const uint64_t *arr, size_t arrlen,
+                               double percentile) {
+  int index = (int)ceil(percentile * (arrlen - 1)); // Calculate index
+  return arr[index];
+}
 
 int uint64_t_cmp(const void *a, const void *b) {
   if (*(uint64_t *)a < *(uint64_t *)b) {
@@ -79,6 +86,8 @@ void println_medium_from_timestamps(char *prefix, uint64_t *tsarr,
   }
 
   printf("%-32s medium: %16llu\n", prefix, medium);
+  printf("%-32s P90   : %16llu\n", "", get_percentile(durs, durslen, 0.90));
+  printf("%-32s P99   : %16llu\n", "", get_percentile(durs, durslen, 0.99));
 }
 
 void println_hexstr(uint8_t *bytes, size_t byteslen) {
