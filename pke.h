@@ -19,8 +19,8 @@
 #define PKE_CIPHERTEXTBYTES KYBER_INDCPA_BYTES
 
 #elif defined(PKE_MCELIECE)
-#include "easy-mceliece/ref/api.h"
-#include "easy-mceliece/ref/params.h"
+#include "easy-mceliece/vec/api.h"
+#include "easy-mceliece/vec/params.h"
 #define PKE_PUBLICKEYBYTES CRYPTO_PUBLICKEYBYTES
 #define PKE_SECRETKEYBYTES CRYPTO_SECRETKEYBYTES
 #define PKE_SYMBYTES 32

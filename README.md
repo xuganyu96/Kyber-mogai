@@ -1,6 +1,5 @@
 TODO:
-- test loopback kex times
-- test kex times on a pair of servers on AWS
+- rerun speed and KEX on c7a instance
 
 # Faster generic IND-CCA secure KEM using encrypt-then-MAC
 This is the accompanying source code for the paper titled _Faster generic IND-CCA secure KEM using encrypt-then-MAC_.

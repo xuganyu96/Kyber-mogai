@@ -22,56 +22,109 @@ KYBERHEADERS = kyber/ref/params.h \
 			   kyber/ref/symmetric.h \
 			   kyber/ref/fips202.h
 
-MCELIECEHEADERS = easy-mceliece/ref/api.h \
-				  easy-mceliece/ref/benes.h \
-				  easy-mceliece/ref/bm.h \
-				  easy-mceliece/ref/controlbits.h \
-				  easy-mceliece/ref/crypto_hash.h \
-				  easy-mceliece/ref/crypto_kem.h \
-				  easy-mceliece/ref/decrypt.h \
-				  easy-mceliece/ref/encrypt.h \
-				  easy-mceliece/ref/gf.h \
-				  easy-mceliece/ref/int32_sort.h \
-				  easy-mceliece/ref/keccak.h \
-				  easy-mceliece/ref/operations.h \
-				  easy-mceliece/ref/params.h \
-				  easy-mceliece/ref/pk_gen.h \
-				  easy-mceliece/ref/randombytes.h \
-				  easy-mceliece/ref/root.h \
-				  easy-mceliece/ref/sk_gen.h \
-				  easy-mceliece/ref/synd.h \
-				  easy-mceliece/ref/transpose.h \
-				  easy-mceliece/ref/uint64_sort.h \
-				  easy-mceliece/ref/util.h \
-				  easy-mceliece/ref/crypto_declassify.h \
-				  easy-mceliece/ref/crypto_int16.h \
-				  easy-mceliece/ref/crypto_int32.h \
-				  easy-mceliece/ref/crypto_uint16.h \
-				  easy-mceliece/ref/crypto_uint32.h \
-				  easy-mceliece/ref/crypto_uint64.h
+# ref implementation of mceliece has very slow decryption
+MCELIECEREFHEADERS = ref/api.h \
+					 ref/benes.h \
+					 ref/bm.h \
+					 ref/controlbits.h \
+					 ref/crypto_hash.h \
+					 ref/crypto_kem.h \
+					 ref/decrypt.h \
+					 ref/encrypt.h \
+					 ref/gf.h \
+					 ref/int32_sort.h \
+					 ref/keccak.h \
+					 ref/operations.h \
+					 ref/params.h \
+					 ref/pk_gen.h \
+					 ref/randombytes.h \
+					 ref/root.h \
+					 ref/sk_gen.h \
+					 ref/synd.h \
+					 ref/transpose.h \
+					 ref/uint64_sort.h \
+					 ref/util.h \
+					 ref/crypto_declassify.h \
+					 ref/crypto_int16.h \
+					 ref/crypto_int32.h \
+					 ref/crypto_uint16.h \
+					 ref/crypto_uint32.h \
+					 ref/crypto_uint64.h
 
-MCELIECESOURCES = easy-mceliece/ref/benes.c \
-				  easy-mceliece/ref/bm.c \
-				  easy-mceliece/ref/controlbits.c \
-				  easy-mceliece/ref/decrypt.c \
-				  easy-mceliece/ref/encrypt.c \
-				  easy-mceliece/ref/gf.c \
-				  easy-mceliece/ref/keccak.c \
-				  easy-mceliece/ref/operations.c \
-				  easy-mceliece/ref/pk_gen.c \
-				  easy-mceliece/ref/randombytes.c \
-				  easy-mceliece/ref/root.c \
-				  easy-mceliece/ref/sk_gen.c \
-				  easy-mceliece/ref/synd.c \
-				  easy-mceliece/ref/transpose.c \
-				  easy-mceliece/ref/util.c
+MCELIECEREFSOURCES = ref/benes.c \
+					 ref/bm.c \
+					 ref/controlbits.c \
+					 ref/decrypt.c \
+					 ref/encrypt.c \
+					 ref/gf.c \
+					 ref/keccak.c \
+					 ref/operations.c \
+					 ref/pk_gen.c \
+					 ref/randombytes.c \
+					 ref/root.c \
+					 ref/sk_gen.c \
+					 ref/synd.c \
+					 ref/transpose.c \
+					 ref/util.c
+
+
+# vec implementations of classic mceliece take longer to compile but will run
+# faster
+MCELIECEVECSOURCES = easy-mceliece/vec/benes.c \
+					 easy-mceliece/vec/bm.c \
+					 easy-mceliece/vec/controlbits.c \
+					 easy-mceliece/vec/decrypt.c \
+					 easy-mceliece/vec/encrypt.c \
+					 easy-mceliece/vec/fft.c \
+					 easy-mceliece/vec/fft_tr.c \
+					 easy-mceliece/vec/gf.c \
+					 easy-mceliece/vec/keccak.c \
+					 easy-mceliece/vec/operations.c \
+					 easy-mceliece/vec/pk_gen.c \
+					 easy-mceliece/vec/randombytes.c \
+					 easy-mceliece/vec/sk_gen.c \
+					 easy-mceliece/vec/vec.c
+
+MCELIECEVECHEADERS = easy-mceliece/vec/api.h \
+					 easy-mceliece/vec/benes.h \
+					 easy-mceliece/vec/bm.h \
+					 easy-mceliece/vec/controlbits.h \
+					 easy-mceliece/vec/crypto_declassify.h \
+					 easy-mceliece/vec/crypto_hash.h \
+					 easy-mceliece/vec/crypto_int16.h \
+					 easy-mceliece/vec/crypto_int32.h \
+					 easy-mceliece/vec/crypto_kem.h \
+					 easy-mceliece/vec/crypto_uint16.h \
+					 easy-mceliece/vec/crypto_uint32.h \
+					 easy-mceliece/vec/crypto_uint64.h \
+					 easy-mceliece/vec/decrypt.h \
+					 easy-mceliece/vec/encrypt.h \
+					 easy-mceliece/vec/fft.h \
+					 easy-mceliece/vec/fft_tr.h \
+					 easy-mceliece/vec/gf.h \
+					 easy-mceliece/vec/int32_sort.h \
+					 easy-mceliece/vec/keccak.h \
+					 easy-mceliece/vec/operations.h \
+					 easy-mceliece/vec/params.h \
+					 easy-mceliece/vec/pk_gen.h \
+					 easy-mceliece/vec/randombytes.h \
+					 easy-mceliece/vec/sk_gen.h \
+					 easy-mceliece/vec/transpose.h \
+					 easy-mceliece/vec/uint16_sort.h \
+					 easy-mceliece/vec/uint64_sort.h \
+					 easy-mceliece/vec/util.h \
+					 easy-mceliece/vec/vec.h
+
+# use vec impl by default
+MCELIECESOURCES = $(MCELIECEVECSOURCES)
+MCELIECEHEADERS = $(MCELIECEVECHEADERS)
 
 ETMKEMSOURCES = etmkem.c authenticators.c pke.c
 ETMKEMHEADERS = etmkem.h authenticators.h pke.h
 
 # If the DEBUG environment is set to 1, then all targets will be compiled with the flag -D__DEBUG__
 ifeq ($(DEBUG),1)
-CFLAGS += -D__DEBUG__
+	CFLAGS += -D__DEBUG__
 endif
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
