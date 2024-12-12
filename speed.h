@@ -12,7 +12,7 @@
 // Number of function calls in each batch, preferable power of 2
 #define BENCH_BATCH_SIZE 8
 
-#define ROUNDS 100
+#define ROUNDS 1000
 
 uint64_t get_clock_cpu(void);
 uint64_t get_clock_ns(void);

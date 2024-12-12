@@ -1,0 +1,390 @@
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_KYBER -DKYBER_K=2 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c speed.c pke.c test_pke_speed.c -o target/test_kyber512_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_KYBER -DKYBER_K=3 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c speed.c pke.c test_pke_speed.c -o target/test_kyber768_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_KYBER -DKYBER_K=4 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c speed.c pke.c test_pke_speed.c -o target/test_kyber1024_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=3488 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece348864_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=4608 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece460896_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6688 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece6688128_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6960 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece6960119_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=8192 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece8192128_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=3488 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece348864f_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=4608 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece460896f_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6688 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece6688128f_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6960 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece6960119f_pke_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c pke.c test_pke_speed.c -o target/test_mceliece8192128f_pke_speed
+target/test_kyber512_pke_speed
+PKE keygen                       medium:            63024
+PKE encrypt                      medium:            80704
+PKE decrypt                      medium:            28704
+target/test_kyber768_pke_speed
+PKE keygen                       medium:           105976
+PKE encrypt                      medium:           128700
+PKE decrypt                      medium:            37908
+target/test_kyber1024_pke_speed
+PKE keygen                       medium:           171054
+PKE encrypt                      medium:           201032
+PKE decrypt                      medium:            49582
+target/test_mceliece348864_pke_speed
+PKE keygen                       medium:        106421393
+PKE encrypt                      medium:            15626
+PKE decrypt                      medium:           301353
+target/test_mceliece460896_pke_speed
+PKE keygen                       medium:        351711555
+PKE encrypt                      medium:            49140
+PKE decrypt                      medium:           585312
+target/test_mceliece6688128_pke_speed
+PKE keygen                       medium:        566580365
+PKE encrypt                      medium:            62972
+PKE decrypt                      medium:           672516
+target/test_mceliece6960119_pke_speed
+PKE keygen                       medium:        624772655
+PKE encrypt                      medium:            97188
+PKE decrypt                      medium:           644540
+target/test_mceliece8192128_pke_speed
+PKE keygen                       medium:        715150683
+PKE encrypt                      medium:           123396
+PKE decrypt                      medium:           671242
+target/test_mceliece348864f_pke_speed
+PKE keygen                       medium:         84348667
+PKE encrypt                      medium:            15678
+PKE decrypt                      medium:           306202
+target/test_mceliece460896f_pke_speed
+PKE keygen                       medium:        276205566
+PKE encrypt                      medium:            49140
+PKE decrypt                      medium:           590746
+target/test_mceliece6688128f_pke_speed
+PKE keygen                       medium:        463862997
+PKE encrypt                      medium:            62946
+PKE decrypt                      medium:           666198
+target/test_mceliece6960119f_pke_speed
+PKE keygen                       medium:        405831894
+PKE encrypt                      medium:            97682
+PKE decrypt                      medium:           640822
+target/test_mceliece8192128f_pke_speed
+PKE keygen                       medium:        466543558
+PKE encrypt                      medium:           123240
+PKE decrypt                      medium:           672204
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_KYBER -DKYBER_K=2 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c speed.c test_kem_speed.c -o target/test_kyber512_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_KYBER -DKYBER_K=3 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c speed.c test_kem_speed.c -o target/test_kyber768_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_KYBER -DKYBER_K=4 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c speed.c test_kem_speed.c -o target/test_kyber1024_kem_speed
+target/test_kyber512_kem_speed
+KEM keygen                       medium:            74126
+KEM encap                        medium:            88686
+KEM decap                        medium:           116948
+target/test_kyber768_kem_speed
+KEM keygen                       medium:           125606
+KEM encap                        medium:           139204
+KEM decap                        medium:           177164
+target/test_kyber1024_kem_speed
+KEM keygen                       medium:           199654
+KEM encap                        medium:           214656
+KEM decap                        medium:           264394
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=3488 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece348864_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=4608 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece460896_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6688 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece6688128_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6960 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece6960119_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=8192 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece8192128_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=3488 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece348864f_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=4608 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece460896f_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6688 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece6688128f_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=6960 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece6960119f_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c speed.c test_kem_speed.c -o target/test_mceliece8192128f_kem_speed
+target/test_mceliece348864_kem_speed
+KEM keygen                       medium:         96285579
+KEM encap                        medium:            28548
+KEM decap                        medium:           372736
+target/test_mceliece460896_kem_speed
+KEM keygen                       medium:        358542197
+KEM encap                        medium:            78442
+KEM decap                        medium:           710606
+target/test_mceliece6688128_kem_speed
+KEM keygen                       medium:        666777111
+KEM encap                        medium:           104884
+KEM decap                        medium:           796250
+target/test_mceliece6960119_kem_speed
+KEM keygen                       medium:        618430722
+KEM encap                        medium:           139347
+KEM decap                        medium:           773630
+target/test_mceliece8192128_kem_speed
+KEM keygen                       medium:        666632070
+KEM encap                        medium:           162890
+KEM decap                        medium:           786630
+target/test_mceliece348864f_kem_speed
+KEM keygen                       medium:         84597955
+KEM encap                        medium:            28522
+KEM decap                        medium:           375414
+target/test_mceliece460896f_kem_speed
+KEM keygen                       medium:        276988179
+KEM encap                        medium:            78780
+KEM decap                        medium:           710320
+target/test_mceliece6688128f_kem_speed
+KEM keygen                       medium:        464819758
+KEM encap                        medium:           113503
+KEM decap                        medium:           797485
+target/test_mceliece6960119f_kem_speed
+KEM keygen                       medium:        405808247
+KEM encap                        medium:           139204
+KEM decap                        medium:           765388
+target/test_mceliece8192128f_kem_speed
+KEM keygen                       medium:        465817989
+KEM encap                        medium:           162279
+KEM decap                        medium:           794638
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_KYBER -DKYBER_K=2 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber512poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_KYBER -DKYBER_K=3 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber768poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_KYBER -DKYBER_K=4 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber1024poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=3488 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=4608 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=6688 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=6960 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=8192 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128poly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=3488 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864fpoly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=4608 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896fpoly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=6688 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128fpoly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=6960 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119fpoly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_POLY1305 -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128fpoly1305_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_KYBER -DKYBER_K=2 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber512gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_KYBER -DKYBER_K=3 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber768gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_KYBER -DKYBER_K=4 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber1024gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=3488 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=4608 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=6688 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=6960 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=8192 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128gmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=3488 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864fgmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=4608 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896fgmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=6688 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128fgmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=6960 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119fgmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_GMAC -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128fgmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_KYBER -DKYBER_K=2 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber512cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_KYBER -DKYBER_K=3 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber768cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_KYBER -DKYBER_K=4 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber1024cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=3488 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=4608 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=6688 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=6960 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=8192 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128cmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=3488 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864fcmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=4608 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896fcmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=6688 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128fcmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=6960 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119fcmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_CMAC -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128fcmac_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_KYBER -DKYBER_K=2 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber512kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_KYBER -DKYBER_K=3 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber768kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_KYBER -DKYBER_K=4 kyber/ref/kem.c kyber/ref/indcpa.c kyber/ref/polyvec.c kyber/ref/poly.c kyber/ref/ntt.c kyber/ref/cbd.c kyber/ref/reduce.c kyber/ref/verify.c kyber/ref/randombytes.c kyber/ref/fips202.c kyber/ref/symmetric-shake.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_kyber1024kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=3488 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=4608 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=6688 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=6960 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=8192 easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128kmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=3488 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece348864fkmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=4608 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece460896fkmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=6688 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6688128fkmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=6960 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece6960119fkmac256_kem_speed
+cc -O3 -Wno-incompatible-pointer-types-discards-qualifiers -Wno-incompatible-pointer-types  -lcrypto -DMAC_KMAC256 -DPKE_MCELIECE -DMCELIECE_N=8192 -DFASTKEYGEN easy-mceliece/vec/benes.c easy-mceliece/vec/bm.c easy-mceliece/vec/controlbits.c easy-mceliece/vec/decrypt.c easy-mceliece/vec/encrypt.c easy-mceliece/vec/fft.c easy-mceliece/vec/fft_tr.c easy-mceliece/vec/gf.c easy-mceliece/vec/keccak.c easy-mceliece/vec/operations.c easy-mceliece/vec/pk_gen.c easy-mceliece/vec/randombytes.c easy-mceliece/vec/sk_gen.c easy-mceliece/vec/vec.c etmkem.c authenticators.c pke.c speed.c test_kem_speed.c -o target/test_mceliece8192128fkmac256_kem_speed
+target/test_kyber512poly1305_kem_speed
+KEM keygen                       medium:            78520
+KEM encap                        medium:            95394
+KEM decap                        medium:            38948
+target/test_kyber768poly1305_kem_speed
+KEM keygen                       medium:           129922
+KEM encap                        medium:           148330
+KEM decap                        medium:            50284
+target/test_kyber1024poly1305_kem_speed
+KEM keygen                       medium:           197600
+KEM encap                        medium:           207324
+KEM decap                        medium:            61100
+target/test_mceliece348864poly1305_kem_speed
+KEM keygen                       medium:        108719832
+KEM encap                        medium:          1680380
+KEM decap                        medium:           311662
+target/test_mceliece460896poly1305_kem_speed
+KEM keygen                       medium:        321851504
+KEM encap                        medium:          3457220
+KEM decap                        medium:           614458
+target/test_mceliece6688128poly1305_kem_speed
+KEM keygen                       medium:        595590593
+KEM encap                        medium:          6675071
+KEM decap                        medium:           682591
+target/test_mceliece6960119poly1305_kem_speed
+KEM keygen                       medium:        616922904
+KEM encap                        medium:          6896071
+KEM decap                        medium:           668954
+target/test_mceliece8192128poly1305_kem_speed
+KEM keygen                       medium:        625362426
+KEM encap                        medium:          8688108
+KEM decap                        medium:           682695
+target/test_mceliece348864fpoly1305_kem_speed
+KEM keygen                       medium:         86799609
+KEM encap                        medium:          1682148
+KEM decap                        medium:           312390
+target/test_mceliece460896fpoly1305_kem_speed
+KEM keygen                       medium:        258987664
+KEM encap                        medium:          3459625
+KEM decap                        medium:           615030
+target/test_mceliece6688128fpoly1305_kem_speed
+KEM keygen                       medium:        501360002
+KEM encap                        medium:          6672627
+KEM decap                        medium:           678626
+target/test_mceliece6960119fpoly1305_kem_speed
+KEM keygen                       medium:        378843270
+KEM encap                        medium:          6899243
+KEM decap                        medium:           675324
+target/test_mceliece8192128fpoly1305_kem_speed
+KEM keygen                       medium:        521837563
+KEM encap                        medium:          8689473
+KEM decap                        medium:           683566
+target/test_kyber512gmac_kem_speed
+KEM keygen                       medium:            76180
+KEM encap                        medium:            96408
+KEM decap                        medium:            41028
+target/test_kyber768gmac_kem_speed
+KEM keygen                       medium:           128336
+KEM encap                        medium:           147160
+KEM decap                        medium:            52312
+target/test_kyber1024gmac_kem_speed
+KEM keygen                       medium:           201422
+KEM encap                        medium:           222846
+KEM decap                        medium:            67496
+target/test_mceliece348864gmac_kem_speed
+KEM keygen                       medium:        108276506
+KEM encap                        medium:          1675531
+KEM decap                        medium:           315354
+target/test_mceliece460896gmac_kem_speed
+KEM keygen                       medium:        360107475
+KEM encap                        medium:          3376126
+KEM decap                        medium:           599950
+target/test_mceliece6688128gmac_kem_speed
+KEM keygen                       medium:        570615071
+KEM encap                        medium:          6680492
+KEM decap                        medium:           684268
+target/test_mceliece6960119gmac_kem_speed
+KEM keygen                       medium:        542869340
+KEM encap                        medium:          6719401
+KEM decap                        medium:           655980
+target/test_mceliece8192128gmac_kem_speed
+KEM keygen                       medium:        720264155
+KEM encap                        medium:          8698300
+KEM decap                        medium:           686088
+target/test_mceliece348864fgmac_kem_speed
+KEM keygen                       medium:         86175908
+KEM encap                        medium:          1674881
+KEM decap                        medium:           320086
+target/test_mceliece460896fgmac_kem_speed
+KEM keygen                       medium:        280053670
+KEM encap                        medium:          3377504
+KEM decap                        medium:           603018
+target/test_mceliece6688128fgmac_kem_speed
+KEM keygen                       medium:        471597737
+KEM encap                        medium:          6684028
+KEM decap                        medium:           691418
+target/test_mceliece6960119fgmac_kem_speed
+KEM keygen                       medium:        410319637
+KEM encap                        medium:          6719388
+KEM decap                        medium:           661102
+target/test_mceliece8192128fgmac_kem_speed
+KEM keygen                       medium:        474947720
+KEM encap                        medium:          8702031
+KEM decap                        medium:           687986
+target/test_kyber512cmac_kem_speed
+KEM keygen                       medium:            76440
+KEM encap                        medium:            99346
+KEM decap                        medium:            43524
+target/test_kyber768cmac_kem_speed
+KEM keygen                       medium:           128076
+KEM encap                        medium:           150787
+KEM decap                        medium:            55562
+target/test_kyber1024cmac_kem_speed
+KEM keygen                       medium:           201942
+KEM encap                        medium:           228696
+KEM decap                        medium:            72124
+target/test_mceliece348864cmac_kem_speed
+KEM keygen                       medium:        108406233
+KEM encap                        medium:          1675908
+KEM decap                        medium:           322868
+target/test_mceliece460896cmac_kem_speed
+KEM keygen                       medium:        368381325
+KEM encap                        medium:          3377699
+KEM decap                        medium:           600743
+target/test_mceliece6688128cmac_kem_speed
+KEM keygen                       medium:        676152425
+KEM encap                        medium:          6680310
+KEM decap                        medium:           684762
+target/test_mceliece6960119cmac_kem_speed
+KEM keygen                       medium:        628971031
+KEM encap                        medium:          6721988
+KEM decap                        medium:           654654
+target/test_mceliece8192128cmac_kem_speed
+KEM keygen                       medium:        719306679
+KEM encap                        medium:          8690214
+KEM decap                        medium:           696306
+target/test_mceliece348864fcmac_kem_speed
+KEM keygen                       medium:         86593338
+KEM encap                        medium:          1676285
+KEM decap                        medium:           320710
+target/test_mceliece460896fcmac_kem_speed
+KEM keygen                       medium:        278630976
+KEM encap                        medium:          3376568
+KEM decap                        medium:           608777
+target/test_mceliece6688128fcmac_kem_speed
+KEM keygen                       medium:        471714412
+KEM encap                        medium:          6680102
+KEM decap                        medium:           678405
+target/test_mceliece6960119fcmac_kem_speed
+KEM keygen                       medium:        410124910
+KEM encap                        medium:          6721858
+KEM decap                        medium:           664924
+target/test_mceliece8192128fcmac_kem_speed
+KEM keygen                       medium:        473858450
+KEM encap                        medium:          8691943
+KEM decap                        medium:           693108
+target/test_kyber512kmac256_kem_speed
+KEM keygen                       medium:            76180
+KEM encap                        medium:           100386
+KEM decap                        medium:            45058
+target/test_kyber768kmac256_kem_speed
+KEM keygen                       medium:           127556
+KEM encap                        medium:           153166
+KEM decap                        medium:            58006
+target/test_kyber1024kmac256_kem_speed
+KEM keygen                       medium:           201318
+KEM encap                        medium:           230646
+KEM decap                        medium:            75920
+target/test_mceliece348864kmac256_kem_speed
+KEM keygen                       medium:        108069195
+KEM encap                        medium:          1675518
+KEM decap                        medium:           320112
+target/test_mceliece460896kmac256_kem_speed
+KEM keygen                       medium:        331612801
+KEM encap                        medium:          3377348
+KEM decap                        medium:           605592
+target/test_mceliece6688128kmac256_kem_speed
+KEM keygen                       medium:        676294138
+KEM encap                        medium:          6686082
+KEM decap                        medium:           692198
+target/test_mceliece6960119kmac256_kem_speed
+KEM keygen                       medium:        629836831
+KEM encap                        medium:          6719336
+KEM decap                        medium:           661154
+target/test_mceliece8192128kmac256_kem_speed
+KEM keygen                       medium:        721845657
+KEM encap                        medium:          8702785
+KEM decap                        medium:           689130
+target/test_mceliece348864fkmac256_kem_speed
+KEM keygen                       medium:         86235058
+KEM encap                        medium:          1676090
+KEM decap                        medium:           320775
+target/test_mceliece460896fkmac256_kem_speed
+KEM keygen                       medium:        279181578
+KEM encap                        medium:          3376893
+KEM decap                        medium:           603031
+target/test_mceliece6688128fkmac256_kem_speed
+KEM keygen                       medium:        470460211
+KEM encap                        medium:          6678945
+KEM decap                        medium:           693563
+target/test_mceliece6960119fkmac256_kem_speed
+KEM keygen                       medium:        411961784
+KEM encap                        medium:          6726564
+KEM decap                        medium:           664118
+target/test_mceliece8192128fkmac256_kem_speed
+KEM keygen                       medium:        475475052
+KEM encap                        medium:          8695349
+KEM decap                        medium:           695448
