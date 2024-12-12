@@ -16,6 +16,9 @@ uint64_t timestamps[KEX_ROUNDS + 1];
 
 int main(int argc, char *argv[]) {
   printf("%s\n", argv[0]);
+#ifdef __DEBUG__
+  printf("Kex rounds %d\n", KEX_ROUNDS);
+#endif
   int auth_mode, port;
   if (0 != parse_args(argc, argv, &auth_mode, NULL, &port)) {
     exit(EXIT_FAILURE);

@@ -27,6 +27,9 @@ void etmkem_keypair(uint8_t *pk, uint8_t *sk) {
   pke_keypair(pk, sk, coins);
 
   shake256(sk + PKE_SECRETKEYBYTES, PKE_SYMBYTES, pk, PKE_PUBLICKEYBYTES);
+#ifdef PREHASH_PUBLICKEY
+  memcpy(pk + PKE_PUBLICKEYBYTES, sk + PKE_SECRETKEYBYTES, PKE_SYMBYTES);
+#endif
 
   // rejection symbol should be independently sampled from PKE key pair
   randombytes(coins, PKE_SYMBYTES);
@@ -43,7 +46,11 @@ void etmkem_encap(uint8_t *ct, uint8_t *ss, const uint8_t *pk) {
   randombytes(coins, PKE_SYMBYTES);
   uint8_t pkhash_pt[PKE_SYMBYTES + PKE_PLAINTEXTBYTES];
   sample_pke_pt(pkhash_pt + PKE_SYMBYTES, coins);
+#ifdef PREHASH_PUBLICKEY
+  memcpy(pkhash_pt, pk + PKE_PUBLICKEYBYTES, PKE_SYMBYTES);
+#else
   shake256(pkhash_pt, PKE_SYMBYTES, pk, PKE_PUBLICKEYBYTES);
+#endif
 
   // Hash (PKE public key hash || PKE plaintext) into the following:
   // (preKey || MAC key || MAC IV)

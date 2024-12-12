@@ -7,12 +7,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// Number of batches, preferably odd
-#define BENCH_BATCH_COUNT 9
-// Number of function calls in each batch, preferable power of 2
-#define BENCH_BATCH_SIZE 8
-
-#define ROUNDS 100
+// number of rounds of tests
+#ifndef SPEED_ROUNDS
+#define SPEED_ROUNDS 100
+#endif
 
 uint64_t get_clock_cpu(void);
 uint64_t get_clock_ns(void);

@@ -126,6 +126,19 @@ ETMKEMHEADERS = etmkem.h authenticators.h pke.h
 ifeq ($(DEBUG),1)
 	CFLAGS += -D__DEBUG__
 endif
+prehash_publickey := 0
+ifeq ($(prehash_publickey),1)
+	CFLAGS += -DPREHASH_PUBLICKEY
+endif
+
+# pass in these arguments to control the number of calls in test binaries
+# e.g. `make speed speed_rounds=42`
+test_rounds := 10
+CFLAGS += -DTEST_ROUNDS=$(test_rounds) 
+speed_rounds := 1000
+CFLAGS += -DSPEED_ROUNDS=$(speed_rounds) 
+kex_rounds := 1000
+CFLAGS += -DKEX_ROUNDS=$(kex_rounds) 
 
 # OpenSSL header files should be included using the CFLAGS environment variables:
 # for example `export CFLAGS="-I/path/to/openssl/include $CFLAGS"`

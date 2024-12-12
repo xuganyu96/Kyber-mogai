@@ -3,9 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TEST_ROUNDS_LOG2 2
+#ifndef TEST_ROUNDS
+#define TEST_ROUNDS 10
+#endif
 
 int main(void) {
+#ifdef __DEBUG__
+  printf("test rounds %d\n", TEST_ROUNDS);
+#endif
   uint8_t pk[KEM_PUBLICKEYBYTES];
   uint8_t sk[KEM_SECRETKEYBYTES];
   uint8_t ct[KEM_CIPHERTEXTBYTES];
@@ -14,7 +19,7 @@ int main(void) {
   kem_keypair(pk, sk);
 
   int diff = 0;
-  for (int i = 0; i < (1 << 2); i++) {
+  for (int i = 0; i < TEST_ROUNDS; i++) {
     kem_enc(ct, ss, pk);
     kem_dec(ss_cmp, ct, sk);
 

@@ -5,7 +5,7 @@
 #include "speed.h"
 #include <stdint.h>
 
-uint64_t timestamps[ROUNDS + 1];
+uint64_t timestamps[SPEED_ROUNDS + 1];
 
 static void benchmark_pke_enc(void) {
   uint8_t pk[PKE_PUBLICKEYBYTES];
@@ -17,12 +17,12 @@ static void benchmark_pke_enc(void) {
   sample_pke_pt(pt, coins);
 
   timestamps[0] = get_clock_cpu();
-  for (int i = 0; i < ROUNDS; i++) {
+  for (int i = 0; i < SPEED_ROUNDS; i++) {
     pke_enc(ct, pt, pk, coins);
     timestamps[i + 1] = get_clock_cpu();
   }
 
-  println_medium_from_timestamps("PKE encrypt", timestamps, ROUNDS + 1);
+  println_medium_from_timestamps("PKE encrypt", timestamps, SPEED_ROUNDS + 1);
 }
 
 static void benchmark_pke_dec(void) {
@@ -37,12 +37,12 @@ static void benchmark_pke_dec(void) {
   pke_enc(ct, pt, pk, coins);
 
   timestamps[0] = get_clock_cpu();
-  for (int i = 0; i < ROUNDS; i++) {
+  for (int i = 0; i < SPEED_ROUNDS; i++) {
     pke_dec(pt_cmp, ct, sk);
     timestamps[i + 1] = get_clock_cpu();
   }
 
-  println_medium_from_timestamps("PKE decrypt", timestamps, ROUNDS + 1);
+  println_medium_from_timestamps("PKE decrypt", timestamps, SPEED_ROUNDS + 1);
 }
 
 static void benchmark_pke_keypair(void) {
@@ -51,15 +51,18 @@ static void benchmark_pke_keypair(void) {
   uint8_t coins[PKE_SYMBYTES];
 
   timestamps[0] = get_clock_cpu();
-  for (int i = 0; i < ROUNDS; i++) {
+  for (int i = 0; i < SPEED_ROUNDS; i++) {
     pke_keypair(pk, sk, coins);
     timestamps[i + 1] = get_clock_cpu();
   }
 
-  println_medium_from_timestamps("PKE keygen", timestamps, ROUNDS + 1);
+  println_medium_from_timestamps("PKE keygen", timestamps, SPEED_ROUNDS + 1);
 }
 
 int main(void) {
+#ifdef __DEBUG__
+  printf("Speed rounds: %d\n", SPEED_ROUNDS);
+#endif
   benchmark_pke_keypair();
   benchmark_pke_enc();
   benchmark_pke_dec();

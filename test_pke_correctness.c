@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef TEST_ROUNDS
 #define TEST_ROUNDS 10
+#endif
 
 /**
  * For random keypair and random message, decryption should be correct
@@ -39,6 +41,9 @@ static int test_pke_correctness(void) {
 }
 
 int main(void) {
+#ifdef __DEBUG__
+  printf("Test rounds: %d\n", TEST_ROUNDS);
+#endif
   int fail = 0;
 
   fail |= test_pke_correctness();
