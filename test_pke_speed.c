@@ -45,25 +45,29 @@ static void benchmark_pke_dec(void) {
   println_medium_from_timestamps("PKE decrypt", timestamps, SPEED_ROUNDS + 1);
 }
 
-static void benchmark_pke_keypair(void) {
+/**
+ * Key generation is not the focus of this paper, so we will reduce the number
+ * of rounds for key gen
+ */
+static void benchmark_pke_keypair(int keygen_rounds) {
   uint8_t pk[PKE_PUBLICKEYBYTES];
   uint8_t sk[PKE_SECRETKEYBYTES];
   uint8_t coins[PKE_SYMBYTES];
 
   timestamps[0] = get_clock_cpu();
-  for (int i = 0; i < SPEED_ROUNDS; i++) {
+  for (int i = 0; i < keygen_rounds; i++) {
     pke_keypair(pk, sk, coins);
     timestamps[i + 1] = get_clock_cpu();
   }
 
-  println_medium_from_timestamps("PKE keygen", timestamps, SPEED_ROUNDS + 1);
+  println_medium_from_timestamps("PKE keygen", timestamps, keygen_rounds + 1);
 }
 
 int main(void) {
 #ifdef __DEBUG__
   printf("Speed rounds: %d\n", SPEED_ROUNDS);
 #endif
-  benchmark_pke_keypair();
+  benchmark_pke_keypair(SPEED_ROUNDS > 10 ? 10 : SPEED_ROUNDS);
   benchmark_pke_enc();
   benchmark_pke_dec();
   return 0;

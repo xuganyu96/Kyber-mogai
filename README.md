@@ -10,6 +10,27 @@ The [`Makefile`](./Makefile) contains three main sets of compilation targets:
 - `make speed` compiles and runs speed tests. Each speed test measures the medium time (CPU clock or CPU cycles depending on the platform, see [speed.h](./speed.h) for specific definitions) needed to execute `TEST_ROUNDS` calls to `keygen`, `enc`, and `dec` routines.
 - `make kex` compiles all key exchange binaries. Each KEM scheme has its own pair of server and client binaries (e.g. `target/kex_kyber1024_client` and `target/kex_kyber1024_server`). To run a key exchange benchmark, first run the server `./target/kex_kyber1024_server <none|server|client|all> 127.0.0.1 <port>`, then run the client `./target/kex_kyber1024_client <none|server|client|all> <servername> <port>`. I also included convenient make target `make run_kex_servers_all` and `make run_kex_clients_all server_name=<server_name>`, which will run all key exchange binaries in sequence.
 
+```bash
+# build all targets
+make all test_rounds=5 speed_rounds=10000 kex_rounds=100 -j8
+
+# test correctness
+make tests
+
+# test speed. prehash_publickey is turned on by default but can be turned off 
+# with the argument "prehash_publickey=0". keygen will only be tested for up to 
+# 10 rounds
+make speed > speed.log &
+tail -f -n 100 speed.log
+
+# test key exchange
+make run_kex_servers_all > kex_server.log &
+make run_clients > kex_client.log &
+tail -f -n 100 kex_client.log
+
+# clean up
+```
+
 ## Performance
 This batch of performance number is strange. Kyber/ML-KEM numbers are in line with the [published results from PQCrystals](https://pq-crystals.org/kyber/index.shtml). However, McEliece numbers are way off its [published results](https://classic.mceliece.org/impl.html).
 

@@ -42,24 +42,24 @@ static void benchmark_kem_dec(void) {
   println_medium_from_timestamps("KEM decap", timestamps, SPEED_ROUNDS + 1);
 }
 
-static void benchmark_kem_keypair(void) {
+static void benchmark_kem_keypair(int keygen_rounds) {
   uint8_t pk[KEM_PUBLICKEYBYTES];
   uint8_t sk[KEM_SECRETKEYBYTES];
 
   timestamps[0] = get_clock_cpu();
-  for (int i = 0; i < SPEED_ROUNDS; i++) {
+  for (int i = 0; i < keygen_rounds; i++) {
     kem_keypair(pk, sk);
     timestamps[i + 1] = get_clock_cpu();
   }
 
-  println_medium_from_timestamps("KEM keygen", timestamps, SPEED_ROUNDS + 1);
+  println_medium_from_timestamps("KEM keygen", timestamps, keygen_rounds + 1);
 }
 
 int main(void) {
 #ifdef __DEBUG__
   printf("Speed rounds: %d\n", SPEED_ROUNDS);
 #endif
-  benchmark_kem_keypair();
+  benchmark_kem_keypair(SPEED_ROUNDS > 10 ? 10 : SPEED_ROUNDS);
   benchmark_kem_enc();
   benchmark_kem_dec();
   return 0;
