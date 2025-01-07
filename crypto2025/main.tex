@@ -1,0 +1,775 @@
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{amsmath,amsfonts}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+% Custom commands
+\newcommand{\pke}{\texttt{PKE}}
+\newcommand{\keygen}{\texttt{KeyGen}}
+\newcommand{\encrypt}{\texttt{Enc}}
+\newcommand{\decrypt}{\texttt{Dec}}
+\newcommand{\kem}{\texttt{KEM}}
+\newcommand{\encap}{\texttt{Encap}}
+\newcommand{\decap}{\texttt{Decap}}
+\newcommand{\etm}{\texttt{EtM}}  % encrypt-then-mac
+\newcommand{\mac}{\texttt{MAC}}
+\newcommand{\sign}{\texttt{Sign}}
+\newcommand{\verify}{\texttt{Verify}}
+\newcommand{\pk}{\texttt{pk}}
+\newcommand{\sk}{\texttt{sk}}
+\newcommand{\pco}{\texttt{PCO}}
+\newcommand{\cvo}{\texttt{CVO}}
+\newcommand{\leftsample}{\stackrel{\$}{\leftarrow}}
+\newcommand{\llbrack}{[\![}
+\newcommand{\rrbrack}{]\!]}
+\newcommand{\norm}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\adv}{\texttt{Adv}}
+\newcommand{\fotplus}{\texttt{FOT+}}
+\newcommand{\us}{\mu s}
+\def\mlkemplus{\text{ML-KEM}^+}
+
+\begin{document}
+%
+\title{Faster generic CCA secure KEM transformation using encrypt-then-MAC}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+
+\author{
+    Ganyu Xu\inst{1} \and
+    Guang Gong\inst{1} \and
+    Kalikinkar Mandal\inst{2}
+}
+\authorrunning{G. Xu et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+
+\institute{
+    University of Waterloo, Waterloo, Ontario, Canada
+    \email{\{g66xu,ggong\}@uwaterloo.ca} \and
+    University of New Brunswick, Canada \email{kmandal@unb.ca}
+}
+
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+    Abstract needs to be rewritten because ML-KEM is not a suitable candidate. Instead, section 3 will be about the proof, section 4 will be a survey of existing public-key encryption schemes and a discussion of which ones are suitable, and section 5 will be about implementation and performance analysis with classic McEliece
+
+\keywords{
+    First keyword  \and Second keyword \and Another keyword.
+}
+\end{abstract}
+
+\section{Introduction}\label{sec:introduction}
+Introduction will need to be re-written. I will get back to it after writing section 2, 3, 4, 5
+
+\section{Preliminaries}\label{sec:preliminaries}
+
+\subsection{Public-key encryption scheme}
+\textbf{Syntax.} A public-key encryption scheme $\pke(\keygen, \encrypt, \decrypt)$ is a collection of three routines defined over some plaintext space $\mathcal{M}$ and some ciphertext space $\mathcal{C}$. Key generation $(\pk, \sk) \leftsample \keygen()$ is a randomized routine that returns a keypair. The encryption routine $\encrypt: (\pk, m) \mapsto c$ encrypts the input plaintext $m$ under the input public key $\pk$ and produces a ciphertext $c$. The decryption routine $\decrypt: (\sk, c) \mapsto m$ decrypts the input ciphertext $c$ under the input secret key $\sk$ and produces a plaintext $m$. Where the encryption routine is randomized, we denote the randomness by a coin $r \in \mathcal{R}$, where $\mathcal{R}$ is called the coin space. The decryption routine is assumed to always be deterministic.
+
+\textbf{Correctness.} Following the definition in \cite{DBLP:conf/eurocrypt/DworkNR04}, a $\pke$ is $\delta$-correct if:
+
+\begin{equation*}
+    E\left[\max_{m \in \mathcal{M}} P\left[\decrypt(\sk, c) \neq m \mid c \leftsample \encrypt(\pk, m)\right]\right] \leq \delta.
+\end{equation*}
+
+Where the expectation is taken with respect to the probability distribution of all possible keypairs $(\pk, \sk) \leftsample \texttt{PKE.KeyGen()}$. For many lattice-based cryptosystems, including ML-KEM, decryption failures could leak information about the secret key, although the probability of a decryption failure is low enough that classical adversaries cannot exploit decryption failure more than they can defeat the underlying lattice problem.
+
+\textbf{Security.} The security of public-key encryption is conventionally discussed within the context of adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. There are two main types of games: i) in the one-wayness (OW-ATK) game, the adversary is given a random encryption, then asked to produce the correct decryption; ii) in the indistinguishability (IND-ATK) game, the adversary is given the encryption of one of two adversary-chosen plaintexts, then asked to decide which of the plaintexts corresponds with the given encryption. Depending on the attack model, the adversary may have access to various oracles. Within the context of public-key cryptography, adversaries are always assumed to have the public key with which they can mount chosen-plaintext attack (CPA). If the adversary has access to a plaintext-checking oracle (PCO) \cite{DBLP:conf/ctrsa/OkamotoP01} then it can mount plaintext-checking attack (PCA). Where the adversary has access to a decryption oracle, it can mount chosen-ciphertext attacks (CCA). 
+
+\begin{figure}
+    \centering
+
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{OW-ATK} Game}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk) \leftsample \keygen(1^\lambda)$
+                \State $m^\ast \leftsample \mathcal{M}$
+                \State $c^\ast \leftsample \encrypt(\pk, m^\ast)$
+                \State $\hat{m} \leftsample A^{\mathcal{O}_\texttt{ATK}}(1^\lambda, \pk, c^\ast)$
+                \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{IND-ATK} Game}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk) \leftsample \keygen(1^\lambda)$
+                \State $(m_0, m_1) \leftsample A^{\mathcal{O}_\texttt{ATK}}(1^\lambda, \pk)$
+                \State $b \leftsample \{0,1\}$
+                \State $c^\ast \leftsample \encrypt(\pk, m_b)$
+                \State $\hat{b} \leftsample A^{\mathcal{O}_\texttt{ATK}}(1^\lambda, \pk, c^\ast)$
+                \State \Return $\llbrack \hat{b} = b \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}_\pco(m, c)$}
+            \begin{algorithmic}[1]
+                \State \Return $\llbrack m = \decrypt(\sk, c) \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}_\decrypt(c)$}
+            \begin{algorithmic}[1]
+                \State \Return $\decrypt(\sk, c)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{The one-way game, indistinguishability game, plaintext-checking oracle (PCO), and decryption oracle. $\texttt{ATK} \in \{\texttt{CPA}, \texttt{PCA}, \texttt{CCA}\}$}
+\end{figure}
+
+The advantage of an adversary in the \texttt{OW-ATK} game is the probability that it outputs the correct decryption. The advantage of an adversary in the \texttt{IND-ATK} game is defined below. A PKE is \texttt{OW-ATK}/\texttt{IND-ATK} secure if no efficient adversary has non-negligible advantage in the corresponding security game.
+
+\begin{equation*}
+    \texttt{Adv}_\texttt{IND-ATK}(A) = \left\vert P\left[A^{\mathcal{O}_\texttt{ATK}}(1^\lambda, \pk, c^\ast) = b \right] - \frac{1}{2} \right\vert.
+\end{equation*}
+
+\subsection{Key encapsulation mechanism (KEM)}
+\textbf{Syntax.} A key encapsulation mechanism $\kem(\keygen, \encap, \decap)$ is a collection of three routines defined over some ciphertext space $\mathcal{C}$ and some key space $\mathcal{K}$. The key generation routine takes the security parameter $1^\lambda$ and outputs a keypair $(\pk, \sk) \leftsample \keygen(1^\lambda)$. $\encap(\pk)$ is a probabilistic routine that takes a public key $\pk$ and outputs a pair of values $(c, K)$ where $c \in \mathcal{C}$ is the ciphertext (also called encapsulation) and $K \in \mathcal{K}$ is the shared secret (also called session key). $\decap(\sk, c)$ is a deterministic routine that takes the secret key $\sk$ and the encapsulation $c$ and returns the shared secret $K$ if the ciphertext is valid. Some KEM constructions use explicit rejection, where if $c$ is invalid then $\decap$ will return a rejection symbol $\bot$; other KEM constructions use implicit rejection, where if $c$ is invalid then $\decap$ will return a fake session key that depends on the ciphertext and some other secret values.
+
+\textbf{Security.} The security of a KEM is similarly discussed in adversarial games (Figure \ref{fig:kem-game}), although the win conditions differ slightly from the win conditions of a PKE indistinguishability game. In a KEM's indistinguishability game, an adversary is given the public key and a challenge ciphertext, then asked to distinguish a pseudorandom shared secret $K_0$ associated with the challenge ciphertext from a truly random bit string of equal length.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[t]{0.49\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{IND-ATK} game}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk) \leftsample \keygen(1^\lambda)$
+                \State $(c^\ast, K_0) \leftsample \encap(\pk)$
+                \State $K_1 \leftsample \mathcal{K}$
+                \State $b \leftsample \{0, 1\}$
+                \State $\hat{b} \leftsample A^{\mathcal{O}_\texttt{ATK}}(
+                    1^\lambda, \pk, c^\ast, K_b
+                )$
+                \State \Return $\llbrack \hat{b} = b \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\textwidth}
+        \begin{algorithm}[H]
+        \caption*{$\mathcal{O}_\decap(c)$}
+        \begin{algorithmic}[1]
+            \State \Return $\decap(\sk, c)$
+        \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{\texttt{IND-ATK} game for KEM and decapsulation oracle $\mathcal{O}_\decap$}\label{fig:kem-game}
+\end{figure}
+
+The decapsulation oracle $\mathcal{O}^\decap$ takes a ciphertext $c$ and returns the output of the $\decap$ routine using the secret key. The advantage of an IND-CCA adversary $\mathcal{A}_\texttt{IND-CCA}$ is defined by the adversary's ability to correctly distinguish the two cases beyond a blind guess:
+
+\begin{equation*}
+    \adv_\texttt{IND-CCA}(A) = \norm{
+        P[A^{\mathcal{O}_\decap}(a^\lambda, \pk, c^\ast, K_b) = b] - \frac{1}{2}
+    }.
+\end{equation*}
+
+A KEM is \texttt{IND-ATK} secure if no efficient adversary has non-negligible advantage in the corresponding security game.
+
+\subsection{Message authentication code (MAC)}\label{sec:message-authentication-code}
+\textbf{Syntax.} A message authentication code $\mac(\keygen, \sign, \verify)$ is a collection of routines defined over some key space $\mathcal{K}$, some message space $\mathcal{M}$, and some tag space $\mathcal{T}$. The signing routine $\sign(k, m)$ authenticates the message $m$ under the secret key $k$ by producing a tag $t$ (also called digest) (we define the process that generates an authentication tag $t$ over message $m$ a \textit{signing routine} in this paper). The verification routine $\verify(k, m, t)$ takes the triplet of secret key $k$, message $m$, and tag $t$, and outputs $\texttt{1}$ if the message-tag pair is valid under the secret key, or $\texttt{0}$ otherwise. Many MAC constructions are deterministic. For these constructions it is simpler to denote the signing routine by $t \leftarrow \mac(k, m)$ and perform verification using a simple comparison.
+
+\textbf{Security.} The security of a MAC is defined in an adversarial game in which an adversary, with access to a MAC oracle that can answer signing queries $\mac(k, m) \leftarrow \mathcal{O}_\mac(m)$, tries to forge a new valid message-tag pair that has never been queried before. The ability to access a MAC oracle is called \emph{chosen-message attack (CMA)}. The ability to produce a valid tag on some arbitrary message is called \emph{existential forgery}. The existential unforgeability under chosen message attack (EUF-CMA) game is shown below:
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.53\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{EUF-CMA} game}
+            \begin{algorithmic}[1]
+                \State $k^\ast \leftsample \mathcal{K}$
+                \State $(\hat{m}, \hat{t}) \leftsample \mathcal{A}^{\mathcal{O}_\mac}()$
+                \State \Return $
+                    \llbrack \verify(k^\ast, \hat{m}, \hat{t}) 
+                    \land (\hat{m}, \hat{t}) \not\in \mathcal{O}_\mac
+                    \rrbrack
+                $
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hspace{0.3cm}
+    \begin{minipage}[t]{0.4\textwidth}
+        \begin{algorithm}[H]
+            \caption*{MAC oracle $\mathcal{O}_\mac(m)$}
+            \begin{algorithmic}[1]
+                \State \Return $\mac(k^\ast, m)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{The existential forgery game and the MAC oracle}\label{fig:euf-cma-game}
+\end{figure}
+
+The advantage $\adv_\texttt{EUF-CMA}$ of the existential forgery adversary is the probability that it wins the EUF-CMA game. Some MACs are one-time existentially unforgeable, meaning that each secret key can be used to authenticate only a single message. The corresponding security game is modified such that the MAC oracle will only answer a single signing query.
+
+% \section{Encrypt-then-MAC: new generic IND-CCA KEM transformation}\label{sec:main-results}
+\section{The encrypt-then-MAC transformation}\label{sec:main-results}
+\noindent\textbf{Our technique.} We introduce our encrypt-then-MAC transformation that transforms a OW-PCA secure PKE and an one-time existentially unforgeable MAC into an IND-CCA secure KEM. Our scheme mainly differs from DHIES in its versatility and input requirement. Whereas the IND-CCA security of DHIES reduces specifically to the Gap Diffie-Hellman assumption, the chosen-ciphertext security of the encrypt-then-MAC KEM reduces more generally to the OW-PCA security \cite{DBLP:conf/ctrsa/OkamotoP01} of the input scheme. In addition, we propose that because each call to encapsulation samples a fresh PKE plaintext, the encrypt-then-MAC KEM can be instantiated with one-time secure MAC such as Poly1305 for further performance improvements (Abdalla, Rogaway, and Bellare originally proposed to use HMAC and CBC-MAC, which are many-time secure MAC but less efficient than one-time MAC, see Section \ref{sec:choosing-a-message-authenticator}). The encapsulation data flow is illustrated in Figure \ref{fig:etm-diagram}.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \tikzstyle{rect} = [draw, rectangle, minimum width=3cm, minimum height=0.5cm]
+        \tikzstyle{filledrect} = [draw, rectangle, minimum width=3cm, minimum height=0.5cm, fill=lightgray]
+        \matrix [column sep=7mm, row sep=5mm] {
+            \node (pk) [rect] {$\pk$}; &
+            \node (m) [rect] {$m \leftsample \mathcal{M}$}; &
+            \node (hashg) [rect] {Hash function $G$}; \\
+            \node (pkeenc) [rect] {$\texttt{PKE.Enc}$}; &
+            \node (mackey) [rect] {$k_\mac$}; \\
+            \node (ct) [filledrect] {$c^\prime$}; &
+            \node (mac) [rect] {$\mac$}; &
+            \node (tag) [filledrect] {$t$}; \\
+        };
+        \draw[->, thick] (pk) -- (pkeenc);
+        \draw[->, thick] (m) -- (pkeenc);
+        \draw[->, thick] (m) -- (hashg);
+        \draw[->, thick] (hashg) -- (mackey);
+        \draw[->, thick] (pkeenc) -- (ct);
+        \draw[->, thick] (mackey) -- (mac);
+        \draw[->, thick] (ct) -- (mac);
+        \draw[->, thick] (mac) -- (tag);
+    \end{tikzpicture}
+
+    \caption{Combining PKE with MAC using encrypt-then-MAC to ensure ciphertext integrity}\label{fig:etm-diagram}
+\end{figure}
+
+In Section \ref{sec:proof-of-theorem} we reduce the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE, and non-tightly to the unforgeability of the MAC. In Section \ref{sec:elgamal-is-ow-pca}, we show that DHIES is a special case of the encrypt-then-MAC transformation by reducing the OW-PCA security of the ElGamal cryptosystem to the Gap Diffie-Hellman assumption.
+
+\subsection{The generic KEM construction}
+Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\pke(\keygen, \encrypt, \decrypt)$ be a public-key encryption scheme defined over message space $\mathcal{M}$ and ciphertext space $\mathcal{C}$. Let $\mac: \mathcal{K}_\mac \times \mathcal{B}^\ast \rightarrow \mathcal{T}$ be a deterministic message authentication code that takes a key $k \in \mathcal{K}_\mac$, some message $m \in \mathcal{B}^\ast$, and outputs a tag $t \in \mathcal{T}$. Let $G: \mathcal{M} \rightarrow \mathcal{K}_\mac$ be a hash function that maps from $\pke$'s plaintext space to $\mac$'s key space. Let $H: \mathcal{B}^\ast \rightarrow \mathcal{K}_\kem$ be a hash function that maps bit strings into the set of possible shared secrets. The encrypt-then-MAC transformation $\etm[\pke, \mac, G, H]$ constructs a key encapsulation mechanism $\kem_\etm(\keygen, \encap, \decap)$, whose routines are described in Figure \ref{fig:etm-routines}.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[t]{0.5\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\kem_\etm.\keygen()$}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk^\prime) \leftsample \pke\texttt{.}\keygen()$
+                \State $z \leftsample \mathcal{M}$
+                \State $\sk \leftarrow (\sk^\prime, z)$
+                \State \Return $(\pk, \sk)$
+            \end{algorithmic}
+        \end{algorithm}
+        \begin{algorithm}[H]
+            \caption*{$\kem_\etm.\encap(\pk)$}
+            \begin{algorithmic}[1]
+                \State $m \leftsample \mathcal{M}$
+                \State $k \leftarrow G(m)$
+                \State $c^\prime \leftsample \pke\texttt{.}\encrypt(\pk, m)$
+                \State $t \leftarrow \mac(k, c^\prime)$
+                \State $c \leftarrow (c^\prime, t)$
+                \State $K \leftarrow H(m, c)$
+                \State \Return $(c, K)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\kem_\etm.\decap(\sk, c)$}
+            \begin{algorithmic}[1]
+                \State $(c^\prime, t) \leftarrow c$
+                \State $(\sk^\prime, z) \leftarrow \sk$
+                \State $\hat{m} \leftarrow \pke\texttt{.}\decrypt(\sk^\prime, c^\prime)$
+                \State $\hat{k} \leftarrow G(\hat{m})$
+                \If{$\mac(\hat{k}, c^\prime) = t$}
+                    \State $K \leftarrow H(\hat{m}, c)$
+                \Else
+                    % This is directly copied from ML-KEM, DO NOT CHANGE
+                    \State $K \leftarrow H(z, c)$
+                \EndIf
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{The encrypt-then-MAC transformation builds a KEM, denoted by $\kem_\etm$, using a $\pke(\keygen, \encrypt, \decrypt)$, a $\mac$, and two hash functions $G, H$}\label{fig:etm-routines} 
+\end{figure}
+
+% The key generation routine of $\kem_\etm$ is largely identical to that of the $\pke$, only a secret value $z$ is sampled as the implicit rejection symbol. In the encapsulation routine, a MAC key is derived from the randomly sampled plaintext, then used to sign the unauthenticated ciphertext $c^\prime$. Finally, the unauthenticated ciphertext $c^\prime$ and the tag $t$ combine into the authenticated ciphertext $c$ that would be transmitted to the peer. In the decapsulation routine, the decryption $\hat{m}$ of the unauthenticated ciphertext is used to re-derive the MAC key $\hat{k}$, which is then used to re-compute the tag $\hat{t}$. The ciphertext is considered valid if and only if the recomputed tag is identical to the input tag.
+
+Since the encrypt-then-MAC transformation removes re-encryption in decapsulation, there is no longer the need for fixing the pseudorandom coin $r$ in the PKE's encryption routine. If the input PKE is already rigid, then the shared secret may be derived from hashing the PKE plaintext alone. However, if the input PKE is not rigid, then the shared secret must be derived from hashing both the PKE plaintext and the PKE ciphertext. 
+
+\paragraph{Security analysis.} The chosen-ciphertext security of the encrypt-then-MAC scheme can be intuitively argued through an adversary's inability to learn additional information from the decapsulation oracle. For an adversary $A$ to produce a valid tag $t$ for some unauthenticated ciphertext $c^\prime$ under the symmetric key $k \leftarrow G(\decrypt(\sk^\prime, c^\prime))$ implies that $A$ must either know the symmetric key $k$ or produce a forgery. Under the random oracle model, $A$ also cannot know $k$ without knowing its pre-image $\decrypt(\sk^\prime, c^\prime)$, so $A$ must either have produced $c^\prime$ honestly, or have broken the one-way security of $\pke$. This means that the decapsulation oracle will not give out information on decryption that the adversary does not already know. 
+
+However, a decapsulation oracle can still give out some information: for a known plaintext $m$, all possible encryptions $c^\prime \leftsample \encrypt(\pk, m)$ can be correctly signed, while ciphertexts that don't decrypt back to $m$ cannot be correctly signed. This means that a decapsulation oracle can be converted into a plaintext-checking oracle, so every chosen-ciphertext attack against the KEM can be converted into a plaintext-checking attack against the underlying PKE.
+
+On the other hand, if the underlying PKE is OW-PCA secure and the underlying MAC is one-time existentially unforgeable, then the encrypt-then-MAC KEM is IND-CCA secure:
+
+\begin{theorem}\label{thm:ow-pca-implies-kem-ind-cca2}
+    For every \texttt{IND-CCA} adversary $A$ against $\kem_\etm$ that makes $q$ decapsulation queries, there exists an \texttt{OW-PCA} adversary $B$ who makes at least $q$ plaintext-checking queries against the underlying $\pke$, and an one-time existential forgery adversary $C$ against the underlying $\mac$ such that
+
+    \begin{equation*}
+        \texttt{Adv}_\texttt{IND-CCA}(A) \leq q \cdot \adv_\texttt{OT-MAC}(C) + 2 \cdot \texttt{Adv}_\texttt{OW-PCA}(B).
+    \end{equation*}
+\end{theorem}
+
+\subsection{Proof of Theorem \ref{thm:ow-pca-implies-kem-ind-cca2}}\label{sec:proof-of-theorem}
+We will prove Theorem \ref{thm:ow-pca-implies-kem-ind-cca2} using a sequence of game. A summary of the the sequence of games can be found in Figure \ref{fig:etm-ind-cc2-sequence-of-games} and \ref{fig:ow-pca-simulates-game-3}. From a high level we made three incremental modifications to the IND-CCA game for $\kem_\etm$: \begin{enumerate}
+    \setlength\itemsep{0.1em}
+    \item Replace the true decapsulation oracle with a simulated decapsulation oracle
+    \item Replace the pseudorandom MAC key $k^\ast \leftarrow G(m^\ast)$ with a truly random $k^\ast \leftsample \mathcal{K}_\mac$
+    \item Replace the pseudorandom shared secret $K_0 \leftarrow H(m^\ast, c)$ with a truly random shared secret $K_0 \leftsample \mathcal{K}_\kem$
+\end{enumerate}
+
+A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adversary, and the advantage of the OW-PCA adversary is associated with the probability of certain behaviors of the KEM adversary.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[t]{0.5\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{IND-CCA} game for $\kem_\etm$}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk) \leftsample \kem_\etm\texttt{.}\keygen()$
+                \State $m^\ast \leftsample \mathcal{M}$
+                \State $c^\prime \leftsample \pke\texttt{.}\encrypt(\pk, m^\ast)$
+                \State $k^\ast \leftarrow G(m^\ast)$
+                    \Comment{Game 0-1}
+                \State $k^\ast \leftsample \mathcal{K}_\mac$
+                    \Comment{Game 2-3}
+                \State $t \leftarrow \mac(k^\ast, c^\prime)$
+                \State $c^\ast \leftarrow (c^\prime, t)$
+                \State $K_0 \leftarrow H(m^\ast, c^\ast)$
+                    \Comment{Game 0-2}
+                \State $K_0 \leftsample \mathcal{K}_\kem$
+                    \Comment{Game 3}
+                \State $K_1 \leftsample \mathcal{K}_\kem$
+                \State $b \leftsample \{0,1\}$
+                \State $\hat{b} \leftarrow A^{\mathcal{O}^\decap}(\pk, c^\ast, K_b)$
+                    \Comment{Game 0}
+                \State $\hat{b} \leftarrow A^{\mathcal{O}^\decap_1}(\pk, c^\ast, K_b)$
+                    \Comment{Game 1-3}
+                \State \Return $\llbrack \hat{b} = b \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+        \begin{algorithm}[H]
+            \caption*{Hash oracle $\mathcal{O}^G(m)$}
+            \begin{algorithmic}[1]
+                \If{$\exists (\tilde{m}, \tilde{k}) \in \mathcal{L}^G : \tilde{m} = m$}
+                    \State \Return $\tilde{k}$
+                \EndIf
+                \State $k \leftsample \mathcal{K}_\mac$
+                \State $\mathcal{L}^G \leftarrow \mathcal{L}^G \cup \{(m, k)\}$
+                \State \Return $k$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.49\textwidth}
+        \begin{algorithm}[H]
+            \caption*{Decap oracle $\mathcal{O}^\decap(c)$}
+            \begin{algorithmic}[1]
+                \State $(c^\prime, t) \leftarrow c$
+                \State $\hat{m} = \decrypt(\sk^\prime, c^\prime)$
+                \State $\hat{k} \leftarrow G(\hat{m})$
+                \If{$\mac(\hat{k}, c^\prime) = t$}
+                    \State $K \leftarrow H(\hat{m}, c)$
+                \Else 
+                    \State $K \leftarrow H(z, c)$
+                \EndIf 
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+        \vspace{-0.5cm}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}^\decap_1(c)$}
+            \begin{algorithmic}[1]
+                \State $(c^\prime, t) \leftarrow c$
+                \If{$\exists (\tilde{m}, \tilde{k}) \in \mathcal{L}^G : 
+                    \tilde{m} = \decrypt(\sk^\prime, c^\prime)
+                    \land \mac(\tilde{k}, c^\prime) = t
+                $}
+                    \State $K \leftarrow H(\tilde{m}, c)$
+                \Else
+                    \State $K \leftarrow H(z, c)$
+                \EndIf
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+        \vspace{-0.5cm}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}^H(m, c)$}
+            \begin{algorithmic}[1]
+                \If{$\exists (\tilde{m}, \tilde{c}, \tilde{K}) \in \mathcal{L}^H : \tilde{m} = m \land \tilde{c} = c$}
+                    \State \Return $\tilde{K}$
+                \EndIf
+                \State $K \leftsample \mathcal{K}_\kem$
+                \State $\mathcal{L}^H \leftarrow \mathcal{L}^H \cup \{(m, c, K)\}$
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{Sequence of games in the proof of Theorem \ref{thm:ow-pca-implies-kem-ind-cca2}}\label{fig:etm-ind-cc2-sequence-of-games}
+\end{figure}
+\begin{figure}[h]
+    \begin{minipage}[t]{0.49\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$B(\pk, {c^\prime}^\ast)$}
+            \begin{algorithmic}[1]
+                \State $z \leftsample \mathcal{M}$
+                \State $k \leftsample \mathcal{K}_\mac$
+                \State $t \leftarrow \mac(k, {c^\prime}^\ast)$
+                \State $c^\ast \leftarrow ({c^\prime}^\ast, t)$
+                \State $K \leftsample \mathcal{K}_\kem$
+                \State $\hat{b} \leftarrow A^{
+                    \mathcal{O}^\decap_B, \mathcal{O}^G_B, \mathcal{O}^H_B
+                }(\pk, c^\ast, K)$
+                \If{$\texttt{ABORT}(m)$}
+                    \State \Return $m$
+                \EndIf
+            \end{algorithmic}
+        \end{algorithm}\vspace{-0.5cm}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}^H_B(m, c)$}
+            \begin{algorithmic}
+                \If{$\pco(m, {c^\prime}^\ast) = 1$}
+                    \State $\texttt{ABORT}(m)$
+                \EndIf
+                \If{$
+                    \exists (\tilde{m}, \tilde{c}, \tilde{K}) \in \mathcal{L}^H 
+                    : \tilde{m} = m \land \tilde{c} = c
+                $}
+                    \State \Return $\tilde{K}$
+                \EndIf
+                \State $K \leftsample \mathcal{K}_\kem$
+                \State $\mathcal{L}^H \leftarrow \mathcal{L}^H \cup \{(m, c, K)\}$
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}^\decap_B(c)$}
+            \begin{algorithmic}[1]
+                \State $(c^\prime, t) \leftarrow c$
+                \If{$\exists (\tilde{m}, \tilde{k}) \in \mathcal{L}^G : 
+                    % \tilde{m} = \decrypt(\sk^\prime, c^\prime)
+                    \pco(\tilde{m}, c^\prime) = 1
+                    \land \mac(\tilde{k}, c^\prime) = t
+                $}
+                    \State $K \leftarrow H(\tilde{m}, c)$
+                \Else
+                    \State $K \leftarrow H(z, c)$
+                \EndIf
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+        \begin{algorithm}[H]
+            \caption*{$\mathcal{O}^G_B(m)$}
+            \begin{algorithmic}[1]
+                \If{$\pco(m, {c^\prime}^\ast) = 1$}
+                    \State $\texttt{ABORT}(m)$
+                \EndIf
+                \If{$\exists (\tilde{m}, \tilde{k}) \in \mathcal{L}^G : \tilde{m} = m$}
+                    \State \Return $\tilde{k}$
+                \EndIf
+                \State $k \leftsample \mathcal{K}_\mac$
+                \State $\mathcal{L}^G \leftarrow \mathcal{L}^G \cup \{(m, k)\}$
+                \State \Return $k$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{OW-PCA adversary $B$ simulates game 3 for IND-CCA adversary $A$ in the proof for Theorem \ref{thm:ow-pca-implies-kem-ind-cca2}}\label{fig:ow-pca-simulates-game-3}
+\end{figure}
+
+
+\begin{proof}
+    \emph{Game 0} is the standard KEM IND-CCA game. The decapsulation oracle $\mathcal{O}^\decap$ executes the decapsulation routine using the challenge keypair and return the results faithfully. The queries made to the hash oracles $\mathcal{O}^G, \mathcal{O}^H$ are recorded to their respective tapes $\mathcal{L}^G, \mathcal{L}^H$.
+
+    \emph{Game 1} is identical to game 0 except that the true decapsulation oracle $\mathcal{O}^\decap$ is replaced with a simulated oracle $\mathcal{O}^\decap_1$. Instead of directly decrypting $c^\prime$ as in the decapsulation routine, the simulated oracle searches through the tape $\mathcal{L}^G$ to find a matching query $(\tilde{m}, \tilde{k})$ such that $\tilde{m}$ is the decryption of $c^\prime$. The simulated oracle then uses $\tilde{k}$ to validate the tag $t$ against $c^\prime$.
+
+    If the simulated oracle accepts the queried ciphertext as valid, then there is a matching query that also validates the tag, which means that the queried ciphertext is honestly generated. Therefore, the true oracle must also accept the queried ciphertext. On the other hand, if the true oracle rejects the queried ciphertext, then the tag is simply invalid under the MAC key $k = G(\decrypt(\sk^\prime, c^\prime))$. Therefore, there could not have been a matching query that also validates the tag, and the simulated oracle must also rejects the queried ciphertext.
+
+    This means that from the adversary $A$'s perspective, game 1 and game 0 differ only when the true oracle accepts while the simulated oracle rejects, which means that $t$ is a valid tag for $c^\prime$ under $k = G(\decrypt(\sk^\prime, c^\prime))$, but $k$ has never been queried. Under the random oracle model, such $k$ is a uniformly random sample of $\mathcal{K}_\mac$ that the adversary does not know, so for $A$ to produce a valid tag is to produce a forgery against the $\mac$ under an unknown and uniformly random key. Furthermore, the security game does not include a MAC oracle, so this is a zero-time forgery. While zero-time forgery is not a standard security definition for a MAC, we can bound it by the advantage of a one-time forgery adversary $C$:
+
+    \begin{equation*}
+        P\left[\mathcal{O}^\decap(c) \neq \mathcal{O}^\decap_1(c)\right]
+        \leq \adv_\texttt{OT-MAC}(C).
+    \end{equation*}
+
+    Across all $q$ decapsulation queries, the probability that at least one query is a forgery is thus at most $q \cdot P\left[\mathcal{O}^\decap(c) \neq \mathcal{O}^\decap_1(c)\right]$. By the difference lemma:
+
+    \begin{equation*}
+        \adv_{G_0}(A) - \adv_{G_1}(A) \leq q\cdot  \adv_\texttt{OT-MAC}(C).
+    \end{equation*}
+
+    \emph{Game 2} is identical to game 1, except that the challenger samples a uniformly random MAC key $k^\ast \leftsample \mathcal{K}_\mac$ instead of deriving it from $m^\ast$. From $A$'s perspective the two games are indistinguishable, unless $A$ queries $G$ with the value of $m^\ast$. Denote the probability that $A$ queries $G$ with $m^\ast$ by $P[\texttt{QUERY G}]$, then:
+
+    \begin{equation*}
+        \adv_{G_1}(A) - \adv_{G_2}(A) \leq P\left[\texttt{QUERY G}\right].
+    \end{equation*}
+
+    \emph{Game 3} is identical to game 2, except that the challenger samples a uniformly random shared secret $K_0 \leftsample \mathcal{K}_\kem$ instead of deriving it from $m^\ast$ and $t$. From $A$'s perspective the two games are indistinguishable, unless $A$ queries $H$ with $(m^\ast, \cdot)$. Denote the probability that $A$ queries $H$ with $(m^\ast, \cdot)$ by $P[\texttt{QUERY H}]$, then:
+
+    \begin{equation*}
+        \adv_{G_2}(A) - \adv_{G_3}(A) \leq P\left[\texttt{QUERY H}\right].
+    \end{equation*}
+
+    Since in game 3, both $K_0$ and $K_1$ are uniformly random and independent of all other variables, no adversary can have any advantage: $\adv_{G_3}(A) = 0$.
+
+    We will bound $P[\texttt{QUERY G}]$ and $P[\texttt{QUERY H}]$ by constructing a OW-PCA adversary $B$ against the underlying PKE that uses $A$ as a sub-routine. $B$'s behaviors are summarized in Figure \ref{fig:ow-pca-simulates-game-3}.
+
+    $B$ simulates game 3 for $A$: receiving the public key $\pk$ and challenge encryption ${c^\prime}^\ast$, $B$ samples random MAC key and session key to produce the challenge encapsulation, then feeds it to $A$. When simulating the decapsulation oracle, $B$ uses the plaintext-checking oracle to look for matching queries in $\mathcal{L}^G$. When simulating the hash oracles, $B$ uses the plaintext-checking oracle to detect when $m^\ast = \decrypt(\sk^\prime, {c^\prime}^\star)$ has been queried. When $m^\ast$ is queried, $B$ terminates $A$ and returns $m^\ast$ to win the OW-PCA game. In other words:
+
+    \begin{equation*}
+        \begin{aligned}
+            P\left[\texttt{QUERY G}\right] &\leq \adv_\texttt{OW-PCA}(B), \\
+            P\left[\texttt{QUERY H}\right] &\leq \adv_\texttt{OW-PCA}(B). \\
+        \end{aligned}
+    \end{equation*}
+
+    Combining all equations above produce the desired security bound.
+\end{proof}
+
+\section{Applications}\label{sec:applications}
+In this section we will survey a number of existing public-key encryption schemes and discuss the applicability of the encrypt-then-MAC transformation to these schemes.
+
+\subsection{RSA}
+RSA \cite{DBLP:journals/cacm/RivestSA78} is a public-key cryptosystem proposed by Rivest, Shamir, and Adleman in 1978. A summary of its subroutines can be found in Figure \ref{fig:textbook-rsa}. 
+
+\begin{figure}[h]
+    \centering
+
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{RSA \texttt{KeyGen}}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.32\textwidth}
+        \begin{algorithm}[H]
+            \caption*{RSA \texttt{Enc}}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.32\textwidth}
+        \begin{algorithm}[H]
+            \caption*{RSA \texttt{Dec}}
+        \end{algorithm}
+    \end{minipage}
+    \caption{Textbook RSA}\label{fig:textbook-rsa}
+\end{figure}
+
+In its original formulation (typically referred to as "textbook RSA"), the RSA cryptosystem is one-way secure against chosen-plaintext attack (OW-CPA) under the conjectured intractability of the RSA problem \cite{DBLP:journals/cacm/RivestSA78} (Definition \ref{def:rsa-problem}). Furthermore, it is easy to show that the RSA cryptosystem is a trapdoor permutation on the multiplicative group $\mathbb{Z}_N^\ast$. In other words, under a given keypair $\texttt{pk} = (N, e), \texttt{sk} = d$, $m^e = c \mod N$ if and only if $c^d \mod N$. Consequently, textbook RSA is one-way secure against plaintext-checking attack, because the plaintext-checking oracle can be perfectly simulated using only the public key, which means that access to a plaintext-checking oracle offers no additional advantage.
+
+\begin{definition}[RSA problem]\label{def:rsa-problem}
+   Let $N = pq$ be the product of two prime numbers. Let $e$ be an integer that is relatively prime to $\phi(N) = (p - 1)(q - 1)$, and let $d = e^{-1} \mod \phi(N)$. Let $m$ be a uniformly random sample in $\mathbb{Z}_N^\ast$ and let $c = m^e \mod N$. Given $N, e, c$, find $m$.
+\end{definition}
+
+Although textbook RSA is OW-PCA secure and thus a suitable candidate for the encrypt-then-MAC transformation, there exists simpler and faster CCA secure KEM transformation. For example, one can apply the $U^{\not\bot}_m$ variant of the modular Fujisaki-Okamoto transformation, which encapsulates the shared secret by directly hashing a randomly sampled plaintext. The resulting KEM (Figure \ref{fig:rsa-kem}) is largely identical to the RSA-KEM proposed by Victor Shoup in \cite{DBLP:journals/iacr/Shoup01}. Compare to the encrypt-then-MAC transformation, RSA-KEM offers identically tight security bound while it removes the need for deriving the MAC key and computing the MAC tag.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{algorithm}[H]
+            \caption*{RSA-KEM KeyGen}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{algorithm}[H]
+            \caption*{RSA-KEM Enc}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{algorithm}[H]
+            \caption*{RSA-KEM Dec}
+        \end{algorithm}
+    \end{minipage}
+    \caption{RSA-KEM}\label{fig:rsa-kem}
+\end{figure}
+
+\subsection{ElGamal}\label{sec:elgamal}
+We show that the DHAES/DHIES hybrid encryption scheme is a special case of the encrypt-then-MAC transformation. Specifically, we will sketch a proof of the following lemma:
+
+\begin{lemma}\label{lemma:elgamal-is-ow-pca}
+    For every OW-PCA adversary $A$ against the ElGamal cryptosystem, there exists a Gap Diffie-Hellman problem solver $B$ such that:
+
+    \begin{equation*}
+        \text{Adv}_\text{GapDH}(B) = \text{Adv}_\text{OW-PCA}(A).
+    \end{equation*}
+
+    In other words, ElGamal is OW-PCA secure under the Gap Diffie-Hellman assumption.
+\end{lemma}
+
+Each ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is parameterized by a cyclic group $G = \langle g \rangle$ of prime order $q > 2$. A summary of the routine is shown in Figure \ref{fig:elgamal-routines}:
+
+\begin{figure}[H]
+    \centering
+
+    \begin{minipage}[t]{0.32\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{KeyGen()}}
+            \begin{algorithmic}[1]
+                \State $x \leftsample \mathbb{Z}_q$
+                \State $\sk \leftarrow x$
+                \State $\pk \leftarrow g^x$
+                \State \Return $(\pk, \sk)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\texttt{Enc}(\pk = g^x, m \in G)$}
+            \begin{algorithmic}[1]
+                \Require $m \in G$
+                \State $y \leftsample \mathbb{Z}_q$
+                \State $w \leftarrow g^y$
+                \State $v \leftarrow m \cdot (g^x)^y$
+                \State \Return $c = (w, v)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\texttt{Dec}(\sk = x, c = (w,v) \in G^2)$}
+            \begin{algorithmic}[1]
+                \State $\hat{m} \leftarrow (w^x)^{-1}\cdot v$
+                \State \Return $\hat{m}$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    
+    \caption{ElGamal cryptosystem}\label{fig:elgamal-routines}
+\end{figure}
+
+The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational Diffie-Hellman problem and the decisional Diffie-Hellman problem:
+
+\begin{definition}[\textbf{computational Diffie-Hellman problem (CDH)}]
+    Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$, compute $g^{xy}$.
+\end{definition}
+\begin{definition}[\textbf{decisional Diffie-Hellman problem (DDH)}]
+    Let $x, y, z \leftsample \mathbb{Z}_q$ be uniformly random samples. Let $h \leftsample \{g^z, g^{xy}\}$ be randomly chosen between $g^z$ and $g^{xy}$. Given $(g, g^x, g^y, h)$, determine whether $h$ is $g^{xy}$ or $g^z$
+\end{definition}
+
+It is also conjectured in \cite{DBLP:conf/ctrsa/AbdallaBR01} (and later extensively studied in \cite{DBLP:conf/pkc/OkamotoP01}) that for certain choice of cyclic group $G$, the computational Diffie-Hellman problem remains intractable even if the adversary as access to a restricted decisional Diffie-Hellman oracle. This assumption is captured in the Gap Diffie-Hellman problem:
+
+\begin{definition}[\textbf{Gap Diffie-Hellman problem}]
+    Let $G = \langle g \rangle$ be a cyclic group of prime order $q > 2$. Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$ and a restricted DDH oracle $\mathcal{O}^\text{DDH}: (u, v) \mapsto \llbrack u^x = v \rrbrack$, compute $g^{xy}$.
+\end{definition}
+
+We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}. 
+\begin{proof}
+    We will prove by a sequence of games. A summary can be found in Figure \ref{fig:elgamal-pca-games}
+
+    \begin{figure}[h]
+        \centering
+
+        \begin{minipage}[t]{0.4\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$G_0 - G_2$}
+                \begin{algorithmic}[1]
+                    \State $x \leftsample \mathbb{Z}_q$
+                    \State $m^\ast \leftsample G$
+                    \State $y \leftsample \mathbb{Z}_q, w \leftarrow g^y$
+                    \State $v \leftarrow m^\ast \cdot (g^x)^y$
+                        \Comment{$G_0$ - $G_1$}
+                    \State $v \leftsample G$
+                        \Comment{$G_2$}
+                    \State $c^\ast \leftarrow (w, v)$
+                    \State $\hat{m} \leftsample A^{\pco}(g^x, c^\ast)$
+                        \Comment{$G_0$}
+                    \State $\hat{m} \leftsample A^{\pco_1}(g^x, c^\ast)$
+                        \Comment{$G_1$ - $G_2$}
+                    \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
+                        \Comment{$G_0$ - $G_1$}
+                    \State \Return $\llbrack \hat{m} = w^{-x}\cdot v \rrbrack$
+                        \Comment{$G_2$}
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+        \begin{minipage}[t]{0.4\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$\pco(m, c=(w, v))$}
+                \begin{algorithmic}[1]
+                    \State \Return $\llbrack m = (w^x)^{-1}\cdot v\rrbrack$
+                \end{algorithmic}
+            \end{algorithm}
+            \begin{algorithm}[H]
+                \caption*{$\pco_1(m, c=(w, v))$}
+                \begin{algorithmic}[1]
+                    \State \Return $\llbrack (w^x) = m^{-1} \cdot v \rrbrack$
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+
+        \caption{ The sequence of games in proving Lemma \ref{lemma:elgamal-is-ow-pca}}\label{fig:elgamal-pca-games}
+    \end{figure}
+
+    \emph{Game 0} is the OW-PCA game. Adversary $A$ has access to the plaintext-checking oracle $\pco$ and wins the game if it can correctly recover the challenge plaintext $m^\ast$.
+
+    \emph{Game 1} is identical to game 0, except that the formulation of the $\pco$ is changed. When servicing the plaintext-checking query $(m, c = (w, v))$, $\pco_1$ checks whether $w^x$ is equal to $m^{-1} \cdot v$. Observe that in the cyclic group $G$, the algebraic expressions in $\pco$ and $\pco_1$ are equivalent, which means that $\pco_1$ behaves identically to $\pco$.
+
+    \emph{Game 2} is identical to game 1 except for two modifications: first, when computing the challenge ciphertext, $v$ is no longer computed from $m^\ast$ but is randomly sampled; second, the win condition changed from $\hat{m} = m^\ast$ to $\hat{m} = w^{-x}\cdot v$. It is easy to verify that Game 0 through Game 2 are algebraically equivalent:
+
+    \begin{equation*}
+        \adv_0(A) = \adv_1(A) = \adv_2(A). 
+    \end{equation*}
+
+    The Gap Diffie-Hellman adversary $B$ can perfectly simulate game 2 for $A$ (see Figure \ref{fig:ow-pca-to-gap-dh}): $B$ receives as the Gap Diffie-Hellman problem inputs $g^x$ and $g^y$. $g^x$ simulates an ElGamal public key, where as $g^y$ simulates the first component of the challenge ciphertext. As in game 2, the second component of the challenge ciphertext can be randomly sampled. Finally, the $\pco_1$ from game 2 can be perfectly simulated using the restricted DDH oracle $\mathcal{O}^\text{DDH}$.
+
+    \begin{figure}[h]
+        \centering
+
+        \begin{minipage}[t]{0.45\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$B^{\mathcal{O}^\text{DDH}}(g, g^x, g^y)$}
+                \begin{algorithmic}[1]
+                    \State $w \leftarrow g^y$
+                    \State $v \leftsample G$
+                    \State $c^\ast \leftarrow (w, v)$
+                    \State $\hat{m} \leftsample A^{\pco_2}(g^x, c^\ast)$
+                    \State \Return $\hat{m}^{-1}\cdot v$
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+        \begin{minipage}[t]{0.45\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$\mathcal{O}^\text{DDH}(u, v)$}
+                \begin{algorithmic}[1]
+                    \State \Return $\llbrack u^x = v \rrbrack$
+                \end{algorithmic}
+            \end{algorithm}\vspace{-0.3cm}
+            \begin{algorithm}[H]
+                \caption*{$\pco_2(m, c=(w, v))$}
+                \begin{algorithmic}[1]
+                    \State \Return $\mathcal{O}^\text{DDH}(w, m^{-1}\cdot v)$
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+
+        \caption{Gap Diffie-Hellman adversary $B$ simulates game 2 for $A$}\label{fig:ow-pca-to-gap-dh}
+    \end{figure}
+
+    If $A$ wins game 2, then its output is $\hat{m} = w^{-x}\cdot v = g^{-xy}\cdot v$, so $m^{-1}\cdot v$ is $g^{xy}$, the correct answer to the Gap Diffie-Hellman problem. In other words, $B$ solves its Gap Diffie-Hellman problem if and only if $A$ wins the simulated game 2: $\adv_2(A) = \adv_\text{GapDH}(B)$.
+\end{proof}
+
+\subsection{Lattice-based cryptosystems}
+Kyber/ML-KEM, Saber, FrodoKEM, and variations of NTRU cryptosystems are all vulnerable to key-recovery plaintext-checking attack (KR-PCA). For details of the attack, we refer readers to \cite{ueno2022curse} (TODO: more citations). Consequently, all of them are not suitable for the encrypt-then-MAC transformation.
+
+As Peikert pointed out in \cite{DBLP:conf/pqcrypto/Peikert14}, variations of the Learning With Error exhibit search-decision equivalence. Since in most lattice cryptosystems a plaintext-checking oracle directly distinguishes valid and invalid ciphertexts and thus solve the decisional problem, such oracle can be used to solve the search problem and thus recover the secret key. It remains an open problem to find a lattice cryptosystem that is one-way secure against plaintext-checking attack, though it seems unlikely.
+
+TODO: this section needs a lot of re-write
+
+\subsection{Code-based cryptosystems}
+
+
+\subsection{Other cryptosystems}
+
+\section{Implementation and performance analysis}\label{sec:implementation-and-performance-analysis}
+
+\section{Conclusion}
+
+\bibliographystyle{splncs04}
+\bibliography{biblio.bib}
+\end{document}
