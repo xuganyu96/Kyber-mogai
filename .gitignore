@@ -53,3 +53,6 @@ dkms.conf
 
 # build binaries
 target/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
