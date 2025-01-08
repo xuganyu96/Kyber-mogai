@@ -89,7 +89,7 @@ Where the expectation is taken with respect to the probability distribution of a
 
 \textbf{Security.} The security of public-key encryption is conventionally discussed within the context of adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. There are two main types of games: i) in the one-wayness (OW-ATK) game, the adversary is given a random encryption, then asked to produce the correct decryption; ii) in the indistinguishability (IND-ATK) game, the adversary is given the encryption of one of two adversary-chosen plaintexts, then asked to decide which of the plaintexts corresponds with the given encryption. Depending on the attack model, the adversary may have access to various oracles. Within the context of public-key cryptography, adversaries are always assumed to have the public key with which they can mount chosen-plaintext attack (CPA). If the adversary has access to a plaintext-checking oracle (PCO) \cite{DBLP:conf/ctrsa/OkamotoP01} then it can mount plaintext-checking attack (PCA). Where the adversary has access to a decryption oracle, it can mount chosen-ciphertext attacks (CCA). 
 
-\begin{figure}
+\begin{figure}[H]
     \centering
 
     \begin{minipage}[t]{0.3\textwidth}
@@ -145,7 +145,7 @@ The advantage of an adversary in the \texttt{OW-ATK} game is the probability tha
 
 \textbf{Security.} The security of a KEM is similarly discussed in adversarial games (Figure \ref{fig:kem-game}), although the win conditions differ slightly from the win conditions of a PKE indistinguishability game. In a KEM's indistinguishability game, an adversary is given the public key and a challenge ciphertext, then asked to distinguish a pseudorandom shared secret $K_0$ associated with the challenge ciphertext from a truly random bit string of equal length.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{minipage}[t]{0.49\textwidth}
         \begin{algorithm}[H]
@@ -219,9 +219,9 @@ The advantage $\adv_\texttt{EUF-CMA}$ of the existential forgery adversary is th
 
 % \section{Encrypt-then-MAC: new generic IND-CCA KEM transformation}\label{sec:main-results}
 \section{The encrypt-then-MAC transformation}\label{sec:main-results}
-\noindent\textbf{Our technique.} We introduce our encrypt-then-MAC transformation that transforms a OW-PCA secure PKE and an one-time existentially unforgeable MAC into an IND-CCA secure KEM. Our scheme mainly differs from DHIES in its versatility and input requirement. Whereas the IND-CCA security of DHIES reduces specifically to the Gap Diffie-Hellman assumption, the chosen-ciphertext security of the encrypt-then-MAC KEM reduces more generally to the OW-PCA security \cite{DBLP:conf/ctrsa/OkamotoP01} of the input scheme. In addition, we propose that because each call to encapsulation samples a fresh PKE plaintext, the encrypt-then-MAC KEM can be instantiated with one-time secure MAC such as Poly1305 for further performance improvements (Abdalla, Rogaway, and Bellare originally proposed to use HMAC and CBC-MAC, which are many-time secure MAC but less efficient than one-time MAC, see Section \ref{sec:choosing-a-message-authenticator}). The encapsulation data flow is illustrated in Figure \ref{fig:etm-diagram}.
+\paragraph{Our technique.} We introduce our encrypt-then-MAC transformation that transforms a OW-PCA secure PKE and an one-time existentially unforgeable MAC into an IND-CCA secure KEM. Our scheme mainly differs from DHIES in its versatility and input requirement. Whereas the IND-CCA security of DHIES reduces specifically to the Gap Diffie-Hellman assumption, the chosen-ciphertext security of the encrypt-then-MAC KEM reduces more generally to the OW-PCA security \cite{DBLP:conf/ctrsa/OkamotoP01} of the input scheme. In addition, we propose that because each call to encapsulation samples a fresh PKE plaintext, the encrypt-then-MAC KEM can be instantiated with one-time secure MAC such as Poly1305 for further performance improvements (Abdalla, Rogaway, and Bellare originally proposed to use HMAC and CBC-MAC, which are many-time secure MAC but less efficient than one-time MAC, see Section \ref{sec:choosing-a-message-authenticator}). The encapsulation data flow is illustrated in Figure \ref{fig:etm-diagram}.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{tikzpicture}
         \tikzstyle{rect} = [draw, rectangle, minimum width=3cm, minimum height=0.5cm]
@@ -254,7 +254,7 @@ In Section \ref{sec:proof-of-theorem} we reduce the IND-CCA security of the KEM 
 \subsection{The generic KEM construction}
 Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\pke(\keygen, \encrypt, \decrypt)$ be a public-key encryption scheme defined over message space $\mathcal{M}$ and ciphertext space $\mathcal{C}$. Let $\mac: \mathcal{K}_\mac \times \mathcal{B}^\ast \rightarrow \mathcal{T}$ be a deterministic message authentication code that takes a key $k \in \mathcal{K}_\mac$, some message $m \in \mathcal{B}^\ast$, and outputs a tag $t \in \mathcal{T}$. Let $G: \mathcal{M} \rightarrow \mathcal{K}_\mac$ be a hash function that maps from $\pke$'s plaintext space to $\mac$'s key space. Let $H: \mathcal{B}^\ast \rightarrow \mathcal{K}_\kem$ be a hash function that maps bit strings into the set of possible shared secrets. The encrypt-then-MAC transformation $\etm[\pke, \mac, G, H]$ constructs a key encapsulation mechanism $\kem_\etm(\keygen, \encap, \decap)$, whose routines are described in Figure \ref{fig:etm-routines}.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{minipage}[t]{0.5\textwidth}
         \begin{algorithm}[H]
@@ -304,7 +304,7 @@ Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\pke(\keygen, 
 
 Since the encrypt-then-MAC transformation removes re-encryption in decapsulation, there is no longer the need for fixing the pseudorandom coin $r$ in the PKE's encryption routine. If the input PKE is already rigid, then the shared secret may be derived from hashing the PKE plaintext alone. However, if the input PKE is not rigid, then the shared secret must be derived from hashing both the PKE plaintext and the PKE ciphertext. 
 
-\paragraph{Security analysis.} The chosen-ciphertext security of the encrypt-then-MAC scheme can be intuitively argued through an adversary's inability to learn additional information from the decapsulation oracle. For an adversary $A$ to produce a valid tag $t$ for some unauthenticated ciphertext $c^\prime$ under the symmetric key $k \leftarrow G(\decrypt(\sk^\prime, c^\prime))$ implies that $A$ must either know the symmetric key $k$ or produce a forgery. Under the random oracle model, $A$ also cannot know $k$ without knowing its pre-image $\decrypt(\sk^\prime, c^\prime)$, so $A$ must either have produced $c^\prime$ honestly, or have broken the one-way security of $\pke$. This means that the decapsulation oracle will not give out information on decryption that the adversary does not already know. 
+\paragraph{Security analysis.} The CCA security of the encrypt-then-MAC scheme can be intuitively argued through an adversary's inability to learn additional information from the decapsulation oracle. For an adversary $A$ to produce a valid tag $t$ for some unauthenticated ciphertext $c^\prime$ under the symmetric key $k \leftarrow G(\decrypt(\sk^\prime, c^\prime))$ implies that $A$ must either know the symmetric key $k$ or produce a forgery. Under the random oracle model, $A$ also cannot know $k$ without knowing its pre-image $\decrypt(\sk^\prime, c^\prime)$, so $A$ must either have produced $c^\prime$ honestly, or have broken the one-way security of $\pke$. This means that the decapsulation oracle will not give out information on decryption that the adversary does not already know. 
 
 However, a decapsulation oracle can still give out some information: for a known plaintext $m$, all possible encryptions $c^\prime \leftsample \encrypt(\pk, m)$ can be correctly signed, while ciphertexts that don't decrypt back to $m$ cannot be correctly signed. This means that a decapsulation oracle can be converted into a plaintext-checking oracle, so every chosen-ciphertext attack against the KEM can be converted into a plaintext-checking attack against the underlying PKE.
 
@@ -328,7 +328,7 @@ We will prove Theorem \ref{thm:ow-pca-implies-kem-ind-cca2} using a sequence of 
 
 A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adversary, and the advantage of the OW-PCA adversary is associated with the probability of certain behaviors of the KEM adversary.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{minipage}[t]{0.5\textwidth}
         \begin{algorithm}[H]
@@ -414,7 +414,7 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
     \end{minipage}
     \caption{Sequence of games in the proof of Theorem \ref{thm:ow-pca-implies-kem-ind-cca2}}\label{fig:etm-ind-cc2-sequence-of-games}
 \end{figure}
-\begin{figure}[h]
+\begin{figure}[H]
     \begin{minipage}[t]{0.49\textwidth}
         \begin{algorithm}[H]
             \caption*{$B(\pk, {c^\prime}^\ast)$}
@@ -540,7 +540,7 @@ In this section we will survey a number of existing public-key encryption scheme
 \subsection{RSA}
 RSA \cite{DBLP:journals/cacm/RivestSA78} is a public-key cryptosystem proposed by Rivest, Shamir, and Adleman in 1978. A summary of its subroutines can be found in Figure \ref{fig:textbook-rsa}. 
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
 
     \begin{minipage}[t]{0.33\textwidth}
@@ -569,7 +569,7 @@ In its original formulation (typically referred to as "textbook RSA"), the RSA c
 
 Although textbook RSA is OW-PCA secure and thus a suitable candidate for the encrypt-then-MAC transformation, there exists simpler and faster CCA secure KEM transformation. For example, one can apply the $U^{\not\bot}_m$ variant of the modular Fujisaki-Okamoto transformation, which encapsulates the shared secret by directly hashing a randomly sampled plaintext. The resulting KEM (Figure \ref{fig:rsa-kem}) is largely identical to the RSA-KEM proposed by Victor Shoup in \cite{DBLP:journals/iacr/Shoup01}. Compare to the encrypt-then-MAC transformation, RSA-KEM offers identically tight security bound while it removes the need for deriving the MAC key and computing the MAC tag.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{minipage}[t]{0.3\textwidth}
         \begin{algorithm}[H]
@@ -643,12 +643,12 @@ Each ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is parameterized by
     \caption{ElGamal cryptosystem}\label{fig:elgamal-routines}
 \end{figure}
 
-The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational Diffie-Hellman problem and the decisional Diffie-Hellman problem:
+The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational and decisional Diffie-Hellman problem:
 
-\begin{definition}[\textbf{computational Diffie-Hellman problem (CDH)}]
+\begin{definition}[\textbf{computational Diffie-Hellman problem}]
     Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$, compute $g^{xy}$.
 \end{definition}
-\begin{definition}[\textbf{decisional Diffie-Hellman problem (DDH)}]
+\begin{definition}[\textbf{decisional Diffie-Hellman problem}]
     Let $x, y, z \leftsample \mathbb{Z}_q$ be uniformly random samples. Let $h \leftsample \{g^z, g^{xy}\}$ be randomly chosen between $g^z$ and $g^{xy}$. Given $(g, g^x, g^y, h)$, determine whether $h$ is $g^{xy}$ or $g^z$
 \end{definition}
 
@@ -755,11 +755,64 @@ We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}.
 \end{proof}
 
 \subsection{Lattice-based cryptosystems}
-Kyber/ML-KEM, Saber, FrodoKEM, and variations of NTRU cryptosystems are all vulnerable to key-recovery plaintext-checking attack (KR-PCA). For details of the attack, we refer readers to \cite{ueno2022curse} (TODO: more citations). Consequently, all of them are not suitable for the encrypt-then-MAC transformation.
+Applying the encrypt-then-MAC transformation to the PKE subroutines of Kyber/ML-KEM (which we will call KyberPKE for short) will not produce CCA secure KEM. This is because KyberPKE is not one-way secure against plaintext checking attack. An abundance of literature \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20} described plaintext-checking attacks that can recover the complete secret key using a few thousand oracle queries. Here we review the key-recovery plaintext-checking attack presented in \cite{DBLP:conf/acns/Huguenin-Dumittan20}.
 
-As Peikert pointed out in \cite{DBLP:conf/pqcrypto/Peikert14}, variations of the Learning With Error exhibit search-decision equivalence. Since in most lattice cryptosystems a plaintext-checking oracle directly distinguishes valid and invalid ciphertexts and thus solve the decisional problem, such oracle can be used to solve the search problem and thus recover the secret key. It remains an open problem to find a lattice cryptosystem that is one-way secure against plaintext-checking attack, though it seems unlikely.
+Let $q=3329, n=256$, let $R_q = \mathbb{Z}_q[x] / \langle x^n + 1 \rangle$. The secret key of KyberPKE is $\texttt{sk} = \mathbf{s} \in R_q^k$ where $k = 2, 3, 4$ for depending on the security level. The coefficients of the secret key are sampled from centered binomial distribution $\text{CBD}_{\eta_1}$. The ciphertext takes the form $c = (\mathbf{u}\in R_q^k, v \in R_q)$. The decryption routine is described in Figure \ref{fig:kyberpke-decryption}
 
-TODO: this section needs a lot of re-write
+\begin{figure}[H]
+    \centering
+
+    \begin{minipage}[t]{0.5\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\texttt{KyberPKE.Dec}(\texttt{sk}, c)$}
+            \begin{algorithmic}[1]
+                \Require $c = (\mathbf{u}, v)$
+                \Require $\texttt{sk} = \mathbf{s}$
+                \State $w \leftarrow v - \langle \mathbf{s}, \mathbf{u} \rangle$
+                \State $m = \texttt{Round}(w)$
+                    \Comment{$m \in Z_2[x]/\langle x^n + 1 \rangle$}
+                \State \Return $m$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{KyberPKE decryption routine}\label{fig:kyberpke-decryption}
+\end{figure}
+
+For $1\leq i \leq k, 0 \leq j \leq n-1$ denote the i-th entry in a polynomial vector $\mathbf{s} \in R_q^k$ by $s_i$ and the coefficient of the j-th power term of a polynomial $v \in R_q$ by $v[j]$. For some fixed $i, j$, an adversary can learn some information about $s_{i}[j]$ by crafting malformed ciphertext $\tilde{c} = (\tilde{\mathbf{u}}, \tilde{v})$ where $\tilde{u}_{i}[1], \tilde{v}[j]$ are chosen by the adversary, and all other coefficients are set to 0. When decrypting this malformed ciphertext, $w[j] = \tilde{v}[j] - s_i[j]\tilde{u}_i[0]$ and all other coefficients of $w$ are 0s. With specific choices of values for $\tilde{u}_i[0], \tilde{v}[j]$, whether $w[j]$ will round to $1$ or $0$ will depend on the value of $s_i[j]$. This can be used to perform a binary search that recovers the value of $s_i[j]$ in $\lceil\log_2(2\cdot\eta_1 + 1)\rceil$ plaintext-checking queries. See Table \ref{tbl:kyber-sk-binary-search} for an example of plaintext-checking query strategy. Such a binary search can then be repeated $n \cdot k$ times to completely recover the secret key.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        $u_i[0]$ & $v[j]$ & if $m[j] = 1$ & if $m[j] = 0$ \\
+        \hline
+        208 & 416 & $s_i[j]\in\{-3\}$ & $s_i[j]\in\{-2, -1, 0, 1, 2, 3\}$ \\
+        \hline
+        208 & 624 & $s_i[j]\in\{-3, -2\}$ & $s_i[j]\in\{-1, 0, 1, 2, 3\}$ \\
+        \hline
+        208 & 832 & $s_i[j]\in\{-3, -2, -1\}$ & $s_i[j]\in\{0, 1, 2, 3\}$ \\
+        \hline
+        208 & 1040 & $s_i[j]\in\{-3, -2, -1, 0\}$ & $s_i[j]\in\{1, 2, 3\}$ \\
+        \hline
+        208 & 1248 & $s_i[j]\in\{-3, -2, -1, 0, 1\}$ & $s_i[j]\in\{2, 3\}$ \\
+        \hline
+        208 & 1456 & $s_i[j]\in\{-3, -2, -1, 0, 1, 2\}$ & $s_i[j]\in\{3\}$ \\
+        \hline
+        208 & -1456 & $s_i[j]\in\{-2, -1, 0, 1, 2, 3\}$ & $s_i[j]\in\{-3\}$ \\
+        \hline
+        208 & -1248 & $s_i[j]\in\{-1, 0, 1, 2, 3\}$ & $s_i[j]\in\{-3, -2\}$ \\
+        \hline
+        208 & -1040 & $s_i[j]\in\{0, 1, 2, 3\}$ & $s_i[j]\in\{-3, -2, -1\}$ \\
+        \hline
+        208 & -832 & $s_i[j]\in\{1, 2, 3\}$ & $s_i[j]\in\{-3, -2, -1, 0\}$ \\
+        \hline
+        208 & -624 & $s_i[j]\in\{2, 3\}$ & $s_i[j]\in\{-3, -2, -1, 0, 1\}$ \\
+        \hline
+        208 & -416 & $s_i[j]\in\{3\}$ & $s_i[j]\in\{-3, -2, -1, 0, 1, 2\}$ \\
+        \hline
+    \end{tabular}
+    \caption{Plaintext-checking query strategy for Kyber512: $\eta_1 = 3, d_u = 10, d_v = 4$}\label{tbl:kyber-sk-binary-search}
+\end{table}
 
 \subsection{Code-based cryptosystems}
 
@@ -773,7 +826,7 @@ Classic McEliece is a IND-CCA secure post-quantum KEM submitted to NIST's Post Q
 
 The PKE subroutines described in the previous paragraph is OW-CPA secure under the conjectured intractability of the Syndrome Decoding Problem (SDP) for random binary Goppa code. However, because the encryption routine is deterministic, the PKE routine does not have indistinguishability. Instead, Classic McEliece applies a non-standard Fujisaki-Okamoto transformation in which the decryption routine checks ciphertext integrity using re-encryption. Finally, indistinguishability is achieved using implicit rejection: the decryption routine will output fake session key on invalid ciphertext that an adversary cannot distinguish from true session key any more than the adversary can recover the decryption without the secret key.
 
-Whether the PKE subroutines of Classic McEliece is OW-PCA secure remains unproven: although the encryption routine is deterministic, the decryption routine might not be injective. Whether the decryption routine is injective likely depends on the choice of binary Goppa decoder. Classic McEliece currently implements syndrome decoding using the Berlekamp-Massey algorithm, which is inherently not injective (there are distinct infinite sequences that correspond to the same shortest LFSR). However, there have been many attempts at constructing plaintext-checking attacks on Classic McEliece using side channels \cite{ueno2022curse}\cite{DBLP:journals/tches/TanakaUXITH23}, but there is no known plaintext-checking attacks to date.
+Whether the PKE subroutines of Classic McEliece is OW-PCA secure remains unproven: although the encryption routine is deterministic, the decryption routine might not be injective. Whether the decryption routine is injective likely depends on the choice of binary Goppa decoder. Classic McEliece currently implements syndrome decoding using the Berlekamp-Massey algorithm, which is inherently not injective (there are distinct infinite sequences that correspond to the same shortest LFSR). However, there have been many attempts at constructing plaintext-checking attacks on Classic McEliece using side channels \cite{DBLP:journals/tches/UenoXTITH22}\cite{DBLP:journals/tches/TanakaUXITH23}, but there is no known plaintext-checking attacks to date.
 
 Under the conjectured OW-PCA security of the PKE subroutines Classic McEliece, we speculate that applying the encrypt-then-MAC transformation to the PKE subroutines should result in a CCA secure KEM, which we will call \texttt{mceliece+}. A summary of \texttt{mceliece+}'s routines can be found in figure \ref{fig:mceliece-plus-routines}
 
