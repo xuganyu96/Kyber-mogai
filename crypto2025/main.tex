@@ -34,6 +34,7 @@
 \newcommand{\adv}{\texttt{Adv}}
 \newcommand{\fotplus}{\texttt{FOT+}}
 \newcommand{\us}{\mu s}
+\newcommand{\wt}{\mathop{wt}}
 \def\mlkemplus{\text{ML-KEM}^+}
 
 \begin{document}
@@ -819,12 +820,59 @@ For $1\leq i \leq k, 0 \leq j \leq n-1$ denote the i-th entry in a polynomial ve
 
 \subsection{Other cryptosystems}
 
-\section{Application to Classic McEliece}\label{sec:implementation-and-performance-analysis}
+\section{Implementation and performance analysis}\label{sec:implementation-and-performance-analysis}
 In this section, we instantiate the encrypt-then-MAC KEM transformation using the subroutines of classic McEliece and a variety of MAC implementations. We will discuss the modifications and their rationale, as well as the performance implications.
 
-Classic McEliece is a IND-CCA secure post-quantum KEM submitted to NIST's Post Quantum Cryptoraphy (PQC) standardization project and is currently one of three viable round 4 candidate. Classic McEliece is primarily based on the McEliece cryptosystem first proposed by Robert McEliece in 1978 (citation!) and later improved by Harald Niederreiter in 1986. For a high-level summary, Classic McEliece generates the secret key by sampling a random binary Goppa code, then computes the systematic form of the canonical parity check matrix as the public key. The message space is the set of all codewords with fixed Hamming weight. Each plaintext message is encrypted by multiplying it with the row-reduced parity check matrix, and the resulting syndrome is returned as the ciphertext. For decryption, the secret key, which contains the decoding algorithm, recovers the locations of the errors from the syndrome, which is then used to reconstruct the original codeword.
+Classic McEliece is an IND-CCA secure post-quantum KEM submitted to NIST's Post Quantum Cryptoraphy (PQC) standardization project and is currently one of three viable round 4 candidate. Classic McEliece is based on the Niederreiter variant of the McEliece cryptosystem using binary Goppa code, originally proposed by Robert McEliece in 1978 and later improved by Harald Niederreiter in 1986. There are two layers in the construction of the Classic McEliece KEM. The first layer is an OW-CPA secure PKE whose one-wayness reduces to the intractability of the Syndrome Decoding Problem (SDP) and the indistinguishability of random binary Goppa code from random linear code. The second layer is a modified Fujisaki-Okamoto transformation for converting the passively secure PKE into an actively secure KEM. Specifically, because the encoding subroutine is deterministic, Classic McEliece does not need de-randomization, and although Classic McEliece uses re-encryption for ensuring ciphertext integrity, it does not simply include the PKE public key in the KEM secret secret and apply the PKE encryption. We will discuss Classic McEliece's re-encryption in details shortly.
 
-The PKE subroutines described in the previous paragraph is OW-CPA secure under the conjectured intractability of the Syndrome Decoding Problem (SDP) for random binary Goppa code. However, because the encryption routine is deterministic, the PKE routine does not have indistinguishability. Instead, Classic McEliece applies a non-standard Fujisaki-Okamoto transformation in which the decryption routine checks ciphertext integrity using re-encryption. Finally, indistinguishability is achieved using implicit rejection: the decryption routine will output fake session key on invalid ciphertext that an adversary cannot distinguish from true session key any more than the adversary can recover the decryption without the secret key.
+Each instance of Classic McEliece KEM is parameterized by the base field size $m$ (which induces a binary extension field $\mathbb{F}_{2^m}$), the codeword length $n$, and the weight $t$ of error vector. Let $\mathcal{G}_{m, t} = \{g(x) \in \mathbb{F}_{2^m}[x] \mid \deg(g) = t, \text{$g$ is irreducible}\}$ denote the set of degree-$t$ irreducible polynomials in $\mathbb{F}_{2^m}$. Given a Goppa polynomial $g \in \mathcal{G}_{m, t}$ and $n$ distinct elements $\alpha_1, \alpha_2, \ldots, \alpha_n \in \mathbb{F}_{2^m}$, the canonical parity check matrix $H \in \mathbb{F}_{2^m}^{t \times n}$ is given by $H_{j,i} = \alpha_i^{j-1}/g(\alpha_i)$ for $1\leq i \leq n, 1 \leq j \leq t$.
+
+Key generation in Classic McEliece involves sampling a random binary Goppa code and computing the canonical parity check matrix. The decoding algorithm, parameterized by the Goppa polynomial $g(x)$ and the support $L = (\alpha_1, \alpha_2, \ldots, \alpha_n)$ with secret permutation, is the secret key. The canonical parity check matrix $H$ is row-reduced, and if the output $H^\prime \leftarrow SH$ ($S$ is some invertible matrix encoding the row reduction) has systematic form $H^\prime = [I_t \mid T]$ for some identity matrix $I_t \in \mathbb{F}_{2^m}^{t \times t}$ and $T \in \mathbb{F}_{2^m}^{t \times (n - t)}$, then $T$ is returned as the public key. However, if the canonical parity check matrix cannot be reduced to systematic form, then the entire key generation is restarted. According to (TODO: citation needed), such randomly sampled $H$ has an estimated 30\% probability of being reduced to sysmatic form, meaning that key generation usually needs to run multiple times before succeeding. Some modifications introduced in the f-variants of Classic McEliece improves the estimated probability of success and consequently speeds up key generation, but they are not the focus of this work and will not be discussed in details.
+
+Let $\mathcal{S}_t = \{\mathbf{e} \in \mathbb{F}_2^n \mid \wt(\mathbf{e}) = t\}$ denote the Hamming sphere of weight $t$. The message space of McEliecePKE is exactly $\mathcal{S}_t$. A plaintext $\mathbf{e}\in\mathcal{S}_t$ is encrypted by interpreting it as a noisy codeword and computing its syndrome under the row-reduced parity check matrix. At decryption, the ciphertext is first zero-padded to transform it into a noisy codeword (this works because the parity-check matrix is in systematic form), then feeding the noisy codeword into the secret Goppa decoder, which identifies the locations of the errors. Because binary Goppa codesare in $\mathbb{F}_2^n$, knowing the error locations is sufficient for recovering the error vector $\mathbf{e}\in\mathcal{S}_t$. Decryption is perfectly correct.
+
+\begin{figure}[H]
+    \centering
+
+    \begin{algorithm}[H]
+        \caption*{\texttt{McEliecePKE.keygen}()}
+        \begin{algorithmic}[1]
+            \While{\texttt{true}}
+                \State $g \leftarrow \mathcal{G}$
+                \State $\alpha_1, \alpha_2, \ldots, \alpha_0 \leftarrow \mathbb{F}_{2^m}$
+                \State $H \leftarrow \texttt{ParityCheck}(\alpha_1, \alpha_2, \ldots, \alpha_n)$
+                \State $H^\prime \leftarrow \texttt{RowReduce}(H)$
+                \If{$H^\prime = [I_t \mid T]$}
+                    \State $\pk \leftarrow T$
+                    \State $\sk \leftarrow (g, \alpha_1, \alpha_2, \ldots, \alpha_n)$
+                    \State \Return $(\pk, \sk)$
+                \EndIf
+            \EndWhile
+        \end{algorithmic}
+    \end{algorithm}
+    \begin{algorithm}[H]
+        \caption*{$\texttt{McEliecePKE.enc}(\pk, \mathbf{e})$}
+        \begin{algorithmic}[1]
+            \Require $\mathbf{e} \in \mathcal{S}_t$
+            \Require $\pk \in \mathbb{F}_{2^m}^{t \times (n - t)}$
+            \State $T \leftarrow \pk$
+            \State $c \leftarrow [I_m \mid T] \cdot \mathbf{e}$
+            \State \Return $c$
+        \end{algorithmic}
+    \end{algorithm}
+    \begin{algorithm}[H]
+        \caption*{$\texttt{McEliecePKE.dec}(\sk, \mathbf{c})$}
+        \begin{algorithmic}[1]
+            \Require $\mathbf{c} \in \mathbb{F}_{2^m}^t$
+            \Require $\sk \in \mathbf{F}_{2^m}^n \times \mathcal{G}_{m,t}$
+            \State $\mathbf{c} \leftarrow [\mathbf{c} \mid \mathbf{0}^{n-t}]$
+                \Comment{Zero-pad ciphertext until reaching codewords length}
+            \State $\mathbf{e} \leftarrow \texttt{GoppaDecode}(\sk, \mathbf{c})$
+            \State \Return $\mathbf{e}$
+        \end{algorithmic}
+    \end{algorithm}
+    \caption{Breaking down Classic McEliece KEM into a OW-CPA PKE and modified Fujisaki-Okamoto transformation. Key generation is identical between PKE and KEM}\label{fig:mceliece-routines}
+\end{figure}
 
 Whether the PKE subroutines of Classic McEliece is OW-PCA secure remains unproven: although the encryption routine is deterministic, the decryption routine might not be injective. Whether the decryption routine is injective likely depends on the choice of binary Goppa decoder. Classic McEliece currently implements syndrome decoding using the Berlekamp-Massey algorithm, which is inherently not injective (there are distinct infinite sequences that correspond to the same shortest LFSR). However, there have been many attempts at constructing plaintext-checking attacks on Classic McEliece using side channels \cite{DBLP:journals/tches/UenoXTITH22}\cite{DBLP:journals/tches/TanakaUXITH23}, but there is no known plaintext-checking attacks to date.
 
@@ -841,97 +889,97 @@ Under the conjectured OW-PCA security of the PKE subroutines Classic McEliece, w
     \caption{\texttt{mceliece+}'s routines}\label{fig:mceliece-plus-routines}
 \end{figure}
 
-\subsection{Choosing a message authentication code (MAC)}\label{sec:choosing-a-message-authenticator}
-In Figure \ref{fig:ml-kem-plus-routines}, while $H$, $G$ and \textsf{KDF} are instantiated by SHA3-256, SHA3-512 and Shake256, respectively, there could be various choices of standardized and well-analyze MAC algorithms. For implementation, we instantiated the MAC with a selection that covered a wide range of MAC designs, including Poly1305 \cite{bernstein2005poly1305}, GMAC \cite{mcgrew2004galois}, CMAC \cite{iwata2003omac}\cite{black2000cbc}, and KMAC \cite{SP80053r4}. All MACs are parameterized with a 256-bit key to ensure that MAC keys are at least as hard to guess as the underlying PKE plaintext. On the other hand, all MACs use a 128-bit tag except for KMAC, which can have a variable tag length. We suspect that a 128-bit tag might be insufficient for the 192-bit and 256-bit security levels, so for instantiation with the higher security levels, we only use KMAC with 192-bit and 256-bit tag length outputs.
+% \subsection{Choosing a message authentication code (MAC)}\label{sec:choosing-a-message-authenticator}
+% In Figure \ref{fig:ml-kem-plus-routines}, while $H$, $G$ and \textsf{KDF} are instantiated by SHA3-256, SHA3-512 and Shake256, respectively, there could be various choices of standardized and well-analyze MAC algorithms. For implementation, we instantiated the MAC with a selection that covered a wide range of MAC designs, including Poly1305 \cite{bernstein2005poly1305}, GMAC \cite{mcgrew2004galois}, CMAC \cite{iwata2003omac}\cite{black2000cbc}, and KMAC \cite{SP80053r4}. All MACs are parameterized with a 256-bit key to ensure that MAC keys are at least as hard to guess as the underlying PKE plaintext. On the other hand, all MACs use a 128-bit tag except for KMAC, which can have a variable tag length. We suspect that a 128-bit tag might be insufficient for the 192-bit and 256-bit security levels, so for instantiation with the higher security levels, we only use KMAC with 192-bit and 256-bit tag length outputs.
 
-\textbf{Poly1305 and GMAC} are both Carter-Wegman style MACs \cite{wegman1981new} that compute the tag using finite field arithmetic. Generically speaking, Carter-Wegman MAC operates by breaking the message into message blocks that can then be parsed into finite field elements. The tag is computed by evaluating a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key (also called a \textit{hash key}). Specifically, Poly1035 operates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$ whereas GMAC operates in the binary field $\mathbb{F}_{2^{128}}$.
+% \textbf{Poly1305 and GMAC} are both Carter-Wegman style MACs \cite{wegman1981new} that compute the tag using finite field arithmetic. Generically speaking, Carter-Wegman MAC operates by breaking the message into message blocks that can then be parsed into finite field elements. The tag is computed by evaluating a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key (also called a \textit{hash key}). Specifically, Poly1035 operates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$ whereas GMAC operates in the binary field $\mathbb{F}_{2^{128}}$.
 
-\textbf{CMAC} is based on the CBC-MAC with the block cipher instantiated from AES-256. To compute a CMAC tag, the message is first broke into 128-bit blocks with appropriate padding. Each block is first XORed with the previous block's output, then encrypted under AES using the symmetric key. The final output is XORed with a sub key derived from the symmetric key, before being encrypted for one last time.
+% \textbf{CMAC} is based on the CBC-MAC with the block cipher instantiated from AES-256. To compute a CMAC tag, the message is first broke into 128-bit blocks with appropriate padding. Each block is first XORed with the previous block's output, then encrypted under AES using the symmetric key. The final output is XORed with a sub key derived from the symmetric key, before being encrypted for one last time.
 
-\textbf{KMAC} is based on the SHA-3 family of sponge functions \cite{FIPS202}. We chose KMAC-256, which uses Shake256 as the underlying extendable output functions. KMAC is the only MAC to support variable key and tag length, though we fixed the key length at 256 bits. On the other hand, we chose the appropriate tag length for the corresponding security level: when instantiated with ML-KEM-512, the tag length is 128 bits; with ML-KEM-768, the tag length is 192 bits; with ML-KEM-1024, the tag length is 256 bits.
+% \textbf{KMAC} is based on the SHA-3 family of sponge functions \cite{FIPS202}. We chose KMAC-256, which uses Shake256 as the underlying extendable output functions. KMAC is the only MAC to support variable key and tag length, though we fixed the key length at 256 bits. On the other hand, we chose the appropriate tag length for the corresponding security level: when instantiated with ML-KEM-512, the tag length is 128 bits; with ML-KEM-768, the tag length is 192 bits; with ML-KEM-1024, the tag length is 256 bits.
 
-We implemented \texttt{mceliece+} by modifying the reference implementation. MAC implementations are taken from OpenSSL. C code is compiled using Apple Clang 15.0.0. Performance measurement is run on Apple Silicon M1 chip. CPU clock is measured using kernel clock \texttt{mach\_absolute\_time}. Each rouine is run 10000 times, with median time reported in Table \ref{tbl:mceliece-plus-performance}.
+% We implemented \texttt{mceliece+} by modifying the reference implementation. MAC implementations are taken from OpenSSL. C code is compiled using Apple Clang 15.0.0. Performance measurement is run on Apple Silicon M1 chip. CPU clock is measured using kernel clock \texttt{mach\_absolute\_time}. Each rouine is run 10000 times, with median time reported in Table \ref{tbl:mceliece-plus-performance}.
 
-\begin{table}[h]
-    \centering
-    % \footnotesize
-    \begin{tabular}[c]{|c|c|c|c|}
-        \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece348864} & 215 & 2471 & 2686 \\
-        \hline
-        \texttt{mceliece348864 + poly1305} & 316 (+46.98\%) & 2074 (-16.07\%) & 2390 (-11.02\%) \\
-        \hline
-        \texttt{mceliece348864 + gmac} & 335 (+55.81\%) & 2087 (-15.54\%) & 2422 (-9.83\%) \\
-        \hline
-        \texttt{mceliece348864 + cmac} & 340 (+58.14\%) & 2092 (-15.34\%) & 2432 (-9.46\%) \\
-        \hline
-        \texttt{mceliece348864 + kmac256} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
-        \hline
-    \end{tabular}
-    \begin{tabular}[c]{|c|c|c|c|}
-        \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece460896} & 487 & 6694 & 7181 \\
-        \hline
-        \texttt{mceliece460896 + poly1305} & 514 (+5.54\%) & 5784 (-13.59\%) & 6298 (-12.30\%) \\
-        \hline
-        \texttt{mceliece460896 + gmac} & 565 (+16.02\%) & 5809 (-13.22\%) & 6374 (-11.24\%) \\
-        \hline
-        \texttt{mceliece460896 + cmac} & 544 (+11.70\%) & 5905 (-11.79\%) & 6449 (-10.19\%) \\
-        \hline
-        \texttt{mceliece460896 + kmac256} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
-        \hline
-    \end{tabular}
-    \begin{tabular}[c]{|c|c|c|c|}
-        \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
-        \hline
-        \texttt{mceliece6688128 + poly1305} & 889 (+8.95\%) & 6509 (-13.21\%) & 7398 (-11.04\%) \\
-        \hline
-        \texttt{mceliece6688128 + gmac} & 890 (+9.07\%) & 6521 (-13.05\%) & 7411 (-10.88\%) \\
-        \hline
-        \texttt{mceliece6688128 + cmac} & 900 (+10.29\%) & 6540 (-12.80\%) & 7440 (-10.53\%) \\
-        \hline
-        \texttt{mceliece6688128 + kmac256} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
-        \hline
-    \end{tabular}
-    \begin{tabular}[c]{|c|c|c|c|}
-        \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
-        \hline
-        \texttt{mceliece6960119 + poly1305} & 735 (+5.15\%) & 6389 (-12.02\%) & 7124 (-10.51\%) \\
-        \hline
-        \texttt{mceliece6960119 + gmac} & 753 (+7.73\%) & 6450 (-11.18\%) & 7203 (-9.52\%) \\
-        \hline
-        \texttt{mceliece6960119 + cmac} & 763 (+9.16\%) & 6428 (-11.48\%) & 7191 (-9.67\%) \\
-        \hline
-        \texttt{mceliece6960119 + kmac256} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
-        \hline
-    \end{tabular}
-    \begin{tabular}[c]{|c|c|c|c|}
-        \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
-        \hline
-        \texttt{mceliece8192128 + poly1305} & 955 (+11.31\%) & 6547 (-12.29\%) & 7502 (-9.85\%) \\
-        \hline
-        \texttt{mceliece8192128 + gmac} & 957 (+11.54\%) & 6550 (-12.25\%) & 7507 (-9.79\%) \\
-        \hline
-        \texttt{mceliece8192128 + cmac} & 945 (+10.14\%) & 6546 (-12.30\%) & 7491 (-9.99\%) \\
-        \hline
-        \texttt{mceliece8192128 + kmac256} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
-        \hline
-    \end{tabular}
-    \caption{Performance comparison between Classic McEliece and \texttt{mceliece+}}\label{tbl:mceliece-plus-performance}
-\end{table}
+% \begin{table}[h]
+%     \centering
+%     % \footnotesize
+%     \begin{tabular}[c]{|c|c|c|c|}
+%         \hline
+%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece348864} & 215 & 2471 & 2686 \\
+%         \hline
+%         \texttt{mceliece348864 + poly1305} & 316 (+46.98\%) & 2074 (-16.07\%) & 2390 (-11.02\%) \\
+%         \hline
+%         \texttt{mceliece348864 + gmac} & 335 (+55.81\%) & 2087 (-15.54\%) & 2422 (-9.83\%) \\
+%         \hline
+%         \texttt{mceliece348864 + cmac} & 340 (+58.14\%) & 2092 (-15.34\%) & 2432 (-9.46\%) \\
+%         \hline
+%         \texttt{mceliece348864 + kmac256} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
+%         \hline
+%     \end{tabular}
+%     \begin{tabular}[c]{|c|c|c|c|}
+%         \hline
+%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece460896} & 487 & 6694 & 7181 \\
+%         \hline
+%         \texttt{mceliece460896 + poly1305} & 514 (+5.54\%) & 5784 (-13.59\%) & 6298 (-12.30\%) \\
+%         \hline
+%         \texttt{mceliece460896 + gmac} & 565 (+16.02\%) & 5809 (-13.22\%) & 6374 (-11.24\%) \\
+%         \hline
+%         \texttt{mceliece460896 + cmac} & 544 (+11.70\%) & 5905 (-11.79\%) & 6449 (-10.19\%) \\
+%         \hline
+%         \texttt{mceliece460896 + kmac256} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
+%         \hline
+%     \end{tabular}
+%     \begin{tabular}[c]{|c|c|c|c|}
+%         \hline
+%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
+%         \hline
+%         \texttt{mceliece6688128 + poly1305} & 889 (+8.95\%) & 6509 (-13.21\%) & 7398 (-11.04\%) \\
+%         \hline
+%         \texttt{mceliece6688128 + gmac} & 890 (+9.07\%) & 6521 (-13.05\%) & 7411 (-10.88\%) \\
+%         \hline
+%         \texttt{mceliece6688128 + cmac} & 900 (+10.29\%) & 6540 (-12.80\%) & 7440 (-10.53\%) \\
+%         \hline
+%         \texttt{mceliece6688128 + kmac256} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
+%         \hline
+%     \end{tabular}
+%     \begin{tabular}[c]{|c|c|c|c|}
+%         \hline
+%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
+%         \hline
+%         \texttt{mceliece6960119 + poly1305} & 735 (+5.15\%) & 6389 (-12.02\%) & 7124 (-10.51\%) \\
+%         \hline
+%         \texttt{mceliece6960119 + gmac} & 753 (+7.73\%) & 6450 (-11.18\%) & 7203 (-9.52\%) \\
+%         \hline
+%         \texttt{mceliece6960119 + cmac} & 763 (+9.16\%) & 6428 (-11.48\%) & 7191 (-9.67\%) \\
+%         \hline
+%         \texttt{mceliece6960119 + kmac256} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
+%         \hline
+%     \end{tabular}
+%     \begin{tabular}[c]{|c|c|c|c|}
+%         \hline
+%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
+%         \hline
+%         \texttt{mceliece8192128 + poly1305} & 955 (+11.31\%) & 6547 (-12.29\%) & 7502 (-9.85\%) \\
+%         \hline
+%         \texttt{mceliece8192128 + gmac} & 957 (+11.54\%) & 6550 (-12.25\%) & 7507 (-9.79\%) \\
+%         \hline
+%         \texttt{mceliece8192128 + cmac} & 945 (+10.14\%) & 6546 (-12.30\%) & 7491 (-9.99\%) \\
+%         \hline
+%         \texttt{mceliece8192128 + kmac256} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
+%         \hline
+%     \end{tabular}
+%     \caption{Performance comparison between Classic McEliece and \texttt{mceliece+}}\label{tbl:mceliece-plus-performance}
+% \end{table}
 
 \section{Conclusion}
 
