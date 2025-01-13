@@ -88,6 +88,8 @@ Introduction will need to be re-written. I will get back to it after writing sec
 
 Where the expectation is taken with respect to the probability distribution of all possible keypairs $(\pk, \sk) \leftsample \texttt{PKE.KeyGen()}$. For many lattice-based cryptosystems, including ML-KEM, decryption failures could leak information about the secret key, although the probability of a decryption failure is low enough that classical adversaries cannot exploit decryption failure more than they can defeat the underlying lattice problem.
 
+\paragraph{rigidity.} %TODO: define rigidity, give citation
+
 \textbf{Security.} The security of public-key encryption is conventionally discussed within the context of adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. There are two main types of games: i) in the one-wayness (OW-ATK) game, the adversary is given a random encryption, then asked to produce the correct decryption; ii) in the indistinguishability (IND-ATK) game, the adversary is given the encryption of one of two adversary-chosen plaintexts, then asked to decide which of the plaintexts corresponds with the given encryption. Depending on the attack model, the adversary may have access to various oracles. Within the context of public-key cryptography, adversaries are always assumed to have the public key with which they can mount chosen-plaintext attack (CPA). If the adversary has access to a plaintext-checking oracle (PCO) \cite{DBLP:conf/ctrsa/OkamotoP01} then it can mount plaintext-checking attack (PCA). Where the adversary has access to a decryption oracle, it can mount chosen-ciphertext attacks (CCA). 
 
 \begin{figure}[H]
@@ -829,65 +831,106 @@ Each instance of Classic McEliece KEM is parameterized by the base field size $m
 
 Key generation in Classic McEliece involves sampling a random binary Goppa code and computing the canonical parity check matrix. The decoding algorithm, parameterized by the Goppa polynomial $g(x)$ and the support $L = (\alpha_1, \alpha_2, \ldots, \alpha_n)$ with secret permutation, is the secret key. The canonical parity check matrix $H$ is row-reduced, and if the output $H^\prime \leftarrow SH$ ($S$ is some invertible matrix encoding the row reduction) has systematic form $H^\prime = [I_t \mid T]$ for some identity matrix $I_t \in \mathbb{F}_{2^m}^{t \times t}$ and $T \in \mathbb{F}_{2^m}^{t \times (n - t)}$, then $T$ is returned as the public key. However, if the canonical parity check matrix cannot be reduced to systematic form, then the entire key generation is restarted. According to (TODO: citation needed), such randomly sampled $H$ has an estimated 30\% probability of being reduced to sysmatic form, meaning that key generation usually needs to run multiple times before succeeding. Some modifications introduced in the f-variants of Classic McEliece improves the estimated probability of success and consequently speeds up key generation, but they are not the focus of this work and will not be discussed in details.
 
-Let $\mathcal{S}_t = \{\mathbf{e} \in \mathbb{F}_2^n \mid \wt(\mathbf{e}) = t\}$ denote the Hamming sphere of weight $t$. The message space of McEliecePKE is exactly $\mathcal{S}_t$. A plaintext $\mathbf{e}\in\mathcal{S}_t$ is encrypted by interpreting it as a noisy codeword and computing its syndrome under the row-reduced parity check matrix. At decryption, the ciphertext is first zero-padded to transform it into a noisy codeword (this works because the parity-check matrix is in systematic form), then feeding the noisy codeword into the secret Goppa decoder, which identifies the locations of the errors. Because binary Goppa codesare in $\mathbb{F}_2^n$, knowing the error locations is sufficient for recovering the error vector $\mathbf{e}\in\mathcal{S}_t$. Decryption is perfectly correct.
+Let $\mathcal{S}_t = \{\mathbf{e} \in \mathbb{F}_2^n \mid \wt(\mathbf{e}) = t\}$ denote the Hamming sphere of weight $t$. The message space of CMPKE is exactly $\mathcal{S}_t$. A plaintext $\mathbf{e}\in\mathcal{S}_t$ is encrypted by interpreting it as a noisy codeword and computing its syndrome under the row-reduced parity check matrix. At decryption, the ciphertext is first zero-padded to transform it into a noisy codeword (this works because the parity-check matrix is in systematic form), then feeding the noisy codeword into the secret Goppa decoder, which identifies the locations of the errors. Because binary Goppa codesare in $\mathbb{F}_2^n$, knowing the error locations is sufficient for recovering the error vector $\mathbf{e}\in\mathcal{S}_t$. Decryption is perfectly correct. Figure \ref{fig:mceliece-pke} and \ref{fig:mceliece-kem} breaks down the two layers of Classic McEliece KEM.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
 
-    \begin{algorithm}[H]
-        \caption*{\texttt{McEliecePKE.keygen}()}
-        \begin{algorithmic}[1]
-            \While{\texttt{true}}
-                \State $g \leftarrow \mathcal{G}$
-                \State $\alpha_1, \alpha_2, \ldots, \alpha_0 \leftarrow \mathbb{F}_{2^m}$
-                \State $H \leftarrow \texttt{ParityCheck}(\alpha_1, \alpha_2, \ldots, \alpha_n)$
-                \State $H^\prime \leftarrow \texttt{RowReduce}(H)$
-                \If{$H^\prime = [I_t \mid T]$}
-                    \State $\pk \leftarrow T$
-                    \State $\sk \leftarrow (g, \alpha_1, \alpha_2, \ldots, \alpha_n)$
-                    \State \Return $(\pk, \sk)$
+    \begin{minipage}[t]{0.32\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{CMKeyGen}()}
+            \begin{algorithmic}[1]
+                    \State $g \leftarrow \mathcal{G}$
+                    \State $L \leftarrow \mathbb{F}_{2^m}^n$
+                    \State $H \leftarrow \texttt{Parity}(L, g)$
+                    \State $H^\prime \leftarrow \texttt{RowReduce}(H)$
+                    \If{$H^\prime = [I_t \mid T]$}
+                        \State $\pk \leftarrow T$
+                        \State $\sk \leftarrow (g, L)$
+                        \State \Return $(\pk, \sk)$
+                    \EndIf
+                    \State Go to line 1
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.32\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\texttt{CMEnc}(\pk, \mathbf{e})$}
+            \begin{algorithmic}[1]
+                \Require $\mathbf{e} \in \mathcal{S}_t$
+                \Require $\pk \in \mathbb{F}_{2^m}^{t \times (n - t)}$
+                \State $T \leftarrow \pk$
+                \State $c \leftarrow [I_m \mid T] \cdot \mathbf{e}$
+                \State \Return $c$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\texttt{CMDec}(\sk, \mathbf{c})$}
+            \begin{algorithmic}[1]
+                \Require $\mathbf{c} \in \mathbb{F}_{2^m}^t$
+                \Require $\sk \in \mathbf{F}_{2^m}^n \times \mathcal{G}_{m,t}$
+                \State $\mathbf{c} \leftarrow [\mathbf{c} \mid \mathbf{0}^{n-t}]$
+                    % \Comment{Zero-pad ciphertext until reaching codewords length}
+                \State $\mathbf{e} \leftarrow \texttt{GoppaDecode}(\sk, \mathbf{c})$
+                \State \Return $\mathbf{e}$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{Classic McEliece uses the Niederreiter variant of the McEliece cryptosystem. When instantiated with binary Goppa code, this PKE achieves OW-CPA security}\label{fig:mceliece-pke}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+
+    \begin{minipage}[t]{0.34\textwidth}
+        \centering
+        \begin{algorithm}[H]
+            \caption*{$\texttt{CMKEM.keygen}()$}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk_\pke) \leftarrow \texttt{CMKeyGen}()$
+                \State $\mathbf{s} \leftarrow \mathbb{F}_2^n$
+                \State $\sk \leftarrow (\sk_\pke, \mathbf{s})$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.25\textwidth}
+        \centering
+        \begin{algorithm}[H]
+            \caption*{$\texttt{CMKEM.enc}(\pk)$}
+            \begin{algorithmic}[1]
+                \State $\mathbf{e} \leftarrow \mathcal{S}_t$
+                \State $\mathbf{c} \leftarrow \texttt{CMEnc}(\pk, \mathbf{e})$
+                \State $K \leftarrow H(1, \mathbf{e}, \mathbf{c})$
+                \State \Return $\mathbf{c}, K$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.35\textwidth}
+        \centering
+        \begin{algorithm}[H]
+            \caption*{$\texttt{CMKEM.dec}(\sk, \mathbf{c})$}
+            \begin{algorithmic}[1]
+                \State $(\sk_\pke, \mathbf{s}) \leftarrow \sk$
+                \State $\hat{\mathbf{e}} \leftarrow \texttt{CMDec}(\sk, \mathbf{c})$
+                \If{$\texttt{Synd}(\sk, \hat{\mathbf{e}}) = \mathbf{c}$}
+                    \State \Return $H(1, \hat{\mathbf{e}}, \mathbf{c})$
+                \Else
+                    \State \Return $H(0, \mathbf{s}, \mathbf{c})$
                 \EndIf
-            \EndWhile
-        \end{algorithmic}
-    \end{algorithm}
-    \begin{algorithm}[H]
-        \caption*{$\texttt{McEliecePKE.enc}(\pk, \mathbf{e})$}
-        \begin{algorithmic}[1]
-            \Require $\mathbf{e} \in \mathcal{S}_t$
-            \Require $\pk \in \mathbb{F}_{2^m}^{t \times (n - t)}$
-            \State $T \leftarrow \pk$
-            \State $c \leftarrow [I_m \mid T] \cdot \mathbf{e}$
-            \State \Return $c$
-        \end{algorithmic}
-    \end{algorithm}
-    \begin{algorithm}[H]
-        \caption*{$\texttt{McEliecePKE.dec}(\sk, \mathbf{c})$}
-        \begin{algorithmic}[1]
-            \Require $\mathbf{c} \in \mathbb{F}_{2^m}^t$
-            \Require $\sk \in \mathbf{F}_{2^m}^n \times \mathcal{G}_{m,t}$
-            \State $\mathbf{c} \leftarrow [\mathbf{c} \mid \mathbf{0}^{n-t}]$
-                \Comment{Zero-pad ciphertext until reaching codewords length}
-            \State $\mathbf{e} \leftarrow \texttt{GoppaDecode}(\sk, \mathbf{c})$
-            \State \Return $\mathbf{e}$
-        \end{algorithmic}
-    \end{algorithm}
-    \caption{Breaking down Classic McEliece KEM into a OW-CPA PKE and modified Fujisaki-Okamoto transformation. Key generation is identical between PKE and KEM}\label{fig:mceliece-routines}
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+
+    \caption{Classic McEliece applies a modified Fujisaki-Okamoto transformation to achieve CCA security}\label{fig:mceliece-kem}
 \end{figure}
 
-Whether the PKE subroutines of Classic McEliece is OW-PCA secure remains unproven: although the encryption routine is deterministic, the decryption routine might not be injective. Whether the decryption routine is injective likely depends on the choice of binary Goppa decoder. Classic McEliece currently implements syndrome decoding using the Berlekamp-Massey algorithm, which is inherently not injective (there are distinct infinite sequences that correspond to the same shortest LFSR). However, there have been many attempts at constructing plaintext-checking attacks on Classic McEliece using side channels \cite{DBLP:journals/tches/UenoXTITH22}\cite{DBLP:journals/tches/TanakaUXITH23}, but there is no known plaintext-checking attacks to date.
+\subsection{Security analysis}\label{sec:security-analysis}
+\paragraph{PCA security of Niederreiter cryptosystem.} The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was first defined by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. OW-PCA came up again in \cite{DBLP:conf/tcc/HofheinzHK17}, where the $U^{\not\bot}$ transformation converts OW-PCA secure PKE into an IND-CCA secure KEM. $U^{\not\bot}$ was used in Kyber's third round submission to NIST PQC project, although ML-KEM switched to using the $U^{\not\bot}_m$ variant because applying de-randomization and re-encryption to Kyber's PKE subroutines have made it a rigid PKE.
 
-Under the conjectured OW-PCA security of the PKE subroutines Classic McEliece, we speculate that applying the encrypt-then-MAC transformation to the PKE subroutines should result in a CCA secure KEM, which we will call \texttt{mceliece+}. A summary of \texttt{mceliece+}'s routines can be found in figure \ref{fig:mceliece-plus-routines}
+\cite{DBLP:journals/tches/UenoXTITH22}
 
-\begin{figure}[H]
-    \centering
-    \begin{algorithm}[H]
-        \caption*{\texttt{mceliece+ KeyGen}}
-        \begin{algorithmic}
-            \State 
-        \end{algorithmic}
-    \end{algorithm}
-    \caption{\texttt{mceliece+}'s routines}\label{fig:mceliece-plus-routines}
-\end{figure}
 
 % \subsection{Choosing a message authentication code (MAC)}\label{sec:choosing-a-message-authenticator}
 % In Figure \ref{fig:ml-kem-plus-routines}, while $H$, $G$ and \textsf{KDF} are instantiated by SHA3-256, SHA3-512 and Shake256, respectively, there could be various choices of standardized and well-analyze MAC algorithms. For implementation, we instantiated the MAC with a selection that covered a wide range of MAC designs, including Poly1305 \cite{bernstein2005poly1305}, GMAC \cite{mcgrew2004galois}, CMAC \cite{iwata2003omac}\cite{black2000cbc}, and KMAC \cite{SP80053r4}. All MACs are parameterized with a 256-bit key to ensure that MAC keys are at least as hard to guess as the underlying PKE plaintext. On the other hand, all MACs use a 128-bit tag except for KMAC, which can have a variable tag length. We suspect that a 128-bit tag might be insufficient for the 192-bit and 256-bit security levels, so for instantiation with the higher security levels, we only use KMAC with 192-bit and 256-bit tag length outputs.
