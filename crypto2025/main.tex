@@ -67,9 +67,8 @@
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-    Abstract needs to be rewritten because ML-KEM is not a suitable candidate. Instead, section 3 will be about the proof, section 4 will be a survey of existing public-key encryption schemes and a discussion of which ones are suitable, and section 5 will be about implementation and performance analysis with classic McEliece
-
-\keywords{
+    The Fujisaki-Okamoto transformation is a generic IND-CCA secure transformation widely adopted by post-quantum KEMs including ML-KEM, FrodoKEM, Classic McEliece, and many more. The FO transform achieves CCA security using de-randomization and re-encryption. However, de-randomization might degrade the security if the input PKE is randomized, and re-encryption incurs significant computational cost in decapsulation. In this paper, we propose a generic IND-CCA secure KEM transformation that achieves chose-ciphertext security by applying the encrypt-then-MAC mechanism to an OW-PCA secure PKE and an one-time existentially unforgeable MAC. Compared to the Fujisaki-Okamoto transformation, the encrypt-then-MAC transformation maintains the randomization of the input PKE and replaces the expensive re-encryption with efficient MAC tag computation. We instantiate our proposed KEM with the McEliece cryptosystem, which we call McEliece+. We then implement McEliece+ with a wide selection of MACs including Poly1305, GMAC, CMAC, and KMAC-256. On average, McEliece+ achieves between 9-12\% speed up in combined ``encapsulation + decapsulation'' compared to Classic McEliece.
+    \keywords{
     First keyword  \and Second keyword \and Another keyword.
 }
 \end{abstract}
@@ -540,6 +539,18 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
     Combining all equations above produce the desired security bound.
 \end{proof}
 
+\subsection{Concrete cryptanalysis}\label{sec:concrete-cryptanalysis}
+\paragraph{PCA security.} The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding \cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure, and the ElGamal cryptosystem is OW-PCA secure under the Gap Diffie-Hellman assumption \cite{DBLP:conf/pkc/OkamotoP01}. More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
+
+There have been numerous attempts at constructing plaintext-checking attacks on post-quantum KEMs submitted to NIST's PQC projects. Due to the search-decision equivalence of the Ring/Module Learning With Error problem, lattice-based cryptosystems including Kyber, Saber, FrodoKEM, and NTRU Prime are all vulnerable to similar key-recovery plaintext-checking attacks (KR-PCA)\cite{DBLP:conf/crypto/00010N20,DBLP:journals/tches/RaviRCB20,DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23}. KR-PCA against NTRU-HRSS/NTRU-HPS can be adapted from \cite{Hoffstein1999,DBLP:conf/crypto/JaulmesJ00,cryptoeprint:2019/1022,cryptoeprint:2021/168}. Among code-based KEMs, HQC has similar structure with LWE-based cryptosystems, so similar KR-PCA applies \cite{DBLP:conf/acns/Huguenin-Dumittan20}. BIKE and Classical McEliece are both based on the Niederreiter cryptosystem, although BIKE is instantiated using Moderate-Density Parity Check (MDPC) code, which was also vulnerable to KR-PCA \cite{DBLP:conf/asiacrypt/Guo0S16}. There are many reaction attacks (also called ciphertext-validation attack) \cite{DBLP:conf/icics/HallGS99}, where an adversary flips chosen bits of the ciphertext and learns the locations of the error bits by observing whether the modified ciphertext incurs decryption failures. However, there is no known way of converting such reaction attacks to a plaintext-checking attacks. In other words, there no known plaintext-checking attack against the Niedereitter cryptosystem using binary Goppa code.
+
+\paragraph{Dictionary attack on MAC key.} In Section \ref{sec:the-encrypt-then-mac-transformation}, we chose to derive the MAC key $k \leftarrow G(m)$ from hashing a randomly sampled plaintext. While this simplifies the security reduction, letting the MAC key depend solely on the plaintext opens the possibility of plaintext recovery attack: an adversary first pre-computes a large lookup table mapping individual plaintexts to the corresponding MAC key, then checks intercepted KEM ciphertext $c = (c^\prime, t)$ against the MAC keys stored in this lookup table. This attack could be more efficient than a brute-force search on the plaintext space, since MAC computation is usually more efficient than PKE encryption. Furthermore, if the input PKE is randomized, then the deterministic hashing of MAC key ``de-randomizes'' the encryption, which might further undermine security \cite{cryptoeprint:2021/912}.
+
+One straightforward fix is to derive the MAC key from hashing both the randomly sampled plaintext and the public key (large public key can be pre-hashed during key generation and added to the keypair). This increases the cost of the plaintext recovery attack since the attacker will need to compute one lookup table per keypair. However, long-term keypairs used in KEM-DEM combination for bulk encryption (e.g. disk encryption or email encryption) might still have sufficiently long lifespan to be vulnerable to dictionary attack. In this case, we propose salting the hash $k \leftarrow G(\pk \Vert m \Vert \text{salt})$, then appending the salt to the ciphertext. At the cost of increasing ciphertext size by the salt size, the cost of dictionary attack can be raised further.
+
+\paragraph{Forgery attack on MAC tag.} With modern MAC constructions such as Carter-Wegman MAC, CMAC, and HMAC, an adversary has no better forgery method than brute-force all possible tags. Although the security evaluation criteria in NIST's PQC project limits chosen-ciphertext attack adversaries to no more than $2^{64}$ classical decapsulation queries, having a relatively small tag size (e.g. Poly1305, GMAC, CMAC all use 128-bit tag size) might still present cryptographic weakness. Among existing popular MAC constructions, HMAC and KMAC-256 can straightforwardly increase the tag size with appropriate choices of parameters. Scaling CMAC will require a secure pseudorandom function with lengthier output, and although methods of converting $n$-bit block cipher into $mn$-bit block cipher exist \cite{DBLP:conf/ctrsa/HaleviR04}, they remain unproven in real-world usage. This is also the reason why scaling Carter-Wegman MAC $\mac(k=(k_1, k_2), m) = H_\text{xpoly}(k_1, m) \oplus \operatorname{PRF}(k_2, r)$ is also not straightforward. However, notice that honest parties executing the encapsulation routine samples fresh plaintext per encapsulation; assuming sufficiently high-quality source of randomness and cryptographically strong hash functions, there should be no repetition of plaintext, thus no repetition of MAC keys. The CCA security game does not include a signing oracle, either. In other words, we can safely assume that each MAC key will only be used once, meaning that we can use one-time MAC such as keyed polynomial hash functions (i.e. Carter-Wegman MAC without PRF). In addition to being computationally more efficient, polynomial hash function is also easy to scale up in security by switching to a larger finite field.
+
+
 \section{Application to ElGamal cryptosystem}\label{sec:application-to-elgamal}
 We show that the DHAES/DHIES hybrid encryption scheme is a special case of the encrypt-then-MAC transformation. Specifically, we will sketch a proof of the following lemma:
 
@@ -707,9 +718,7 @@ We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}.
 
 
 \section{Application to Classic McEliece}\label{sec:application-to-classic-mceliece}
-In this section, we instantiate the encrypt-then-MAC KEM transformation using the subroutines of classic McEliece and a variety of MAC implementations. We will discuss the modifications and their rationale, as well as the performance implications.
-
-Classic McEliece is an IND-CCA secure post-quantum KEM submitted to NIST's Post Quantum Cryptoraphy (PQC) standardization project and is currently one of three viable round 4 candidate. Classic McEliece is based on the Niederreiter variant of the McEliece cryptosystem using binary Goppa code, originally proposed by Robert McEliece in 1978 and later improved by Harald Niederreiter in 1986. There are two layers in the construction of the Classic McEliece KEM. The first layer is an OW-CPA secure PKE whose one-wayness reduces to the intractability of the Syndrome Decoding Problem (SDP) and the indistinguishability of random binary Goppa code from random linear code. The second layer is a modified Fujisaki-Okamoto transformation for converting the passively secure PKE into an actively secure KEM. Specifically, because the encoding subroutine is deterministic, Classic McEliece does not need de-randomization, and although Classic McEliece uses re-encryption for ensuring ciphertext integrity, it does not simply include the PKE public key in the KEM secret secret and apply the PKE encryption. We will discuss Classic McEliece's re-encryption in details shortly.
+Classic McEliece is an IND-CCA secure post-quantum KEM submitted to the Post Quantum Cryptoraphy (PQC) standardization project and is currently one of three viable fourth round KEM candidates. Classic McEliece is based on the Niederreiter variant of the McEliece cryptosystem using binary Goppa code, originally proposed by Robert McEliece in 1978 and later improved by Harald Niederreiter in 1986. There are two layers in the construction of the Classic McEliece KEM. The first layer is an OW-CPA secure PKE whose one-wayness reduces to the intractability of the Syndrome Decoding Problem (SDP) and the indistinguishability of random binary Goppa code from random linear code. The second layer is a modified Fujisaki-Okamoto transformation for converting the passively secure PKE into an actively secure KEM.
 
 Each instance of Classic McEliece KEM is parameterized by the base field size $m$ (which induces a binary extension field $\mathbb{F}_{2^m}$), the codeword length $n$, and the weight $t$ of error vector. Let $\mathcal{G}_{m, t} = \{g(x) \in \mathbb{F}_{2^m}[x] \mid \deg(g) = t, \text{$g$ is irreducible}\}$ denote the set of degree-$t$ irreducible polynomials in $\mathbb{F}_{2^m}$. Given a Goppa polynomial $g \in \mathcal{G}_{m, t}$ and $n$ distinct elements $\alpha_1, \alpha_2, \ldots, \alpha_n \in \mathbb{F}_{2^m}$, the canonical parity check matrix $H \in \mathbb{F}_{2^m}^{t \times n}$ is given by $H_{j,i} = \alpha_i^{j-1}/g(\alpha_i)$ for $1\leq i \leq n, 1 \leq j \leq t$.
 
@@ -810,228 +819,140 @@ Let $\mathcal{S}_t = \{\mathbf{e} \in \mathbb{F}_2^n \mid \wt(\mathbf{e}) = t\}$
     \caption{Classic McEliece applies a modified Fujisaki-Okamoto transformation to achieve CCA security}\label{fig:mceliece-kem}
 \end{figure}
 
-\subsection{Security analysis}\label{sec:security-analysis}
-\paragraph{PCA security.} The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was first defined by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding \cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure, and the ElGamal cryptosystem is OW-PCA secure under the Gap Diffie-Hellman assumption \cite{DBLP:conf/pkc/OkamotoP01}. More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
+We apply the encrypt-then-MAC KEM transformation to the the OW-CPA subroutines $(\texttt{CMKeyGen}, \texttt{CMEnc}, \texttt{CMDec})$ and call it \texttt{mceliece+} (Figure \ref{fig:mceliece-plus}).
 
-There have been numerous attempts at constructing plaintext-checking attacks on post-quantum KEMs submitted to NIST's PQC projects. Due to the search-decision equivalence of the Ring/Module Learning With Error problem, lattice-based cryptosystems including Kyber, Saber, FrodoKEM, and NTRU Prime are all vulnerable to similar key-recovery plaintext-checking attacks (KR-PCA)\cite{DBLP:conf/crypto/00010N20,DBLP:journals/tches/RaviRCB20,DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23}. KR-PCA against NTRU-HRSS/NTRU-HPS can be adapted from \cite{Hoffstein1999,DBLP:conf/crypto/JaulmesJ00,cryptoeprint:2019/1022,cryptoeprint:2021/168}. Among code-based KEMs, HQC has similar structure with LWE-based cryptosystems, so similar KR-PCA applies \cite{DBLP:conf/acns/Huguenin-Dumittan20}. BIKE and Classical McEliece are both based on the Niederreiter cryptosystem, although BIKE is instantiated using Moderate-Density Parity Check (MDPC) code, which was also vulnerable to KR-PCA \cite{DBLP:conf/asiacrypt/Guo0S16}. There are many reaction attacks (also called ciphertext-validation attack) \cite{DBLP:conf/icics/HallGS99}, where an adversary flips chosen bits of the ciphertext and learns the locations of the error bits by observing whether the modified ciphertext incurs decryption failures. However, there is no known way of converting such reaction attacks to a plaintext-checking attacks. In other words, there no known plaintext-checking attack against the Niedereitter cryptosystem using binary Goppa code.
-
-\paragraph{Dictionary attack on MAC key.} In Section \ref{sec:the-encrypt-then-mac-transformation}, we chose to derive the MAC key $k \leftarrow G(m)$ from hashing a randomly sampled plaintext. While this simplifies the security reduction, letting the MAC key depend solely on the plaintext opens the possibility of plaintext recovery attack: an adversary first pre-computes a large lookup table mapping individual plaintexts to the corresponding MAC key, then checks intercepted KEM ciphertext $c = (c^\prime, t)$ against the MAC keys stored in this lookup table. This attack could be more efficient than a brute-force search on the plaintext space, since MAC computation is usually more efficient than PKE encryption. Furthermore, if the input PKE is randomized, then the deterministic hashing of MAC key ``de-randomizes'' the encryption, which might further undermine security \cite{cryptoeprint:2021/912}.
-
-One straightforward fix is to derive the MAC key from hashing both the randomly sampled plaintext and the public key (large public key can be pre-hashed during key generation and added to the keypair). This increases the cost of the plaintext recovery attack since the attacker will need to compute one lookup table per keypair. However, long-term keypairs used in KEM-DEM combination for bulk encryption (e.g. disk encryption or email encryption) might still have sufficiently long lifespan to be vulnerable to dictionary attack. In this case, we propose salting the hash $k \leftarrow G(\pk \Vert m \Vert \text{salt})$, then appending the salt to the ciphertext. At the cost of increasing ciphertext size by the salt size, the cost of dictionary attack can be raised further.
-
-\paragraph{Forgery attack on MAC tag.} With modern MAC constructions such as Carter-Wegman MAC, CMAC, and HMAC, an adversary has no better forgery method than brute-force all possible tags. Although the security evaluation criteria in NIST's PQC project limits chosen-ciphertext attack adversaries to no more than $2^{64}$ classical decapsulation queries, having a relatively small tag size (e.g. Poly1305, GMAC, CMAC all use 128-bit tag size) might still present cryptographic weakness. Among existing popular MAC constructions, HMAC and KMAC-256 can straightforwardly increase the tag size with appropriate choices of parameters. Scaling CMAC will require a secure pseudorandom function with lengthier output, and although methods of converting $n$-bit block cipher into $mn$-bit block cipher exist \cite{DBLP:conf/ctrsa/HaleviR04}, they remain unproven in real-world usage. This is also the reason why scaling Carter-Wegman MAC $\mac(k=(k_1, k_2), m) = H_\text{xpoly}(k_1, m) \oplus \operatorname{PRF}(k_2, r)$ is also not straightforward. However, notice that honest parties executing the encapsulation routine samples fresh plaintext per encapsulation; assuming sufficiently high-quality source of randomness and cryptographically strong hash functions, there should be no repetition of plaintext, thus no repetition of MAC keys. The CCA security game does not include a signing oracle, either. In other words, we can safely assume that each MAC key will only be used once, meaning that we can use one-time MAC such as keyed polynomial hash functions (i.e. Carter-Wegman MAC without PRF). In addition to being computationally more efficient, polynomial hash function is also easy to scale up in security by switching to a larger finite field.
-
-% \subsection{Choosing a message authentication code (MAC)}\label{sec:choosing-a-message-authenticator}
-% In Figure \ref{fig:ml-kem-plus-routines}, while $H$, $G$ and \textsf{KDF} are instantiated by SHA3-256, SHA3-512 and Shake256, respectively, there could be various choices of standardized and well-analyze MAC algorithms. For implementation, we instantiated the MAC with a selection that covered a wide range of MAC designs, including Poly1305 \cite{bernstein2005poly1305}, GMAC \cite{mcgrew2004galois}, CMAC \cite{iwata2003omac}\cite{black2000cbc}, and KMAC \cite{SP80053r4}. All MACs are parameterized with a 256-bit key to ensure that MAC keys are at least as hard to guess as the underlying PKE plaintext. On the other hand, all MACs use a 128-bit tag except for KMAC, which can have a variable tag length. We suspect that a 128-bit tag might be insufficient for the 192-bit and 256-bit security levels, so for instantiation with the higher security levels, we only use KMAC with 192-bit and 256-bit tag length outputs.
-
-% \textbf{Poly1305 and GMAC} are both Carter-Wegman style MACs \cite{wegman1981new} that compute the tag using finite field arithmetic. Generically speaking, Carter-Wegman MAC operates by breaking the message into message blocks that can then be parsed into finite field elements. The tag is computed by evaluating a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key (also called a \textit{hash key}). Specifically, Poly1035 operates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$ whereas GMAC operates in the binary field $\mathbb{F}_{2^{128}}$.
-
-% \textbf{CMAC} is based on the CBC-MAC with the block cipher instantiated from AES-256. To compute a CMAC tag, the message is first broke into 128-bit blocks with appropriate padding. Each block is first XORed with the previous block's output, then encrypted under AES using the symmetric key. The final output is XORed with a sub key derived from the symmetric key, before being encrypted for one last time.
-
-% \textbf{KMAC} is based on the SHA-3 family of sponge functions \cite{FIPS202}. We chose KMAC-256, which uses Shake256 as the underlying extendable output functions. KMAC is the only MAC to support variable key and tag length, though we fixed the key length at 256 bits. On the other hand, we chose the appropriate tag length for the corresponding security level: when instantiated with ML-KEM-512, the tag length is 128 bits; with ML-KEM-768, the tag length is 192 bits; with ML-KEM-1024, the tag length is 256 bits.
-
-% We implemented \texttt{mceliece+} by modifying the reference implementation. MAC implementations are taken from OpenSSL. C code is compiled using Apple Clang 15.0.0. Performance measurement is run on Apple Silicon M1 chip. CPU clock is measured using kernel clock \texttt{mach\_absolute\_time}. Each rouine is run 10000 times, with median time reported in Table \ref{tbl:mceliece-plus-performance}.
-
-% \begin{table}[h]
-%     \centering
-%     % \footnotesize
-%     \begin{tabular}[c]{|c|c|c|c|}
-%         \hline
-%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-%         \hline
-%         \texttt{mceliece348864} & 215 & 2471 & 2686 \\
-%         \hline
-%         \texttt{mceliece348864 + poly1305} & 316 (+46.98\%) & 2074 (-16.07\%) & 2390 (-11.02\%) \\
-%         \hline
-%         \texttt{mceliece348864 + gmac} & 335 (+55.81\%) & 2087 (-15.54\%) & 2422 (-9.83\%) \\
-%         \hline
-%         \texttt{mceliece348864 + cmac} & 340 (+58.14\%) & 2092 (-15.34\%) & 2432 (-9.46\%) \\
-%         \hline
-%         \texttt{mceliece348864 + kmac256} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
-%         \hline
-%     \end{tabular}
-%     \begin{tabular}[c]{|c|c|c|c|}
-%         \hline
-%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-%         \hline
-%         \texttt{mceliece460896} & 487 & 6694 & 7181 \\
-%         \hline
-%         \texttt{mceliece460896 + poly1305} & 514 (+5.54\%) & 5784 (-13.59\%) & 6298 (-12.30\%) \\
-%         \hline
-%         \texttt{mceliece460896 + gmac} & 565 (+16.02\%) & 5809 (-13.22\%) & 6374 (-11.24\%) \\
-%         \hline
-%         \texttt{mceliece460896 + cmac} & 544 (+11.70\%) & 5905 (-11.79\%) & 6449 (-10.19\%) \\
-%         \hline
-%         \texttt{mceliece460896 + kmac256} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
-%         \hline
-%     \end{tabular}
-%     \begin{tabular}[c]{|c|c|c|c|}
-%         \hline
-%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-%         \hline
-%         \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
-%         \hline
-%         \texttt{mceliece6688128 + poly1305} & 889 (+8.95\%) & 6509 (-13.21\%) & 7398 (-11.04\%) \\
-%         \hline
-%         \texttt{mceliece6688128 + gmac} & 890 (+9.07\%) & 6521 (-13.05\%) & 7411 (-10.88\%) \\
-%         \hline
-%         \texttt{mceliece6688128 + cmac} & 900 (+10.29\%) & 6540 (-12.80\%) & 7440 (-10.53\%) \\
-%         \hline
-%         \texttt{mceliece6688128 + kmac256} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
-%         \hline
-%     \end{tabular}
-%     \begin{tabular}[c]{|c|c|c|c|}
-%         \hline
-%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-%         \hline
-%         \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
-%         \hline
-%         \texttt{mceliece6960119 + poly1305} & 735 (+5.15\%) & 6389 (-12.02\%) & 7124 (-10.51\%) \\
-%         \hline
-%         \texttt{mceliece6960119 + gmac} & 753 (+7.73\%) & 6450 (-11.18\%) & 7203 (-9.52\%) \\
-%         \hline
-%         \texttt{mceliece6960119 + cmac} & 763 (+9.16\%) & 6428 (-11.48\%) & 7191 (-9.67\%) \\
-%         \hline
-%         \texttt{mceliece6960119 + kmac256} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
-%         \hline
-%     \end{tabular}
-%     \begin{tabular}[c]{|c|c|c|c|}
-%         \hline
-%         KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-%         \hline
-%         \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
-%         \hline
-%         \texttt{mceliece8192128 + poly1305} & 955 (+11.31\%) & 6547 (-12.29\%) & 7502 (-9.85\%) \\
-%         \hline
-%         \texttt{mceliece8192128 + gmac} & 957 (+11.54\%) & 6550 (-12.25\%) & 7507 (-9.79\%) \\
-%         \hline
-%         \texttt{mceliece8192128 + cmac} & 945 (+10.14\%) & 6546 (-12.30\%) & 7491 (-9.99\%) \\
-%         \hline
-%         \texttt{mceliece8192128 + kmac256} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
-%         \hline
-%     \end{tabular}
-%     \caption{Performance comparison between Classic McEliece and \texttt{mceliece+}}\label{tbl:mceliece-plus-performance}
-% \end{table}
-
-\section{Other applications}
-In this section we will survey a number of existing public-key encryption schemes and discuss the applicability of the encrypt-then-MAC transformation to these schemes.
-
-\subsection{RSA}
-RSA \cite{DBLP:journals/cacm/RivestSA78} is a public-key cryptosystem proposed by Rivest, Shamir, and Adleman in 1978. A summary of its subroutines can be found in Figure \ref{fig:textbook-rsa}. 
-
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-
-    \begin{minipage}[t]{0.33\textwidth}
+    
+    \begin{minipage}[t]{0.34\textwidth}
         \begin{algorithm}[H]
-            \caption*{RSA \texttt{KeyGen}}
-        \end{algorithm}
-    \end{minipage}
-    \begin{minipage}[t]{0.32\textwidth}
-        \begin{algorithm}[H]
-            \caption*{RSA \texttt{Enc}}
-        \end{algorithm}
-    \end{minipage}
-    \begin{minipage}[t]{0.32\textwidth}
-        \begin{algorithm}[H]
-            \caption*{RSA \texttt{Dec}}
-        \end{algorithm}
-    \end{minipage}
-    \caption{Textbook RSA}\label{fig:textbook-rsa}
-\end{figure}
-
-In its original formulation (typically referred to as "textbook RSA"), the RSA cryptosystem is one-way secure against chosen-plaintext attack (OW-CPA) under the conjectured intractability of the RSA problem \cite{DBLP:journals/cacm/RivestSA78} (Definition \ref{def:rsa-problem}). Furthermore, it is easy to show that the RSA cryptosystem is a trapdoor permutation on the multiplicative group $\mathbb{Z}_N^\ast$. In other words, under a given keypair $\texttt{pk} = (N, e), \texttt{sk} = d$, $m^e = c \mod N$ if and only if $c^d \mod N$. Consequently, textbook RSA is one-way secure against plaintext-checking attack, because the plaintext-checking oracle can be perfectly simulated using only the public key, which means that access to a plaintext-checking oracle offers no additional advantage.
-
-\begin{definition}[RSA problem]\label{def:rsa-problem}
-   Let $N = pq$ be the product of two prime numbers. Let $e$ be an integer that is relatively prime to $\phi(N) = (p - 1)(q - 1)$, and let $d = e^{-1} \mod \phi(N)$. Let $m$ be a uniformly random sample in $\mathbb{Z}_N^\ast$ and let $c = m^e \mod N$. Given $N, e, c$, find $m$.
-\end{definition}
-
-Although textbook RSA is OW-PCA secure and thus a suitable candidate for the encrypt-then-MAC transformation, there exists simpler and faster CCA secure KEM transformation. For example, one can apply the $U^{\not\bot}_m$ variant of the modular Fujisaki-Okamoto transformation, which encapsulates the shared secret by directly hashing a randomly sampled plaintext. The resulting KEM (Figure \ref{fig:rsa-kem}) is largely identical to the RSA-KEM proposed by Victor Shoup in \cite{DBLP:journals/iacr/Shoup01}. Compare to the encrypt-then-MAC transformation, RSA-KEM offers identically tight security bound while it removes the need for deriving the MAC key and computing the MAC tag.
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[t]{0.3\textwidth}
-        \begin{algorithm}[H]
-            \caption*{RSA-KEM KeyGen}
-        \end{algorithm}
-    \end{minipage}
-    \begin{minipage}[t]{0.3\textwidth}
-        \begin{algorithm}[H]
-            \caption*{RSA-KEM Enc}
-        \end{algorithm}
-    \end{minipage}
-    \begin{minipage}[t]{0.3\textwidth}
-        \begin{algorithm}[H]
-            \caption*{RSA-KEM Dec}
-        \end{algorithm}
-    \end{minipage}
-    \caption{RSA-KEM}\label{fig:rsa-kem}
-\end{figure}
-
-\subsection{Lattice-based cryptosystems}
-Applying the encrypt-then-MAC transformation to the PKE subroutines of Kyber/ML-KEM (which we will call KyberPKE for short) will not produce CCA secure KEM. This is because KyberPKE is not one-way secure against plaintext checking attack. An abundance of literature \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20} described plaintext-checking attacks that can recover the complete secret key using a few thousand oracle queries. Here we review the key-recovery plaintext-checking attack presented in \cite{DBLP:conf/acns/Huguenin-Dumittan20}.
-
-Let $q=3329, n=256$, let $R_q = \mathbb{Z}_q[x] / \langle x^n + 1 \rangle$. The secret key of KyberPKE is $\texttt{sk} = \mathbf{s} \in R_q^k$ where $k = 2, 3, 4$ for depending on the security level. The coefficients of the secret key are sampled from centered binomial distribution $\text{CBD}_{\eta_1}$. The ciphertext takes the form $c = (\mathbf{u}\in R_q^k, v \in R_q)$. The decryption routine is described in Figure \ref{fig:kyberpke-decryption}
-
-\begin{figure}[H]
-    \centering
-
-    \begin{minipage}[t]{0.5\textwidth}
-        \begin{algorithm}[H]
-            \caption*{$\texttt{KyberPKE.Dec}(\texttt{sk}, c)$}
+            \caption*{\texttt{mceliece+.keygen()}}
             \begin{algorithmic}[1]
-                \Require $c = (\mathbf{u}, v)$
-                \Require $\texttt{sk} = \mathbf{s}$
-                \State $w \leftarrow v - \langle \mathbf{s}, \mathbf{u} \rangle$
-                \State $m = \texttt{Round}(w)$
-                    \Comment{$m \in Z_2[x]/\langle x^n + 1 \rangle$}
-                \State \Return $m$
+                \State $(\pk, \sk_\pke) \leftarrow \texttt{CMKeyGen}()$
+                \State $h \leftarrow H(\pk)$
+                \State $s \leftarrow \mathbb{F}_2^n$
+                \State $\sk \leftarrow (\sk_\pke, s, h)$
+                \State \Return $(\pk, \sk)$
             \end{algorithmic}
         \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.28\textwidth}
+    \begin{algorithm}[H]
+        \caption*{\texttt{mceliece+.enc}(\pk)}
+        \begin{algorithmic}[1]
+            \State $\mathbf{e} \leftarrow \mathcal{S}_t$
+            \State $k \leftarrow G(H(\pk), \mathbf{e})$
+            \State $c^\prime \leftarrow \texttt{CMEnc}(\pk, \mathbf{e})$
+            \State $t \leftarrow \mac(k, c^\prime)$
+            \State $K \leftarrow \texttt{KDF}(\mathbf{e}, t)$
+            \State $c \leftarrow (c^\prime, t)$
+            \State \Return $(c, t)$
+        \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.33\textwidth}
+    \begin{algorithm}[H]
+        \caption*{\texttt{mceliece+.dec(sk, c)}}
+        \begin{algorithmic}[1]
+            \State $(c^\prime, t) \leftarrow c$
+            \State $(\sk_\pke, s, h) \leftarrow \sk$
+            \State $\hat{\mathbf{e}} \leftarrow \texttt{CMDec}(\sk_\pke, c^\prime)$
+            \State $\hat{k} \leftarrow G(h, \hat{\mathbf{e}})$
+            \If{$\mac(\hat{k}, c^\prime) = t$}
+                \State $K \leftarrow \texttt{KDF}(\hat{\mathbf{e}}, t)$
+            \Else
+                \State $K \leftarrow \texttt{KDF}(\hat{\mathbf{s}, c})$
+            \EndIf
+            \State \Return $K$
+        \end{algorithmic}
+    \end{algorithm}
     \end{minipage}
-    \caption{KyberPKE decryption routine}\label{fig:kyberpke-decryption}
+
+    \caption{\texttt{mceliece+}: applying encrypt-then-MAC to the Niedereitter/McEliece cryptosystem}\label{fig:mceliece-plus}
 \end{figure}
 
-For $1\leq i \leq k, 0 \leq j \leq n-1$ denote the i-th entry in a polynomial vector $\mathbf{s} \in R_q^k$ by $s_i$ and the coefficient of the j-th power term of a polynomial $v \in R_q$ by $v[j]$. For some fixed $i, j$, an adversary can learn some information about $s_{i}[j]$ by crafting malformed ciphertext $\tilde{c} = (\tilde{\mathbf{u}}, \tilde{v})$ where $\tilde{u}_{i}[1], \tilde{v}[j]$ are chosen by the adversary, and all other coefficients are set to 0. When decrypting this malformed ciphertext, $w[j] = \tilde{v}[j] - s_i[j]\tilde{u}_i[0]$ and all other coefficients of $w$ are 0s. With specific choices of values for $\tilde{u}_i[0], \tilde{v}[j]$, whether $w[j]$ will round to $1$ or $0$ will depend on the value of $s_i[j]$. This can be used to perform a binary search that recovers the value of $s_i[j]$ in $\lceil\log_2(2\cdot\eta_1 + 1)\rceil$ plaintext-checking queries. See Table \ref{tbl:kyber-sk-binary-search} for an example of plaintext-checking query strategy. Such a binary search can then be repeated $n \cdot k$ times to completely recover the secret key.
+We implemented \texttt{mceliece+} by modifying the reference implementation. MAC implementations are taken from OpenSSL. C code is compiled using Apple Clang 15.0.0. Performance measurement is run on Apple Silicon M1 chip. CPU clock is measured using kernel clock \texttt{mach\_absolute\_time}. Each rouine is run 10000 times, with median time reported in Table \ref{tbl:mceliece-plus-performance}.
 
-\begin{table}
+\begin{table}[h]
     \centering
-    \begin{tabular}{|c|c|c|c|}
+    % \footnotesize
+    \begin{tabular}[c]{|c|c|c|c|}
         \hline
-        $u_i[0]$ & $v[j]$ & if $m[j] = 1$ & if $m[j] = 0$ \\
+        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
         \hline
-        208 & 416 & $s_i[j]\in\{-3\}$ & $s_i[j]\in\{-2, -1, 0, 1, 2, 3\}$ \\
+        \texttt{mceliece348864} & 215 & 2471 & 2686 \\
         \hline
-        208 & 624 & $s_i[j]\in\{-3, -2\}$ & $s_i[j]\in\{-1, 0, 1, 2, 3\}$ \\
+        \texttt{mceliece348864 + poly1305} & 316 (+46.98\%) & 2074 (-16.07\%) & 2390 (-11.02\%) \\
         \hline
-        208 & 832 & $s_i[j]\in\{-3, -2, -1\}$ & $s_i[j]\in\{0, 1, 2, 3\}$ \\
+        \texttt{mceliece348864 + gmac} & 335 (+55.81\%) & 2087 (-15.54\%) & 2422 (-9.83\%) \\
         \hline
-        208 & 1040 & $s_i[j]\in\{-3, -2, -1, 0\}$ & $s_i[j]\in\{1, 2, 3\}$ \\
+        \texttt{mceliece348864 + cmac} & 340 (+58.14\%) & 2092 (-15.34\%) & 2432 (-9.46\%) \\
         \hline
-        208 & 1248 & $s_i[j]\in\{-3, -2, -1, 0, 1\}$ & $s_i[j]\in\{2, 3\}$ \\
-        \hline
-        208 & 1456 & $s_i[j]\in\{-3, -2, -1, 0, 1, 2\}$ & $s_i[j]\in\{3\}$ \\
-        \hline
-        208 & -1456 & $s_i[j]\in\{-2, -1, 0, 1, 2, 3\}$ & $s_i[j]\in\{-3\}$ \\
-        \hline
-        208 & -1248 & $s_i[j]\in\{-1, 0, 1, 2, 3\}$ & $s_i[j]\in\{-3, -2\}$ \\
-        \hline
-        208 & -1040 & $s_i[j]\in\{0, 1, 2, 3\}$ & $s_i[j]\in\{-3, -2, -1\}$ \\
-        \hline
-        208 & -832 & $s_i[j]\in\{1, 2, 3\}$ & $s_i[j]\in\{-3, -2, -1, 0\}$ \\
-        \hline
-        208 & -624 & $s_i[j]\in\{2, 3\}$ & $s_i[j]\in\{-3, -2, -1, 0, 1\}$ \\
-        \hline
-        208 & -416 & $s_i[j]\in\{3\}$ & $s_i[j]\in\{-3, -2, -1, 0, 1, 2\}$ \\
+        \texttt{mceliece348864 + kmac256} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
         \hline
     \end{tabular}
-    \caption{Plaintext-checking query strategy for Kyber512: $\eta_1 = 3, d_u = 10, d_v = 4$}\label{tbl:kyber-sk-binary-search}
+    \begin{tabular}[c]{|c|c|c|c|}
+        \hline
+        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \hline
+        \texttt{mceliece460896} & 487 & 6694 & 7181 \\
+        \hline
+        \texttt{mceliece460896 + poly1305} & 514 (+5.54\%) & 5784 (-13.59\%) & 6298 (-12.30\%) \\
+        \hline
+        \texttt{mceliece460896 + gmac} & 565 (+16.02\%) & 5809 (-13.22\%) & 6374 (-11.24\%) \\
+        \hline
+        \texttt{mceliece460896 + cmac} & 544 (+11.70\%) & 5905 (-11.79\%) & 6449 (-10.19\%) \\
+        \hline
+        \texttt{mceliece460896 + kmac256} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
+        \hline
+    \end{tabular}
+    \begin{tabular}[c]{|c|c|c|c|}
+        \hline
+        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \hline
+        \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
+        \hline
+        \texttt{mceliece6688128 + poly1305} & 889 (+8.95\%) & 6509 (-13.21\%) & 7398 (-11.04\%) \\
+        \hline
+        \texttt{mceliece6688128 + gmac} & 890 (+9.07\%) & 6521 (-13.05\%) & 7411 (-10.88\%) \\
+        \hline
+        \texttt{mceliece6688128 + cmac} & 900 (+10.29\%) & 6540 (-12.80\%) & 7440 (-10.53\%) \\
+        \hline
+        \texttt{mceliece6688128 + kmac256} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
+        \hline
+    \end{tabular}
+    \begin{tabular}[c]{|c|c|c|c|}
+        \hline
+        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \hline
+        \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
+        \hline
+        \texttt{mceliece6960119 + poly1305} & 735 (+5.15\%) & 6389 (-12.02\%) & 7124 (-10.51\%) \\
+        \hline
+        \texttt{mceliece6960119 + gmac} & 753 (+7.73\%) & 6450 (-11.18\%) & 7203 (-9.52\%) \\
+        \hline
+        \texttt{mceliece6960119 + cmac} & 763 (+9.16\%) & 6428 (-11.48\%) & 7191 (-9.67\%) \\
+        \hline
+        \texttt{mceliece6960119 + kmac256} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
+        \hline
+    \end{tabular}
+    \begin{tabular}[c]{|c|c|c|c|}
+        \hline
+        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \hline
+        \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
+        \hline
+        \texttt{mceliece8192128 + poly1305} & 955 (+11.31\%) & 6547 (-12.29\%) & 7502 (-9.85\%) \\
+        \hline
+        \texttt{mceliece8192128 + gmac} & 957 (+11.54\%) & 6550 (-12.25\%) & 7507 (-9.79\%) \\
+        \hline
+        \texttt{mceliece8192128 + cmac} & 945 (+10.14\%) & 6546 (-12.30\%) & 7491 (-9.99\%) \\
+        \hline
+        \texttt{mceliece8192128 + kmac256} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
+        \hline
+    \end{tabular}
+    \caption{\texttt{mceliece+} achieves 9-12\% speedup in combined ``encapsulate + decapsulate'' compared to Classic McEliece}\label{tbl:mceliece-plus-performance}
 \end{table}
-
-\subsection{Code-based cryptosystems}
-
-
-\subsection{Other cryptosystems}
 
 \section{Conclusion}
 
