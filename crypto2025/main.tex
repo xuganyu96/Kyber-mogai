@@ -69,9 +69,95 @@
 \section{Introduction}\label{sec:introduction}
 Key encapsulation mechanism (KEM) is a public-key cryptographic primitive that allows two parties to establish a shared secret over an insecure communication channel. The accepted security requirement of a KEM is \textit{Indistinguishability under adaptive chosen ciphertext attack (IND-CCA)}. Intuitively speaking, IND-CCA security implies that no efficient adversary (usually defined as probabilistic polynomial time Turing machine) can distinguish a pseudorandom shared secret from a uniformly random bit string of identical length even with access to a decapsulation oracle. Unfortunately, CCA security is difficult to achieve from scratch. Early attempts at constructing CCA secure public-key cryptosystems using only heuristics argument and without using formal proof, such as RSA encryption in PKCS \#1 \cite{rfc2313} and RSA signature ISO 9796 \cite{ISO9796-1}, were badly broken with sophisticated cryptanalysis \cite{DBLP:conf/crypto/Bleichenbacher98,coppersmith1999iso,DBLP:conf/crypto/CoronNS99}. Afterwards, provable chosen ciphertext security became a necessity for new cryptographic protocols. There have been many provable CCA secure constructions since then. Notable examples include Optimal Asymmetric Encryption Padding (OAEP) \cite{DBLP:conf/eurocrypt/BellareR94}, which is combined with RSA \cite{DBLP:conf/crypto/FujisakiOPS01} into the widely adopted RSA-OAEP. The Fujisaki-Okamoto transformation \cite{DBLP:conf/crypto/FujisakiO99,DBLP:conf/tcc/HofheinzHK17} is another generic CCA secure transformation that was thoroughly studied and widely adopted, particularly by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project.
 
-Chosen ciphertext security is a solved problem within the context of symmetric cryptography. It is well understood that authenticated encryption can be achieved by combining a semantically secure symmetric encryption scheme with an existentially unforgeable message authentication code (MAC) using either the ``encrypt-then-MAC'' (AES-GCM, ChaCha20-Poly1305) or ``MAC-then-encrypt'' pattern (AES-CCM)\cite{DBLP:conf/asiacrypt/BellareN00,DBLP:conf/crypto/Krawczyk01}. However, adapting this technique for public-key cryptosystems is challenging, since the two communicating parties do not have a pre-shared symmetric key. The first attempt at such adaption is the Diffie-Hellman integrated encryption scheme (DHIES) \cite{DBLP:journals/iacr/AbdallaBR99,DBLP:conf/ctrsa/AbdallaBR01} proposed by Abdalla, Bellare, and Rogaway, who proved its chosen ciphertext security under a non-standard but well studied assumption called ``Gap Diffie-Hellman problem'' \cite{DBLP:conf/pkc/OkamotoP01}. DHIES was standardized in IEEE P1363a \cite{P1363a-2004}.
+Chosen ciphertext security is a solved problem within the context of symmetric cryptography. It is well understood that authenticated encryption can be achieved by combining a semantically secure symmetric encryption scheme with an existentially unforgeable message authentication code (MAC) using either the ``encrypt-then-MAC'' (AES-GCM, ChaCha20-Poly1305) or ``MAC-then-encrypt'' pattern (AES-CCM)\cite{DBLP:conf/asiacrypt/BellareN00,DBLP:conf/crypto/Krawczyk01}. However, adapting this technique for public-key cryptosystems is challenging, since the two communicating parties do not have a pre-shared symmetric key. The first attempt at such adaption is the Diffie-Hellman integrated encryption scheme (DHIES) \cite{DBLP:journals/iacr/AbdallaBR99,DBLP:conf/ctrsa/AbdallaBR01} proposed by Abdalla, Bellare, and Rogaway, who proved its chosen ciphertext security under a non-standard but well studied assumption called ``Gap Diffie-Hellman problem'' \cite{DBLP:conf/pkc/OkamotoP01}. DHIES and its variations appeared in international standards such as IEEE P1363a\cite{P1363a-2004} and ANSI X9.63\cite{ansi-x9.63}.
 
-\subsection{Our contribution}
+\subsection{Our contributions}\label{sec:our-contributions}
+Our contributions are as follows:
+
+\paragraph{Generic CCA secure KEM transformation.} We propose the ``encrypt-then-MAC'' KEM transformation. Our transformation constructs a KEM with provable CCA security under the random oracle model using a public-key encryption scheme with one-wayness under plaintext-checking attack and a message authentication code with existential unforgeability. Compared to the Fujisaki-Okamoto transformation, which is widely adopted by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project, our transformation replaces \textit{de-randomization} (which might degrade the security of a randomized cryptosystem) and \textit{re-encryption} (which is computationally inefficient and introduces additional risk of side channels) with computing MAC tag. We also provided concrete cryptanalysis on possible real-world attacks.
+
+\paragraph{Instantiation with ElGamal and McEliece cryptosystem.} We applied our KEM transformation to the ElGamal cryptosystem and the McEliece cryptosystems. We demonstrate that the ``encrypt-then-MAC'' KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of one-way security under plaintext checking attacks. We also surveyed plaintext checking attacks against many post quantum KEM candidates in the PQC standardizaton project.
+
+\paragraph{C implementation of McEliece+.} We implemented McEliece+ in C and benchmarked its performance. Compared to the reference implementation of Classic McEliece (which uses re-encryption), McEliece+ achieves significant decapsulation speedup at some minimal cost of encapsulation overhead, which results in 9-12\% increase in throughput (encapsulation + decapsulation time).
+
+\subsection{Related works}\label{sec:related-works}
+\subsubsection{OAEP}
+\textit{Optimal Asymmetric Encryption Padding (OAEP)} \cite{DBLP:conf/eurocrypt/BellareR94}, proposed by Mihir Bellare and Phillip Rogaway in 1994, was one of the earliest provably secure CCA transformations. However, Victor Shoup identified a non-trivial gap in OAEP's security proof that cannot be filled under ROM\cite{DBLP:conf/crypto/Shoup01}, although Fujisaki et al. later proved that RSA-OAEP is secure under the RSA assumption \cite{DBLP:conf/crypto/FujisakiOPS01}. RSA-OAEP is widely used in secure communication protocols such as TLS 1.2. The main drawback of OAEP is that it requires its input to be an one-way trapdoor permutation, which is difficult to find. To this day, RSA remains the only viable candidate to apply OAEP to.
+
+\subsubsection{REACT/GEM} Okamoto and Pointchval proposed REACT \cite{DBLP:conf/ctrsa/OkamotoP01} (Figure \ref{fig:react}) in 2001, followed by GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02} in 2002. Both are generic CCA transformation with security proved under ROM. Okamoto and Pointcheval first defined the security notion of one-wayness under plaintext checking attack (OW-PCA) and reduced the CCA security of the transformation to the OW-PCA security of the input public-key cryptosystem.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\encrypt_\text{REACT}(\pk, m)$}
+            \begin{algorithmic}[1]
+                \State $w \leftarrow \mathcal{M}_\pke$
+                \State $c_1 \leftarrow \encrypt(\pk, w)$
+                \State $k \leftarrow G(w)$
+                \State $c_2 \leftarrow \mathcal{E}_k(m)$
+                \State $c_3 \leftarrow H(w, m, c_1, c_2)$
+                \State \Return $(c_1, c_2, c_3)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\decrypt_\text{REACT}(\sk, c)$}
+            \begin{algorithmic}[1]
+                \Require $(c_1, c_2, c_3) \leftarrow c$
+                \State $\hat{w} \leftarrow \decrypt(\sk, c_1)$
+                \State $\hat{k} \leftarrow G(\hat{w})$
+                \State $\hat{m} \leftarrow \mathcal{D}_{\hat{k}}(c_2)$
+                \If{$H(\hat{w}, \hat{m}, c_1, c_2) = c_3$}
+                    \State \Return $\hat{m}$
+                \Else
+                    \State \Return $\bot$
+                \EndIf
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{Given PKE $(\keygen, \encrypt, \decrypt)$, SKE $(\mathcal{E}, \mathcal{D})$, and hash functions $G, H$, REACT constructs a hybrid PKE $(\keygen_\text{REACT}, \encrypt_\text{REACT}, \decrypt_\text{REACT})$}\label{fig:react}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\encrypt_\text{GEM}(\pk, m)$}
+            \begin{algorithmic}[1]
+                \State $r \leftarrow \mathcal{R}$
+                \State $s \leftarrow F(m, r)$
+                \State $w \leftarrow s \Vert (r \oplus H(s))$
+                \State $c_1 \leftarrow \encrypt(\pk, w)$
+                \State $k \leftarrow G(w, c_1)$
+                \State $c_2 \leftarrow \mathcal{E}_k(m)$
+                \State \Return $(c_1, c_2)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\decrypt_\text{GEM}(\sk, c)$}
+            \begin{algorithmic}[1]
+                \Require $(c_1, c_2) \leftarrow c$
+                \State $\hat{w} \leftarrow \decrypt(\sk, c_1)$
+                \State $(\hat{s}, \hat{t}) \leftarrow \hat{w}$
+                \State $\hat{r} \leftarrow \hat{t}\oplus H(\hat{s})$
+                \State $\hat{k} \leftarrow G(\hat{w}, c_1)$
+                \State $\hat{m} \leftarrow \mathcal{D}_{\hat{k}}(c_2)$
+                \If{$F(\hat{m}, \hat{r}) = \hat{s}$}
+                    \State \Return $\hat{m}$
+                \Else \State \Return $\bot$
+                \EndIf
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{Given PKE $(\keygen, \encrypt, \decrypt)$, SKE $(\mathcal{E}, \mathcal{D})$, and hash functions $F, G, H$, GEM constructs a hybrid PKE $(\keygen_\text{GEM}, \encrypt_\text{GEM}, \decrypt_\text{GEM})$}\label{fig:gem}
+\end{figure}
+
+\subsubsection{Fujisaki-Okamoto transformation}
+Fujisaki and Okamoto proposed a generic CCA secure hybrid PKE transformation in 1999
 
 \bibliographystyle{splncs04}
 \bibliography{biblio.bib}
