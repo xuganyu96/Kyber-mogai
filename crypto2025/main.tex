@@ -74,11 +74,11 @@ Chosen ciphertext security is a solved problem within the context of symmetric c
 \subsection{Our contributions}\label{sec:our-contributions}
 Our contributions are as follows:
 
-\paragraph{Generic CCA secure KEM transformation.} We propose the ``encrypt-then-MAC'' KEM transformation. Our transformation constructs a KEM with provable CCA security under the random oracle model using a public-key encryption scheme with one-wayness under plaintext-checking attack and a message authentication code with existential unforgeability. Compared to the Fujisaki-Okamoto transformation, which is widely adopted by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project, our transformation replaces \textit{de-randomization} (which might degrade the security of a randomized cryptosystem) and \textit{re-encryption} (which is computationally inefficient and introduces additional risk of side channels) with computing MAC tag. We also provided concrete cryptanalysis on possible real-world attacks.
+\subsubsection{Generic CCA secure KEM transformation.} We propose the ``encrypt-then-MAC'' KEM transformation. Our transformation constructs a KEM with provable CCA security under the random oracle model using a public-key encryption scheme (PKE) with one-wayness under plaintext-checking attack and a message authentication code with existential unforgeability. Compared to the Fujisaki-Okamoto transformation, which is widely adopted by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project, our transformation replaces \textit{de-randomization} (which might degrade the security of a randomized cryptosystem) and \textit{re-encryption} (which is computationally inefficient and introduces additional risk of side channels) with computing MAC tag. We also provided concrete cryptanalysis on possible real-world attacks.
 
-\paragraph{Instantiation with ElGamal and McEliece cryptosystem.} We applied our KEM transformation to the ElGamal cryptosystem and the McEliece cryptosystems. We demonstrate that the ``encrypt-then-MAC'' KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of one-way security under plaintext checking attacks. We also surveyed plaintext checking attacks against many post quantum KEM candidates in the PQC standardizaton project.
+\subsubsection{Instantiation with ElGamal and McEliece cryptosystem.} We applied our KEM transformation to the ElGamal cryptosystem and the McEliece cryptosystems. We demonstrate that the ``encrypt-then-MAC'' KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of one-way security under plaintext checking attacks. We also surveyed plaintext checking attacks against many post quantum KEM candidates in the PQC standardizaton project.
 
-\paragraph{C implementation of McEliece+.} We implemented McEliece+ in C and benchmarked its performance. Compared to the reference implementation of Classic McEliece (which uses re-encryption), McEliece+ achieves significant decapsulation speedup at some minimal cost of encapsulation overhead, which results in 9-12\% increase in throughput (encapsulation + decapsulation time).
+\subsubsection{C implementation of McEliece+.} We implemented McEliece+ in C and benchmarked its performance. Compared to the reference implementation of Classic McEliece (which uses re-encryption), McEliece+ achieves significant decapsulation speedup at some minimal cost of encapsulation overhead, which results in 9-12\% increase in throughput (encapsulation + decapsulation time).
 
 \subsection{Related works}\label{sec:related-works}
 \subsubsection{OAEP}
@@ -157,7 +157,87 @@ Our contributions are as follows:
 \end{figure}
 
 \subsubsection{Fujisaki-Okamoto transformation}
-Fujisaki and Okamoto proposed a generic CCA secure hybrid PKE transformation in 1999
+Fujisaki and Okamoto proposed to construct CCA secure hybrid PKE by combining a OW-CPA secure PKE and a semantically secure symmetric-key encryption (SKE) scheme \cite{DBLP:conf/crypto/FujisakiO99}. The main techniques, namely \textit{de-randomization} and \textit{re-encrytion} were both introduced in the original proposal. Under ROM, Fujisaki and Okamoto reduced the CCA security of the hybrid PKE tightly to the semantic security of the input SKE and \textit{non-tightly} to the OW-CPA security of the input PKE (with loss factor $q$, the number of hash oracle queries). Later works extended the original proposal to build CCA secure KEM: KEM's security model makes building secure KEM simpler than building secure PKE, and it is well-known that combining a CCA secure KEM with a CCA secure data encapsulation mechanism (DEM), such as some authenticated encryption scheme (e.g. AES-GCM, AES-CCM, ChaCha20-Poly1305), results in a CCA secure hybrid PKE \cite{DBLP:journals/iacr/Shoup01,DBLP:conf/eurocrypt/Shoup00a}. Further studies \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17,DBLP:journals/iacr/BernsteinP18,DBLP:conf/asiacrypt/HovelmannsHM22,DBLP:conf/pqcrypto/XagawaY19,DBLP:conf/crypto/JiangZCWM18} gave tighter security bounds, accounted for decryption failures in the underlying PKE, and analyzed the security under quantum random oracle model (QROM). To this day, the Fujisaki-Okamoto transformation is the only known generic CCA secure transformation that can convert OW-CPA/IND-CPA PKE into a CCA secure KEM. Because of the minimal input requirement and the simple construction, the Fujisaki-Okamoto transformation was widely adopted among post-quantum KEM candidates submitted to the PQC standardization project, including Kyber \cite{DBLP:conf/eurosp/BosDKLLSSSS18}, Saber \cite{DBLP:conf/africacrypt/DAnversKRV18}, FrodoKEM \cite{DBLP:conf/ccs/BosCDMNNRS16}, and Classic McEliece \cite{DBLP:conf/ches/BernsteinCS13}.
+
+Despite its widespread adoption, the Fujisaki-Okamoto transformation has many flaws: \begin{itemize}
+    \item \textbf{Computational inefficiency.} In all variants of Fujisaki-Okamoto transformation, decapsulation routine needs to re-encrypt the decryption to ensure ciphertext non-malleability. For input PKE whose encryption routine carries significant computational cost, such as most lattice-based cryptosystems, re-encryption substantially slows down decapsulation.
+    \item \textbf{Side-channel vulnerability.} Re-encryption introduces side-channels that can leak information about the decrypted PKE plaintext. As demonstrated in \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20}, these side-channels can be converted into efficient plaintext-checking attacks that can fully recover the secret key
+    \item \textbf{Security degradation.} \textit{de-randomization} can degrade the security of a randomized PKE. Where the security parameters did not account for this loss, the security of the KEM can fall below the expected level. Consequently, larger parameters are necessary to account for the security loss, which slows down the cryptosystem \cite{cryptoeprint:2021/912,DBLP:journals/iacr/Bernstein21}.
+\end{itemize}
+
+\subsection{Paper organization}\label{sec:paper-organization}
+In Section \ref{sec:preliminaries}, we review the preliminary definitions and theorems. In Section \ref{sec:the-enc-then-mac-transformation}, we present the encrypt-then-MAC KEM transformation, proves its CCA security, and discusses practical attacks. In Section \ref{sec:application-to-elgamal}, we show that the encrypt-then-MAC transformation is a generalization of DHIES by applying it to the ElGamal cryptosystem. In Section \ref{sec:application-to-mceliece}, we present McEliece+, an instantiation of the encrypt-then-MAC transformation, benchmark, and compare the performance of McEliece+ with Classic McEliece.
+
+\section{Preliminaries}\label{sec:preliminaries}
+\subsection{Public-key encryption scheme}
+\subsubsection{Syntax} A public-key encryption scheme (PKE) is a collection fo three routines $(\keygen, \encrypt, \decrypt)$ defined over some plaintext space $\mathcal{M}$ and some ciphertext space $\mathcal{C}$. Key generation $(\pk, \sk) \leftarrow \keygen(1^\lambda)$ is a randomized routine that returns a keypair consisting of a public encryption key and a secret decryption key. The encryption routine $\encrypt: (\pk, m) \mapsto c$ encrypts the input plaintext $m$ under the input public key $\pk$ and produces a ciphertext $c$. The decryption routine $\decrypt: (\sk, c) \mapsto m$ decrypts the input ciphertext $c$ under the input secret key and produces the corresponding plaintext. Where the encryption routine is randomized, we denote the randomness by a coin $r \in \mathcal{R}$ where $\mathcal{R}$ is called the coin space. Decryption routines are assumed to always be deterministic.
+
+\subsubsection{Correctness} A PKE is $\delta$-correct if
+
+\begin{equation*}
+    E\left[\max_{m\in\mathcal{M}}
+        P\left[ \decrypt(\sk, c) \neq m \mid c \leftarrow \encrypt(\pk, m)\right]
+    \right] \leq \delta
+\end{equation*}
+
+Where the expectation is taken with respect to the probability distribution of all possible keypairs. For many lattice-based cryptosystems, decryption failures could leak information about the secret key, although the probability of a decryption failure is low enough that classical adversaries cannot exploit decryption failure more than they can defeat the underlying lattice problems.
+
+\subsubsection{Security} The security of PKE's is conventionally discussed using adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. In the OW-ATK game (Figure \ref{fig:ow-game}), the challenger samples a random keypair and a random encryption. The adversary is given the public key, the random encryption (also called the challenge ciphertext), and access to ATK, then asked to decrypt the challenge ciphertext.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.45\textwidth}
+    \begin{algorithm}[H]
+        \caption*{OW-ATK game}
+        \begin{algorithmic}[1]
+            \State $(\pk, \sk) \leftarrow \keygen(1^\lambda)$
+            \State $m^\ast \leftarrow \mathcal{M}$
+            \State $c^\ast \leftarrow \encrypt(\pk, m)$
+            \State $\hat{m} \leftarrow A^\text{ATK}(1^\lambda, \pk, c^\ast)$
+            \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
+        \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+    \caption{The one-wayness game: challenger samples a random keypair and a random encryption, and the adversary wins if it correctly produces the decryption}\label{fig:ow-game}
+\end{figure}
+
+The advantage of an adversary is its probability of producing the correct decryption: $\text{Adv}^\text{OW-ATK}_\pke(A) = P[\hat{m} = m^\ast]$. A PKE is said to be OW-ATK secure if no efficient adversary can win the OW-ATK game with non-negligible probability.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.5\textwidth}
+        \begin{algorithm}[H]
+            \caption*{IND-ATK game}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk) \leftarrow \keygen(1^\lambda)$
+                \State $(m_0, m_1) \leftarrow A^\text{ATK}(1^\lambda, \pk)$
+                \State $b \leftarrow \{0,1\}$
+                \State $c^\ast \leftarrow \encrypt(\pk, m_b)$
+                \State $\hat{b} \leftarrow A^\text{ATK}(1^\lambda, \pk, c^\ast)$
+                \State \Return $\llbrack \hat{b} = b \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{IND-ATK game: adversary is asked to distinguish the encryption of one message from another}\label{fig:ind-atk-game}
+\end{figure}
+
+In the IND-ATK game (Figure \ref{fig:ind-atk-game}), the adversary chooses two distinct messages and receives the encryption of one of them, randomly selected by the challenger. The advantage of an adversary is its probability of correctly distinguishing the ciphertext of one message from the other beyond blind guess: $\text{Adv}^\text{IND-ATK}_\pke(A) = \vert P[\hat{b} = b] - \frac{1}{2}\vert$. A PKE is said to be IND-ATK secure if no efficient adversary can win the IND-ATK game with non-negligible advantage.
+
+In public-key cryptography, all adversaries are assumed to have access to the public key ($\text{ATK} = \text{CPA}$). If the adversary has access to a decryption oracle $\mathcal{O}_\decrypt: c \mapsto \decrypt(\sk, c)$, it is said to mount chosen-ciphertext attack (ATK = CCA). If the adversary has access to a plaintext-checking oracle (PCO) $\mathcal{O}_\pco: (m, c) \mapsto \llbrack m = \decrypt(\sk, c)\rrbrack$, then it is said to mount plaintext-checking attack (ATK = PCA).
+
+\begin{equation*}
+    \text{ATK} = \begin{cases}
+        \text{CPA} & \mathcal{O}_\text{ATK} = \cdot \\
+        \text{PCA} & \mathcal{O}_\text{ATK} = \mathcal{O}_\pco \\
+        \text{CCA} & \mathcal{O}_\text{ATK} = \mathcal{O}_\decrypt \\
+    \end{cases}
+\end{equation*}
+
+\subsection{Key encapsulation mechanism (KEM)}\label{sec:key-encapsulation-mechanism}
+
+\section{The encrypt-then-MAC transformation}\label{sec:the-enc-then-mac-transformation}
+\section{Application to ElGamal}\label{sec:application-to-elgamal}
+\section{McEliece+: applying encrypt-then-MAC to the McEliece cryptosystem}\label{sec:application-to-mceliece}
 
 \bibliographystyle{splncs04}
 \bibliography{biblio.bib}
