@@ -30,3 +30,6 @@
 # Beamer
 *.nav
 *.snm
+
+# TCHES 2025 submission materials
+tches2025/
