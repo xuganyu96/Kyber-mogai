@@ -13,7 +13,7 @@
 
 % Custom commands
 \newcommand{\pke}{\texttt{PKE}}
-\newcommand{\keygen}{\texttt{Gen}}
+\newcommand{\keygen}{\texttt{KeyGen}}
 \newcommand{\encrypt}{\texttt{Enc}}
 \newcommand{\decrypt}{\texttt{Dec}}
 \newcommand{\kem}{\texttt{KEM}}
@@ -331,6 +331,72 @@ In this section we present the encrypt-then-MAC KEM transformation. The transfor
     \caption{Combining PKE with MAC using encrypt-then-MAC to ensure ciphertext integrity}\label{fig:etm-encap-data-flow}
 \end{figure}
 
+In Section \ref{sec:etm-construction} we will describe the encrypt-then-MAC KEM routines and state the security reduction. In Section \ref{sec:proof-of-etm-theorem} we present the proof reducing the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the unforgeability of the MAC. In Section \ref{sec:etm-cryptanalysis} we discuss some generic attacks on our KEM transformation.
+
+\subsection{The construction}\label{sec:etm-construction}
+Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\mathcal{K}_\kem$ denote the set of all possible shared secrets. Let $(\keygen_\pke, \encrypt_\pke, \decrypt_\pke)$ be a PKE defined over message space $\mathcal{M}_\pke$ and ciphertext space $\mathcal{C}_\pke$. Let $\mac: \mathcal{K}_\mac \times \mathcal{B}^\ast \rightarrow \mathcal{T}$ be a MAC over key space $\mathcal{K}_\mac$ and tag space $\mathcal{T}$. Let $G: \mathcal{B}^\ast \rightarrow \mathcal{K}_\mac, H: \mathcal{B}^\ast \rightarrow \mathcal{K}_\kem$ be hash functions. The encrypt-then-MAC transformation $\etm[\pke,\mac,G,H]$ constructs a KEM $(\keygen_\etm, \encap_\etm, \decap_\etm)$ (Figure \ref{fig:etm-routines}).
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.32\textwidth}
+    \begin{algorithm}[H]
+        \caption*{$\keygen_\etm()$}
+        \begin{algorithmic}[1]
+            \State $(\pk,  \sk) \leftarrow \keygen_\pke()$
+            \State $s \leftarrow \mathcal{M}_\pke$
+            \State $\sk \leftarrow (\sk, s)$
+            \State \Return $(\pk, \sk)$
+        \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.3\textwidth}
+    \begin{algorithm}[H]
+        \caption*{$\encap_\etm(\pk)$}
+        \begin{algorithmic}[1]
+            \State $m \leftarrow \mathcal{M}_\pke$
+            \State $k \leftarrow G(m)$
+            \State $c^\prime \leftarrow \encrypt_\pke(\pk, m)$
+            \State $t \leftarrow \mac(k, c^\prime)$
+            \State $c \leftarrow (c^\prime, t)$
+            \State $K \leftarrow H(m, c)$
+            \State \Return $(c, K)$
+        \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.33\textwidth}
+    \begin{algorithm}[H]
+        \caption*{$\decap_\etm(\sk, c)$}
+        \begin{algorithmic}[1]
+            \Require $c = (c^\prime, t)$
+            \Require $\sk = (\sk^\prime, s)$
+            \State $\hat{m} \leftarrow \decrypt_\pke(\sk^\prime, c^\prime)$
+            \State $\hat{k} \leftarrow G(\hat{m})$
+            \If{$\mac(\hat{k}, c^\prime) = t$}
+                \State $K \leftarrow H(\hat{m}, c)$
+            \Else 
+                \State $K \leftarrow H(s, c)$
+            \EndIf
+            \State \Return $K$
+        \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+    \caption{The encrypt-then-MAC KEM routines}\label{fig:etm-routines}
+\end{figure}
+
+We chose to construct $\kem_\etm$ using implicit rejection $K \leftarrow H(s, c)$: on invalid ciphertexts, the decapsulation routine returns a fake shared secret that depends on the ciphertext and some secret values, though choosing to use explicit rejection should not impact the security of the KEM. In addition, because the underlying PKE can be randomized, the shared secret $K \leftarrow H(m, c)$ must depend on both the plaintext and the ciphertext. According to \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17}, if the input PKE is \textit{rigid} (i.e. $m = \decrypt(\sk, c)$ if and only if $c = \encrypt(\pk, m)$), such as with RSA, then the shared secret may be derived from the plaintext alone $K \leftarrow H(m)$.
+
+The CCA security of $\kem_\etm$ can be intuitively argued through an adversary's inability to learn additional information from the decapsulation oracle. For an adversary $A$ to produce a valid tag for some unauthenticated ciphertext $c^\prime$, it must either know the correct symmetric key or produce a forgery. Under the random oracle, $A$ cannot know the symmetric key without knowing its pre-image under the hash function $G$, so $A$ must either produced $c^\prime$ honestly, or have broken the one-wayness of the underlying PKE. This means that the decapsulation oracle will not leak information on decryption that the adversary does not already know. We formalize the security in Theorem \ref{thm:etm-is-ind-cca-secure}
+
+\begin{theorem}\label{thm:etm-is-ind-cca-secure}
+    For every IND-CCA adversary $A$ against $\kem_\etm$ that makes $q$ decapsulation queries, there exists a OW-PCA adversary $B$ against the underlying PKE making at least $q$ decapsulation queries, and an existential forgery adversary $C$ against the underlying MAC such that:
+
+    \begin{equation*}
+        \texttt{Adv}^\texttt{IND-CCA}_{\kem_\etm}(A) \leq q \cdot \texttt{Adv}_{\mac}(C) + 2 \cdot \texttt{Adv}^\texttt{OW-PCA}_{\pke}(B)
+    \end{equation*}
+\end{theorem}
+
+\subsection{Proof of Theorem \ref{thm:etm-is-ind-cca-secure}}\label{sec:proof-of-etm-theorem}
+\subsection{Cryptanalysis}\label{sec:etm-cryptanalysis}
 
 \section{Application to ElGamal}\label{sec:application-to-elgamal}
 \section{McEliece+: applying encrypt-then-MAC to the McEliece cryptosystem}\label{sec:application-to-mceliece}
