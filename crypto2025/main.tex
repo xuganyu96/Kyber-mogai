@@ -182,7 +182,7 @@ In Section \ref{sec:preliminaries}, we review the preliminary definitions and th
 
 Where the expectation is taken with respect to the probability distribution of all possible keypairs. For many lattice-based cryptosystems, decryption failures could leak information about the secret key, although the probability of a decryption failure is low enough that classical adversaries cannot exploit decryption failure more than they can defeat the underlying lattice problems.
 
-\subsubsection{Security} The security of PKE's is conventionally discussed using adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. In the OW-ATK game (Figure \ref{fig:ow-game}), the challenger samples a random keypair and a random encryption. The adversary is given the public key, the random encryption (also called the challenge ciphertext), and access to ATK, then asked to decrypt the challenge ciphertext.
+\subsubsection{Security} The security of PKE's is conventionally discussed using adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. In the OW-ATK game (Figure \ref{fig:pke-ow-atk-game}), the challenger samples a random keypair and a random encryption. The adversary is given the public key, the random encryption (also called the challenge ciphertext), and access to ATK, then asked to decrypt the challenge ciphertext.
 
 \begin{figure}[H]
     \centering
@@ -198,7 +198,7 @@ Where the expectation is taken with respect to the probability distribution of a
         \end{algorithmic}
     \end{algorithm}
     \end{minipage}
-    \caption{The one-wayness game: challenger samples a random keypair and a random encryption, and the adversary wins if it correctly produces the decryption}\label{fig:ow-game}
+    \caption{The one-wayness game: challenger samples a random keypair and a random encryption, and the adversary wins if it correctly produces the decryption}\label{fig:pke-ow-atk-game}
 \end{figure}
 
 The advantage of an adversary is its probability of producing the correct decryption: $\text{Adv}^\text{OW-ATK}_\pke(A) = P[\hat{m} = m^\ast]$. A PKE is said to be OW-ATK secure if no efficient adversary can win the OW-ATK game with non-negligible probability.
@@ -218,10 +218,10 @@ The advantage of an adversary is its probability of producing the correct decryp
             \end{algorithmic}
         \end{algorithm}
     \end{minipage}
-    \caption{IND-ATK game: adversary is asked to distinguish the encryption of one message from another}\label{fig:ind-atk-game}
+    \caption{IND-ATK game: adversary is asked to distinguish the encryption of one message from another}\label{fig:pke-ind-atk-game}
 \end{figure}
 
-In the IND-ATK game (Figure \ref{fig:ind-atk-game}), the adversary chooses two distinct messages and receives the encryption of one of them, randomly selected by the challenger. The advantage of an adversary is its probability of correctly distinguishing the ciphertext of one message from the other beyond blind guess: $\text{Adv}^\text{IND-ATK}_\pke(A) = \vert P[\hat{b} = b] - \frac{1}{2}\vert$. A PKE is said to be IND-ATK secure if no efficient adversary can win the IND-ATK game with non-negligible advantage.
+In the IND-ATK game (Figure \ref{fig:pke-ind-atk-game}), the adversary chooses two distinct messages and receives the encryption of one of them, randomly selected by the challenger. The advantage of an adversary is its probability of correctly distinguishing the ciphertext of one message from the other beyond blind guess: $\text{Adv}^\text{IND-ATK}_\pke(A) = \vert P[\hat{b} = b] - \frac{1}{2}\vert$. A PKE is said to be IND-ATK secure if no efficient adversary can win the IND-ATK game with non-negligible advantage.
 
 In public-key cryptography, all adversaries are assumed to have access to the public key ($\text{ATK} = \text{CPA}$). If the adversary has access to a decryption oracle $\mathcal{O}_\decrypt: c \mapsto \decrypt(\sk, c)$, it is said to mount chosen-ciphertext attack (ATK = CCA). If the adversary has access to a plaintext-checking oracle (PCO) $\mathcal{O}_\pco: (m, c) \mapsto \llbrack m = \decrypt(\sk, c)\rrbrack$, then it is said to mount plaintext-checking attack (ATK = PCA).
 
@@ -234,8 +234,104 @@ In public-key cryptography, all adversaries are assumed to have access to the pu
 \end{equation*}
 
 \subsection{Key encapsulation mechanism (KEM)}\label{sec:key-encapsulation-mechanism}
+\subsubsection{Syntax} A key encapsulation mechanism (KEM) is a collection of three routines $(\keygen, \encap, \decap)$ defined over some ciphertext space $\mathcal{C}$ and some key space $\mathcal{K}$. Key generation $\keygen: 1^\lambda \mapsto (\pk, \sk)$ is a randomized routine that returns a keypair. Encapsulation $\encap: \pk \mapsto (c, K)$ is a randomized routine that takes a public encapsulation key and returns a pair of ciphertext $c$ and shared secret $K$ (also commonly referred to as session key). Decapsulation $\decap: (\sk, c) \mapsto K$ is a deterministic routine that uses the secret key $\sk$ to recover the shared secret $K$ from the input ciphertext $c$. Where the KEM chooses to reject invalid ciphertext explicitly, the decapsulation routine can also output the rejection symbol $\bot$. We assume a KEM to be perfectly correct:
+
+$$
+P\left[
+    \decap(\sk, c) = K \mid (\pk, \sk) \leftarrow \keygen(1^\lambda); (c, K) \leftarrow \encap(\pk)
+\right] = 1
+$$
+
+\subsubsection{Security} Similar to PKE security, the security of KEM is discussed using adversarial games. In the IND-ATK game (Figure \ref{fig:kem-ind-atk-game}), the challenger generates a random keypair and encapsulates a random secret; the adversary is given the public key and the ciphertext, then asked to distinguish the shared secret from a random bit string.
+
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.5\textwidth}
+        \begin{algorithm}[H]
+            \caption*{KEM IND-ATK Game}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk) \leftarrow \keygen((1^\lambda))$
+                \State $(c^\ast, K_0) \leftarrow \encap(\pk)$
+                \State $K_1 \leftarrow \mathcal{K}$
+                \State $b \leftarrow \{0,1\}$
+                \State $\hat{b} \leftarrow A^\texttt{ATK}(1^\lambda, \pk, c^\ast, K_b)$
+                \State \Return $\llbrack \hat{b} = b \rrbrack$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \caption{The IND-ATK game for KEM}\label{fig:kem-ind-atk-game}
+\end{figure}
+
+The advantage of an adversary is its probability of winning beyong blind guess. A KEM is said to be IND-ATK secure if no efficient adversary can win the IND-ATK game with non-negligible advantage.
+
+$$
+\texttt{Adv}^\texttt{IND-ATK}(A) = \left\vert P\left[
+    A^\texttt{ATK}(1^\lambda, c^\ast, K_b) = b
+    \mid \begin{aligned}
+    &(\pk, \sk) \leftarrow \keygen(1^\lambda); \\
+    &(c^\ast, K_0) \leftarrow \encap(\pk); \\
+    &K_1 \leftarrow \mathcal{K}; b \leftarrow \{0,1\}
+    \end{aligned}
+\right] - \frac{1}{2}
+\right\vert
+$$
+
+By default, all adversaries are assumed to have the public key, with which they can mount chosen plaintext attacks (ATK = CPA). If the adversary as access to a decapsulation oracle $\mathcal{O}_\decap: c \mapsto \decap(\sk, c)$, it is said to mount a chosen-ciphertext attack (ATK = CCA).
+
+\subsection{Message authentication code (MAC)}\label{sec:message-authentication-code}
+\subsubsection{Syntax} A message authentication code (MAC) is a collection of two routines $(\sign, \verify)$ defined over some key space $\mathcal{K}$, some message space $\mathcal{M}$, and some tag space $\mathcal{T}$. The signing routine $\sign: (k, m) \mapsto t$ authenticates the message $m$ under the symmetric key $k$ by producing a tag $t$. The verification routine $\verify(k,m,t)$ outputs $1$ if the message-tag pair $(m, t)$ is authentic under the symmetric key $k$ and $0$ otherwise. Many MAC constructions are deterministic: for these constructions it is simpler to denote the signing routine by $t \leftarrow \mac(k, m)$, and verification done using a simple comparison. Some MAC constructions require a distinct or randomized nonce $r \leftarrow \mathcal{R}$, and the signing routine will take this additional argument $t \leftarrow \mac(k, m; r)$.
+
+\subsubsection{Security} The standard security notion for a MAC is \textit{existential unforgeability under chosen message attack (EUF-CMA)}. We define it using an adversarial game in which an adversary has access to a signing oracle $\mathcal{O}_\sign: m \mapsto \sign(k, m)$ and tries to produce a valid message-tag pair that has not been queried from the signing oracle (Figure \ref{fig:euf-cma-game}).
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.6\textwidth}
+    \begin{algorithm}[H]
+        \caption*{MAC EUF-CMA game}
+        \begin{algorithmic}[1]
+            \State $k^\ast \leftarrow \mathcal{K}$
+            \State $(\hat{m}, \hat{t}) \leftarrow A^\texttt{CMA}()$
+            \State \Return $\llbrack \verify(k^\ast, \hat{m}, \hat{t}) \land (\hat{m}, \hat{t}) \not\in \mathcal{O}_\sign \rrbrack$
+        \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+    \caption{The signing oracle signs the queried message with the secret key. The adversary must produce a message-tag pair that has never been queried before}\label{fig:euf-cma-game}
+\end{figure}
+
+The advantage of the adversary is the probability that it successfully produces a valid message-tag pair. A MAC is said to be EUF-CMA secure if no efficient adversary has non-negligible advantage. Some MACs are \textit{one-time existentially unforgeable} (we call them one-time MAC), meaning that each secret key can be used to authenticate exactly one message. The corresponding security game is identical to the EUF-CMA game except for that the signing oracle will only answer up to one query.
 
 \section{The encrypt-then-MAC transformation}\label{sec:the-enc-then-mac-transformation}
+In this section we present the encrypt-then-MAC KEM transformation. The transformation constructs an IND-CCA secure KEM using an OW-PCA secure PKE and an existentially unforgeable MAC. Our scheme is inspired by DHIES, but differs from it in two key aspects: whereas DHIES reduces its CCA security specifically to the Gap Diffie-Hellman assumption \cite{DBLP:conf/pkc/OkamotoP01}, our construction's CCA security reduces generically to the PCA security of the the input PKE; in addition, we argue that if the PKE's plaintext space is large and the sampling method has sufficient entropy, then the MAC only needs to be one-time existentially unforgeable (Abdalla, Rogaway, and Bellare originally proposed to use HMAC and CBC-MAC, which are many-time secure MAC but less efficient than one-time MAC). The data flow of the encapsulation is illustrated in Figure \ref{fig:etm-encap-data-flow}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \tikzstyle{rect} = [draw, rectangle, minimum width=3cm, minimum height=0.5cm]
+        \tikzstyle{filledrect} = [draw, rectangle, minimum width=3cm, minimum height=0.5cm, fill=lightgray]
+        \matrix [column sep=7mm, row sep=5mm] {
+            \node (pk) [rect] {$\pk$}; &
+            \node (m) [rect] {$m \leftsample \mathcal{M}$}; &
+            \node (hashg) [rect] {Hash function $G$}; \\
+            \node (pkeenc) [rect] {$\texttt{PKE.Enc}$}; &
+            \node (mackey) [rect] {$k_\mac$}; \\
+            \node (ct) [filledrect] {$c^\prime$}; &
+            \node (mac) [rect] {$\mac$}; &
+            \node (tag) [filledrect] {$t$}; \\
+        };
+        \draw[->, thick] (pk) -- (pkeenc);
+        \draw[->, thick] (m) -- (pkeenc);
+        \draw[->, thick] (m) -- (hashg);
+        \draw[->, thick] (hashg) -- (mackey);
+        \draw[->, thick] (pkeenc) -- (ct);
+        \draw[->, thick] (mackey) -- (mac);
+        \draw[->, thick] (ct) -- (mac);
+        \draw[->, thick] (mac) -- (tag);
+    \end{tikzpicture}
+
+    \caption{Combining PKE with MAC using encrypt-then-MAC to ensure ciphertext integrity}\label{fig:etm-encap-data-flow}
+\end{figure}
+
+
 \section{Application to ElGamal}\label{sec:application-to-elgamal}
 \section{McEliece+: applying encrypt-then-MAC to the McEliece cryptosystem}\label{sec:application-to-mceliece}
 
