@@ -1102,6 +1102,9 @@ We implemented \texttt{mceliece+} by modifying the reference implementation. MAC
 \end{table}
 
 \section{Conclusion and future works}\label{sec:conclusion}
+In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then applie the encrypt-then-MAC transformation to the ElGamal cryptosystem and the McEliece cryptosystem, and implemented the transformed McEliece+ in C using a variety of MACs. On average, McEliece+ achieved 9-12\% increase in throughput compared to Classic McEliece, which uses the Fujisaki-Okamoto transformation to convert OW-CPA encryption scheme into a CCA secure KEM.
+
+We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:journals/siamcomp/Shor97} is inapplicable to most MAC constructions, the encrypt-then-MAC KEM transformation can be applied to a quantum-resistant PKE scheme to derive a post-quantum CCA-secure KEM scheme. In future works, we plan to analyze the security reduction under the quantum random oracle model, which can inform us of the appropriate parameters for the MAC.
 
 \bibliographystyle{splncs04}
 \bibliography{biblio.bib}
