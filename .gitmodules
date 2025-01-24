@@ -1,6 +1,3 @@
-[submodule "kyber"]
-	path = kyber
-	url = https://github.com/pq-crystals/kyber
 [submodule "easy-mceliece"]
 	path = easy-mceliece
 	url = https://github.com/xuganyu96/easy-mceliece
