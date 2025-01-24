@@ -1,8 +1,8 @@
 CompileFlags:
   Add: [
     # allow clangd to find OpenSSL's header files
-    "-I/opt/homebrew/Cellar/openssl@3/3.3.2/include",
-    "-L/opt/homebrew/Cellar/openssl@3/3.3.2/lib",
+    "-I/opt/homebrew/Cellar/openssl@3/3.4.0/include",
+    "-L/opt/homebrew/Cellar/openssl@3/3.4.0/lib",
     "-Wall", 
     "-Wextra", 
     "-Wpedantic", 
@@ -15,6 +15,6 @@ CompileFlags:
     "-fomit-frame-pointer",
     "-D__DEBUG__",
     "-DMAC_GMAC",
-    "-DPKE_MCELIECE"
+    "-DMCELIECE_N=3488"
     # "-DPKE_KYBER"
   ]
