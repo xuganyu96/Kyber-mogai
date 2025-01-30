@@ -88,7 +88,7 @@ Our contributions are as follows:
 
 \subsubsection{REACT/GEM} Okamoto and Pointchval proposed REACT \cite{DBLP:conf/ctrsa/OkamotoP01} (Figure \ref{fig:react}) in 2001, followed by GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02} in 2002. Both are generic CCA transformation with security proved under ROM. Okamoto and Pointcheval first defined the security notion of one-wayness under plaintext checking attack (OW-PCA) and reduced the CCA security of the transformation to the OW-PCA security of the input public-key cryptosystem.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.45\textwidth}
         \begin{algorithm}[H]
@@ -107,7 +107,7 @@ Our contributions are as follows:
         \begin{algorithm}[H]
             \caption*{$\decrypt_\text{REACT}(\sk, c)$}
             \begin{algorithmic}[1]
-                \Require $(c_1, c_2, c_3) \leftarrow c$
+                \Require $c = (c_1, c_2, c_3)$
                 \State $\hat{w} \leftarrow \decrypt(\sk, c_1)$
                 \State $\hat{k} \leftarrow G(\hat{w})$
                 \State $\hat{m} \leftarrow \mathcal{D}_{\hat{k}}(c_2)$
@@ -122,7 +122,7 @@ Our contributions are as follows:
     \caption{Given PKE $(\keygen, \encrypt, \decrypt)$, SKE $(\mathcal{E}, \mathcal{D})$, and hash functions $G, H$, REACT constructs a hybrid PKE $(\keygen_\text{REACT}, \encrypt_\text{REACT}, \decrypt_\text{REACT})$}\label{fig:react}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.45\textwidth}
         \begin{algorithm}[H]
@@ -186,7 +186,7 @@ Where the expectation is taken with respect to the probability distribution of a
 
 \subsubsection{Security} The security of PKE's is conventionally discussed using adversarial games played between a challenger and an adversary \cite{DBLP:conf/stoc/GoldwasserM82}. In the OW-ATK game (Figure \ref{fig:pke-ow-atk-game}), the challenger samples a random keypair and a random encryption. The adversary is given the public key, the random encryption (also called the challenge ciphertext), and access to ATK, then asked to decrypt the challenge ciphertext.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.45\textwidth}
     \begin{algorithm}[H]
@@ -205,7 +205,7 @@ Where the expectation is taken with respect to the probability distribution of a
 
 The advantage of an adversary is its probability of producing the correct decryption: $\text{Adv}^\text{OW-ATK}_\pke(A) = P[\hat{m} = m^\ast]$. A PKE is said to be OW-ATK secure if no efficient adversary can win the OW-ATK game with non-negligible probability.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.5\textwidth}
         \begin{algorithm}[H]
@@ -246,7 +246,7 @@ $$
 
 \subsubsection{Security} Similar to PKE security, the security of KEM is discussed using adversarial games. In the IND-ATK game (Figure \ref{fig:kem-ind-atk-game}), the challenger generates a random keypair and encapsulates a random secret; the adversary is given the public key and the ciphertext, then asked to distinguish the shared secret from a random bit string.
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.5\textwidth}
         \begin{algorithm}[H]
@@ -285,7 +285,7 @@ By default, all adversaries are assumed to have the public key, with which they 
 
 \subsubsection{Security} The standard security notion for a MAC is \textit{existential unforgeability under chosen message attack (EUF-CMA)}. We define it using an adversarial game in which an adversary has access to a signing oracle $\mathcal{O}^\sign: m \mapsto \sign(k, m)$ and tries to produce a valid message-tag pair that has not been queried from the signing oracle (Figure \ref{fig:euf-cma-game}).
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.6\textwidth}
     \begin{algorithm}[H]
@@ -333,12 +333,12 @@ In this section we present the encrypt-then-MAC KEM transformation. The transfor
     \caption{Combining PKE with MAC using encrypt-then-MAC to ensure ciphertext integrity}\label{fig:etm-encap-data-flow}
 \end{figure}
 
-In Section \ref{sec:etm-construction} we will describe the encrypt-then-MAC KEM routines and state the security reduction. In Section \ref{sec:proof-of-etm-theorem} we present the proof reducing the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the unforgeability of the MAC. In Section \ref{sec:etm-cryptanalysis} we discuss some generic attacks on our KEM transformation.
+In Section \ref{sec:etm-construction} we will describe the encrypt-then-MAC KEM routines and state the security reduction. In Section \ref{sec:proof-of-etm-theorem} we present the proof reducing the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the unforgeability of the MAC. In Section \ref{sec:ow-pca-security} we discuss how the OW-PCA security of the PKE relates to the CCA security of the encrypt-then-MAC KEM. In Section \ref{sec:discussion-on-real-world-attacks} we discuss some generic attacks on our KEM transformation.
 
 \subsection{The construction}\label{sec:etm-construction}
 Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\mathcal{K}_\kem$ denote the set of all possible shared secrets. Let $(\keygen_\pke, \encrypt_\pke, \decrypt_\pke)$ be a PKE defined over message space $\mathcal{M}_\pke$ and ciphertext space $\mathcal{C}_\pke$. Let $\mac: \mathcal{K}_\mac \times \mathcal{B}^\ast \rightarrow \mathcal{T}$ be a MAC over key space $\mathcal{K}_\mac$ and tag space $\mathcal{T}$. Let $G: \mathcal{B}^\ast \rightarrow \mathcal{K}_\mac, H: \mathcal{B}^\ast \rightarrow \mathcal{K}_\kem$ be hash functions. The encrypt-then-MAC transformation $\etm[\pke,\mac,G,H]$ constructs a KEM $(\keygen_\etm, \encap_\etm, \decap_\etm)$ (Figure \ref{fig:etm-routines}).
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.32\textwidth}
     \begin{algorithm}[H]
@@ -387,7 +387,7 @@ Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\mathcal{K}_\k
 
 We chose to construct $\kem_\etm$ using implicit rejection $K \leftarrow H(s, c)$: on invalid ciphertexts, the decapsulation routine returns a fake shared secret that depends on the ciphertext and some secret values, though choosing to use explicit rejection should not impact the security of the KEM. In addition, because the underlying PKE can be randomized, the shared secret $K \leftarrow H(m, c)$ must depend on both the plaintext and the ciphertext. According to \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17}, if the input PKE is \textit{rigid} (i.e. $m = \decrypt(\sk, c)$ if and only if $c = \encrypt(\pk, m)$), such as with RSA, then the shared secret may be derived from the plaintext alone $K \leftarrow H(m)$.
 
-The CCA security of $\kem_\etm$ can be intuitively argued through an adversary's inability to learn additional information from the decapsulation oracle. For an adversary $A$ to produce a valid tag for some unauthenticated ciphertext $c^\prime$, it must either know the correct symmetric key or produce a forgery. Under the random oracle, $A$ cannot know the symmetric key without knowing its pre-image under the hash function $G$, so $A$ must either produced $c^\prime$ honestly, or have broken the one-wayness of the underlying PKE. This means that the decapsulation oracle will not leak information on decryption that the adversary does not already know. We formalize the security in Theorem \ref{thm:etm-is-ind-cca-secure}
+The CCA security of $\kem_\etm$ can be intuitively argued through an adversary's inability to learn additional information from the decapsulation oracle. For an adversary $A$ to produce a valid tag for some unauthenticated ciphertext $c^\prime$, it must either know the correct symmetric key or produce a forgery. Under the Random Oracle Model (ROM), $A$ cannot know the symmetric key without knowing its pre-image under the hash function $G$, so $A$ must either produced $c^\prime$ honestly, or have broken the one-wayness of the underlying PKE. This means that the decapsulation oracle will not leak information on decryption that the adversary does not already know. We formalize the security in Theorem \ref{thm:etm-is-ind-cca-secure}
 
 \begin{theorem}\label{thm:etm-is-ind-cca-secure}
     For every IND-CCA adversary $A$ against $\kem_\etm$ that makes $q$ decapsulation queries, there exists a OW-PCA adversary $B$ against the underlying PKE making at least $q$ decapsulation queries, and an existential forgery adversary $C$ against the underlying MAC such that:
@@ -399,10 +399,9 @@ The CCA security of $\kem_\etm$ can be intuitively argued through an adversary's
 
 \subsection{Proof of Theorem \ref{thm:etm-is-ind-cca-secure}}\label{sec:proof-of-etm-theorem}
 We will prove Theorem \ref{thm:etm-is-ind-cca-secure} using a sequence of game. A summary of the the sequence of games can be found in Figure \ref{fig:etm-ind-cc2-sequence-of-games} and \ref{fig:ow-pca-simulates-game-3}. From a high level we made three incremental modifications to the IND-CCA game for $\kem_\etm$: \begin{enumerate}
-    \setlength\itemsep{0.1em}
-    \item Replace the true decapsulation oracle with a simulated decapsulation oracle
-    \item Replace the pseudorandom MAC key $k^\ast \leftarrow G(m^\ast)$ with a truly random $k^\ast \leftsample \mathcal{K}_\mac$
-    \item Replace the pseudorandom shared secret $K_0 \leftarrow H(m^\ast, c)$ with a truly random shared secret $K_0 \leftsample \mathcal{K}_\kem$
+    \item Replace the true decapsulation oracle with a simulated decapsulation oracle. The simulated decapsulation oracle does not directly decrypt the queried ciphertext. Instead it searches through the hash oracle and looks for matching queries using the plaintext-checking oracle. The true decapsulation oracle and the simulated decapsulation oracle disagree if and only if the adversary queries with a ciphertext that contains a forged MAC tag, so the adversary cannot distinguish the two games more than it can perform existential forgery against the underlying MAC.
+    \item Replace the pseudorandom MAC key $k^\ast \leftarrow G(m^\ast)$ with a uniformly random MAC key $k^\ast \leftsample \mathcal{K}_\mac$. Under ROM, the adversary cannot distinguish this game from the previous one unless it queries the hash oracle with $m^\ast$, in which case a second adversary with access to a plaintext-checking oracle can win the OW-PCA game against the underlying PKE.
+    \item Replace the pseudorandom shared secret $K_0 \leftarrow H(m^\ast, c)$ with a truly random shared secret $K_0 \leftsample \mathcal{K}_\kem$. Similar to the point above, the adversary cannot distinguish the change more than it can break the one-wayness of the underlying PKE. Furthermore, since both $K_0$ and $K_1$ are uniformly random, no adversary can have any advantage.
 \end{enumerate}
 
 A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adversary, and the advantage of the OW-PCA adversary is associated with the probability of certain behaviors of the KEM adversary.
@@ -612,8 +611,12 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
     Combining all equations above produce the desired security bound.
 \end{proof}
 
-\subsection{Cryptanalysis}\label{sec:etm-cryptanalysis}
-\subsubsection{OW-PCA security} Theorem \ref{thm:etm-is-ind-cca-secure} stated that if the underlying PKE is OW-PCA secure, then the encrypt-then-MAC KEM is IND-CCA secure. Conversely, if the underlying PKE is not OW-PCA secure, then the encrypt-then-MAC KEM is NOT IND-CCA secure. This is captured in Lemma \ref{lemma:ind-cca-implies-ow-pca}
+% TODO: PCA security should be separate subsection
+% TODO: The rest of the discussion should move to a "discussion" section, be made shorter, and have more references
+\subsection{OW-PCA security}\label{sec:ow-pca-security}
+The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding (OAEP)\cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure (Figure \ref{fig:pco-trapdoor-perm}), while there are cryptosystems that are OW-PCA secure but not one-way trapdoor permutation (Table \ref{tbl:ow-pca-candidates}). More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
+
+Theorem \ref{thm:etm-is-ind-cca-secure} stated that if the underlying PKE is OW-PCA secure, then the encrypt-then-MAC KEM is IND-CCA secure. Conversely, if the underlying PKE is not OW-PCA secure, then the encrypt-then-MAC KEM is NOT IND-CCA secure. This is captured in Lemma \ref{lemma:ind-cca-implies-ow-pca}
 
 \begin{lemma}\label{lemma:ind-cca-implies-ow-pca}
     For every OW-PCA adversary $A$ against the underlying PKE, there exists an IND-CCA adversary $B$ against the encrypt-then-MAC KEM such that:
@@ -624,7 +627,7 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
 
 For a sketch of proof, we observe that the IND-CCA adversary $B$ can perfectly simulate the plaintext-checking oracle for the OW-PCA adversary $A$ (Figure \ref{fig:simulate-pca-oracle-with-cca-oracle}), and if $A$ succeeds in breaking the one-wayness of the underlying PKE, then $B$ can compute the shared secret associated with the challenge ciphertext, which allows $B$ to distinguish true shared secret from random bit strings.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{minipage}[t]{0.4\textwidth}
         \begin{algorithm}[H]
@@ -640,9 +643,8 @@ For a sketch of proof, we observe that the IND-CCA adversary $B$ can perfectly s
     \caption{Plaintext-checking oracle can be simulated using decapsulation oracle. If $m$ is the decryption of $c$, then $m$ will hash into the correct MAC key and produce the correct tag, and the decapsulation will accept $(c, t)$ and return the true shared secret. If $m$ is not the decryption of $c$, then the probability of producing the correct tag is negligible, and the decapsulation will reject $(c, t)$ as invalid.}\label{fig:simulate-pca-oracle-with-cca-oracle}
 \end{figure}
 
-The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding (OAEP)\cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is strictly easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure (Figure \ref{fig:pco-trapdoor-perm}), while there are cryptosystems that are OW-PCA secure but not one-way trapdoor permutation (Table \ref{tbl:ow-pca-candidates}). More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
 
     \begin{minipage}[t]{0.5\textwidth}
@@ -654,6 +656,7 @@ The security notion of \textit{One-wayness under plaintext-checking attack (OW-P
     \end{algorithm}
     \end{minipage}
 
+    % TODO: add reference, who pointed out that trapdoor permutation is PCA secure
     \caption{If $\pke(\keygen, \encrypt, \decrypt)$ is an one-way trapdoor permutation, then for all $(\pk, \sk) \leftarrow \keygen()$, $\decrypt(\sk, c) = m$ if and only if $\encrypt(\pk, m) = c$}\label{fig:pco-trapdoor-perm}
 \end{figure}
 
@@ -677,15 +680,19 @@ The security notion of \textit{One-wayness under plaintext-checking attack (OW-P
         \hline
         
     \end{tabular}
+    % TODO: also add references in the table
     \caption{The landscape of OW-PCA security}\label{tbl:ow-pca-candidates}
 \end{table}
 
 There have been numerous attempts at constructing plaintext-checking attacks on post-quantum KEMs submitted to NIST's PQC projects. Due to the search-decision equivalence of the Ring/Module Learning With Error problem, lattice-based cryptosystems including Kyber, Saber, FrodoKEM, and NTRU Prime are all vulnerable to similar key-recovery plaintext-checking attacks (KR-PCA)\cite{DBLP:conf/crypto/00010N20,DBLP:journals/tches/RaviRCB20,DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23}. KR-PCA against NTRU-HRSS/NTRU-HPS can be adapted from \cite{Hoffstein1999,DBLP:conf/crypto/JaulmesJ00,cryptoeprint:2019/1022,cryptoeprint:2021/168}. Among code-based KEMs, HQC has similar structure with LWE-based cryptosystems, so similar KR-PCA applies \cite{DBLP:conf/acns/Huguenin-Dumittan20}. BIKE and Classical McEliece are both based on the Niederreiter cryptosystem, although BIKE is instantiated using Moderate-Density Parity Check (MDPC) code, which was also vulnerable to KR-PCA \cite{DBLP:conf/asiacrypt/Guo0S16}. There are many reaction attacks (also called ciphertext-validation attack) \cite{DBLP:conf/icics/HallGS99} against the McEliece/Niedereitter cryptosystem using binary Goppa code, where an adversary flips chosen bits of the ciphertext and learns the locations of the error bits by observing whether the modified ciphertext incurs decryption failures. However, there is no known way of converting such reaction attacks to a plaintext-checking attacks. In other words, there no known plaintext-checking attack against the Niedereitter cryptosystem using binary Goppa code.
 
+% TODO: these attacks are too trivial, make them shorter, add more references
+\subsection{Discussion on real-world attacks}\label{sec:discussion-on-real-world-attacks}
 \subsubsection{Dictionary attack on MAC key.} For simplicity of proof, we chose to derive the MAC key $k \leftarrow G(m)$ from hashing a randomly sampled plaintext. However, letting the MAC key depend solely on the plaintext opens the possibility of plaintext recovery attack (in fact, deriving the MAC key from plaintext is the source of non-tightness in Theorem \ref{thm:etm-is-ind-cca-secure}). An adversary first pre-computes a large lookup table mapping individual plaintexts to the corresponding MAC key, then checks intercepted KEM ciphertext $c = (c^\prime, t)$ against the MAC keys stored in this lookup table. This attack could be more efficient than a brute-force search on the plaintext space, since MAC computation is usually more efficient than PKE encryption. This is especially problematic if the PKE is randomized and the MAC key space is smaller than the combination of plaintext space and coin space. We refer reader to \cite{DBLP:journals/iacr/Bernstein21,cryptoeprint:2021/912} for detailed discussion of how de-randomization can reduce the search space of a brute-force attack and thus degrade the security of the KEM.
 
 One straightforward fix is to use a MAC with larger key space and derive the MAC key from hashing both the randomly sampled plaintext and the public key. If the PKE public key is large, then it can be pre-hashed during key generation and appended to the KEM keypair. This increases the cost of the plaintext recovery attack since the attacker will need to compute one lookup table per keypair. However, long-term keypairs (e.g. disk encryption or email encryption) might still have sufficiently long lifespan to be vulnerable to dictionary attack. In this case, we propose salting the hash $k \leftarrow G(\pk \Vert m \Vert \text{salt})$ with a random salt at each encapsulation, then appending the salt to the ciphertext. At the cost of increasing ciphertext size by the salt size, the cost of such dictionary attack can be raised arbitrarily high.
 
+% TODO: reference attacks on MAC to show that it is harder to 
 \subsubsection{Forgery attack on MAC tag.} With modern MAC constructions such as Poly1305, an adversary has no better method of forging tags under unknown key than blind guesses. Although the security evaluation criteria in NIST's PQC project limits chosen-ciphertext attack adversaries to no more than $2^{64}$ classical decapsulation queries \cite{NIST_PQC_Evaluation}, having a relatively small tag size (e.g. Poly1305, GMAC, CMAC all use 128-bit tag size) might still present practical weakness. Among existing popular MAC constructions, HMAC and KMAC-256 can straightforwardly increase the tag size with appropriate choices of parameters. Scaling CMAC will require a secure pseudorandom function with lengthier output, and although methods of converting $n$-bit block cipher into $mn$-bit block cipher exist \cite{DBLP:conf/ctrsa/HaleviR04}, they remain unproven in real-world usage. Scaling Carter-Wegman MACs \cite{DBLP:journals/jcss/CarterW79,DBLP:journals/jcss/WegmanC81} (e.g. Poly1305 and GMAC) is relatively straightforward: first the universal hash function needs to operate on a larger finite field, then the pseudorandom function needs to output longer bit strings.
 
 \subsubsection{One-time MAC.} Under ROM, deriving the MAC key from freshly sampled plaintext means that at each encaspsulation, the MAC key is statistically indistinguishable from uniformly random unless the pre-image is known. In practice, this means that if the implementation has a high-quality source of randomness, the underlying PKE's plaintext space is sufficiently large, and the hash function is collision resistant, then within some reasonable limit for the number of encapsulations under each keypair, the probability of signing distinct ciphertext with identical MAC key is negligible. Furthermore, within the standard IND-CCA security model for KEMs, an adversary does not have access to a signing oracle or other methods of obtaining MAC tag under an unknown symmetric key. Consequently, using a one-time MAC should not affect the security of the transformed KEM. On the other hand, one-time MACs are usually significantly more efficient than many-time MACs, which can lead to meaningful speedup in both encapsulation and decapsulation.
@@ -694,8 +701,7 @@ One straightforward fix is to use a MAC with larger key space and derive the MAC
 
 \subsubsection{Side-channel attacks} We speculate that the encrypt-then-MAC transformation carries less risk for side-channels than the Fujisaki-Okamoto transformation. This is because Fujisaki-Okamoto transformation re-encrypts the decrypted plaintext in the decapsulation routine, which is more complex than computing a MAC tag. In fact, a number of side-channel attacks \cite{cryptoeprint:2024/1049,cryptoeprint:2024/2051,clangover} successfully target insecure implementation of the PKE encryption sub-routine. On the other hand, MAC implementation is usually simpler and thus easier to verify. Furthermore, many MAC constructions such as HMAC and CBC-MAC and benefit from hardware support for SHA-256, AES, or finite field arithmetic, which further decreases the risk of side-channels introduced in software.
 
-% \paragraph{Ephemeral key exchange?}
-
+% TODO: move after code-based section
 \section{Application to ElGamal}\label{sec:application-to-elgamal}
 Applying the encrypt-then-MAC KEM transformation to the ElGamal cryptosystem results in a construction that is highly similar to DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01}. In this section, we will show that the encrypt-then-MAC KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of OW-PCA security. Specifically we will sketch a proof of the following Lemma:
 
@@ -864,6 +870,7 @@ We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}.
     $$\adv_2(A) = \adv_\text{GapDH}(B).$$
 \end{proof}
 
+% TODO: move this section before the ElGamal section
 \section{Applying encrypt-then-MAC to code-based cryptosystem}\label{sec:application-to-mceliece}
 Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow PGS$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P, S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, finally the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{Niederreiter1986} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard. Compared to the McEliece formulation, the Niederreiter variant enjoys smaller public key and smaller ciphertexts.
 
@@ -1097,6 +1104,7 @@ We implemented McEliece+ by modifying the reference implementation. MAC implemen
     \caption{McEliece+ achieves 9-12\% speedup in combined ``encapsulate + decapsulate'' compared to Classic McEliece}\label{tbl:mceliece-plus-performance}
 \end{table}
 
+% TODO: mention how applying encrypt-then-MAC to Kyber can be used in ephemeral key exchange and will still have performance savings, include performance numbers in appendix
 \section{Conclusion and future works}\label{sec:conclusion}
 In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then applie the encrypt-then-MAC transformation to the ElGamal cryptosystem and the McEliece cryptosystem, and implemented the transformed McEliece+ in C using a variety of MACs. On average, McEliece+ achieved 9-12\% increase in throughput compared to Classic McEliece, which uses the Fujisaki-Okamoto transformation to convert OW-CPA encryption scheme into a CCA secure KEM.
 
