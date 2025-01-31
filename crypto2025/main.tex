@@ -643,48 +643,42 @@ For a sketch of proof, we observe that the IND-CCA adversary $B$ can perfectly s
     \caption{Plaintext-checking oracle can be simulated using decapsulation oracle. If $m$ is the decryption of $c$, then $m$ will hash into the correct MAC key and produce the correct tag, and the decapsulation will accept $(c, t)$ and return the true shared secret. If $m$ is not the decryption of $c$, then the probability of producing the correct tag is negligible, and the decapsulation will reject $(c, t)$ as invalid.}\label{fig:simulate-pca-oracle-with-cca-oracle}
 \end{figure}
 
-
-\begin{figure}[h]
-    \centering
-
-    \begin{minipage}[t]{0.5\textwidth}
-    \begin{algorithm}[H]
-        \caption*{$\mathcal{O}^\pco(m, c)$}
-        \begin{algorithmic}[1]
-            \State \Return $\llbrack \encrypt(\pk, m) = c \rrbrack$
-        \end{algorithmic}
-    \end{algorithm}
-    \end{minipage}
-
-    % TODO: add reference, who pointed out that trapdoor permutation is PCA secure
-    \caption{If $\pke(\keygen, \encrypt, \decrypt)$ is an one-way trapdoor permutation, then for all $(\pk, \sk) \leftarrow \keygen()$, $\decrypt(\sk, c) = m$ if and only if $\encrypt(\pk, m) = c$}\label{fig:pco-trapdoor-perm}
-\end{figure}
+For the remainder of this section, we will review the OW-PCA security of some well-known cryptosystems. A summary can be found in Table \ref{tbl:ow-pca-candidates}.
 
 \begin{table}
     \centering
-    \begin{tabular}{|p{17em}|p{12em}|}
+    \begin{tabular}{|p{17em}|p{14em}|}
         \hline
         \centering\textbf{PKE} & \textbf{is it OW-PCA?} \\
         \hline
-        RSA & Yes \\
+        RSA & Yes \cite{DBLP:conf/ima/Dent03,DBLP:journals/iacr/Shoup01}\\
         \hline
-        ElGamal & If Gap Diffie-Hellman assumption holds \\
+        ElGamal & If Gap Diffie-Hellman assumption holds \cite{DBLP:conf/ctrsa/AbdallaBR01,DBLP:conf/pkc/OkamotoP01}\\
         \hline
-        Kyber/Saber/FrodoKEM/NTRU & No \\
+        FrodoKEM & No: full key recovery \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19} \\
         \hline
-        HQC & No \\
+        Kyber/Saber & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23}\\
         \hline
-        BIKE (with MDPC) & No \\
+        NTRU & No, full key recovery \cite{Hoffstein1999,DBLP:conf/crypto/JaulmesJ00,DBLP:journals/tches/UenoXTITH22} \\
         \hline
-        Classic McEliece (binary Goppa code) & unknown, but there is no known attack \\
+        HQC & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19}\\
+        \hline
+        BIKE (with MDPC) & No, partial key recovery \cite{DBLP:conf/asiacrypt/Guo0S16} \\
+        \hline
+        Classic McEliece (binary Goppa code) & Unknown, but there is no known attack \cite{DBLP:journals/tches/UenoXTITH22}\\
         \hline
         
     \end{tabular}
-    % TODO: also add references in the table
     \caption{The landscape of OW-PCA security}\label{tbl:ow-pca-candidates}
 \end{table}
 
-There have been numerous attempts at constructing plaintext-checking attacks on post-quantum KEMs submitted to NIST's PQC projects. Due to the search-decision equivalence of the Ring/Module Learning With Error problem, lattice-based cryptosystems including Kyber, Saber, FrodoKEM, and NTRU Prime are all vulnerable to similar key-recovery plaintext-checking attacks (KR-PCA)\cite{DBLP:conf/crypto/00010N20,DBLP:journals/tches/RaviRCB20,DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23}. KR-PCA against NTRU-HRSS/NTRU-HPS can be adapted from \cite{Hoffstein1999,DBLP:conf/crypto/JaulmesJ00,cryptoeprint:2019/1022,cryptoeprint:2021/168}. Among code-based KEMs, HQC has similar structure with LWE-based cryptosystems, so similar KR-PCA applies \cite{DBLP:conf/acns/Huguenin-Dumittan20}. BIKE and Classical McEliece are both based on the Niederreiter cryptosystem, although BIKE is instantiated using Moderate-Density Parity Check (MDPC) code, which was also vulnerable to KR-PCA \cite{DBLP:conf/asiacrypt/Guo0S16}. There are many reaction attacks (also called ciphertext-validation attack) \cite{DBLP:conf/icics/HallGS99} against the McEliece/Niedereitter cryptosystem using binary Goppa code, where an adversary flips chosen bits of the ciphertext and learns the locations of the error bits by observing whether the modified ciphertext incurs decryption failures. However, there is no known way of converting such reaction attacks to a plaintext-checking attacks. In other words, there no known plaintext-checking attack against the Niedereitter cryptosystem using binary Goppa code.
+\subsubsection{RSA} The RSA cryptosystem as it was originally proposed in \cite{DBLP:journals/cacm/RivestSA78} is OW-PCA secure. This is because the RSA cryptosystem is a one-way trapdoor permutation \cite{DBLP:conf/crypto/FujisakiOPS01}, meaning that encryption and decryption are both injective. Given some public key $(N=pq, e)$ and a plaintext-ciphertext pair $(m, c)$, one can check that $m$ is the decryption of $c$ by checking that $c \equiv m^e \mod N$, which renders a plaintext-checking oracle completely useless.
+
+\subsubsection{ElGamal} The ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is OW-PCA secure if the Gap Diffie-Hellman assumption \cite{DBLP:conf/pkc/OkamotoP01} holds for the underlying group $G = \langle g \rangle$. This is the basis on which the CCA secure of DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01} is proved. We will discuss in details in Section \ref{sec:application-to-elgamal}.
+
+\subsubsection{Lattice cryptosystems} Key-Recovery Plaintext-Checking Attacks (KR-PCA) capable of recovering the entire secret key were described for FrodoKEM in \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19}. Similar attacks for Kyber and Saber were described in \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23}. Hoffstein and Silverman \cite{Hoffstein1999} proposed KR-PCA for the original NTRU cryptosystem, which Ueno et al. \cite{DBLP:journals/tches/UenoXTITH22} adapted into a KR-PCA against modern instantiations such as NTRU-HPS and NTRU-HRSS (also see \cite{cryptoeprint:2021/168}). Ueno et al. also adapted from \cite{DBLP:conf/crypto/JaulmesJ00} a KR-PCA against NTRU-Prime. As Peikert pointed out in \cite{cryptoeprint:2014/070}, because of the search-decision equivalence of the (Ring) Learning With Error problem, lattice-based cryptosystems are unlikely to have inherent OW-PCA security.
+
+\subsubsection{Code-based cryptosystems} HQC, despite being based on hard coding problems, has a structure that is similar to the lattice cryptosystems. Consequently, KR-PCA for lattice cryptosystems can be easily adapted to work on HQC \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19}. BIKE is based on the Niederreiter cryptosystem instantiated with quasi-cyclic moderate density parity check (QC-MDPC) code \cite{DBLP:conf/isit/MisoczkiTSB13}, and while \cite{DBLP:conf/asiacrypt/Guo0S16} described KR-PCA against QC-MDPC code, such attack can partially recover BIKE secret keys. There is no known adaptive attack against Classic McEliece  \cite{DBLP:journals/tches/UenoXTITH22}.
 
 % TODO: these attacks are too trivial, make them shorter, add more references
 \subsection{Discussion on real-world attacks}\label{sec:discussion-on-real-world-attacks}
