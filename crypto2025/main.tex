@@ -614,7 +614,7 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
 % TODO: PCA security should be separate subsection
 % TODO: The rest of the discussion should move to a "discussion" section, be made shorter, and have more references
 \subsection{OW-PCA security}\label{sec:ow-pca-security}
-The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding (OAEP)\cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure (Figure \ref{fig:pco-trapdoor-perm}), while there are cryptosystems that are OW-PCA secure but not one-way trapdoor permutation (Table \ref{tbl:ow-pca-candidates}). More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
+The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding (OAEP)\cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure, while there are cryptosystems that are OW-PCA secure but not one-way trapdoor permutation (Table \ref{tbl:ow-pca-candidates}). More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
 
 Theorem \ref{thm:etm-is-ind-cca-secure} stated that if the underlying PKE is OW-PCA secure, then the encrypt-then-MAC KEM is IND-CCA secure. Conversely, if the underlying PKE is not OW-PCA secure, then the encrypt-then-MAC KEM is NOT IND-CCA secure. This is captured in Lemma \ref{lemma:ind-cca-implies-ow-pca}
 
@@ -690,201 +690,32 @@ For the remainder of this section, we will review the OW-PCA security of some we
 
 % \subsubsection{Side-channel attacks} We speculate that the encrypt-then-MAC transformation carries less risk for side-channels than the Fujisaki-Okamoto transformation. This is because Fujisaki-Okamoto transformation re-encrypts the decrypted plaintext in the decapsulation routine, which is more complex than computing a MAC tag. In fact, a number of side-channel attacks \cite{cryptoeprint:2024/1049,cryptoeprint:2024/2051,clangover} successfully target insecure implementation of the PKE encryption sub-routine. On the other hand, MAC implementation is usually simpler and thus easier to verify. Furthermore, many MAC constructions such as HMAC and CBC-MAC and benefit from hardware support for SHA-256, AES, or finite field arithmetic, which further decreases the risk of side-channels introduced in software.
 
-% TODO: move after code-based section
-\section{Application to ElGamal}\label{sec:application-to-elgamal}
-Applying the encrypt-then-MAC KEM transformation to the ElGamal cryptosystem results in a construction that is highly similar to DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01}. In this section, we will show that the encrypt-then-MAC KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of OW-PCA security. Specifically we will sketch a proof of the following Lemma:
-
-\begin{lemma}\label{lemma:elgamal-is-ow-pca}
-    For every OW-PCA adversary $A$ against the ElGamal cryptosystem, there exists a Gap Diffie-Hellman problem solver $B$ such that:
-
-    \begin{equation*}
-        \text{Adv}_\text{GapDH}(B) = \text{Adv}_\text{ElGamal}^\texttt{OW-PCA}(A).
-    \end{equation*}
-\end{lemma}
-
-Each ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is parameterized by a cyclic group $G = \langle g \rangle$ of prime order $q > 2$. A summary of the routine is shown in Figure \ref{fig:elgamal-routines}:
-
-\begin{figure}[H]
-    \centering
-
-    \begin{minipage}[t]{0.32\textwidth}
-        \begin{algorithm}[H]
-            \caption*{\texttt{KeyGen()}}
-            \begin{algorithmic}[1]
-                \State $x \leftsample \mathbb{Z}_q$
-                \State $\sk \leftarrow x$
-                \State $\pk \leftarrow g^x$
-                \State \Return $(\pk, \sk)$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.31\textwidth}
-        \begin{algorithm}[H]
-            \caption*{$\encrypt(\pk, m)$}
-            \begin{algorithmic}[1]
-                \Require $m \in G$
-                \Require $\pk = g^x \in G$
-                \State $y \leftsample \mathbb{Z}_q$
-                \State $w \leftarrow g^y$
-                \State $v \leftarrow m \cdot (g^x)^y$
-                \State \Return $(w, v)$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.35\textwidth}
-        \begin{algorithm}[H]
-            \caption*{$\decrypt(\sk, c)$}
-            \begin{algorithmic}[1]
-                \Require $\sk = x \in \mathbb{Z}_q$
-                \Require $c = (w, v) \in G \times G$
-                \State $\hat{m} \leftarrow (w^x)^{-1}\cdot v$
-                \State \Return $\hat{m}$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}
-    
-    \caption{ElGamal cryptosystem over cyclic group $G = \langle g \rangle$ of prime order $q$}\label{fig:elgamal-routines}
-\end{figure}
-
-The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational and decisional Diffie-Hellman problem:
-
-\begin{definition}[\textbf{computational Diffie-Hellman problem}]
-    Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$, compute $g^{xy}$.
-\end{definition}
-\begin{definition}[\textbf{decisional Diffie-Hellman problem}]
-    Let $x, y, z \leftsample \mathbb{Z}_q$ be uniformly random samples. Let $h \leftsample \{g^z, g^{xy}\}$ be randomly chosen between $g^z$ and $g^{xy}$. Given $(g, g^x, g^y, h)$, determine whether $h$ is $g^{xy}$ or $g^z$
-\end{definition}
-
-It is also conjectured in \cite{DBLP:conf/ctrsa/AbdallaBR01} (and later extensively studied in \cite{DBLP:conf/pkc/OkamotoP01}) that for certain choice of cyclic group $G$, the computational Diffie-Hellman problem remains intractable even if the adversary as access to a restricted decisional Diffie-Hellman oracle. This assumption is captured in the Gap Diffie-Hellman problem:
-
-\begin{definition}[\textbf{Gap Diffie-Hellman problem}]
-    Let $G = \langle g \rangle$ be a cyclic group of prime order $q > 2$. Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$ and a restricted DDH oracle $\mathcal{O}^\text{DDH}: (u, v) \mapsto \llbrack u^x = v \rrbrack$, compute $g^{xy}$.
-\end{definition}
-
-We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}. 
-\begin{proof}
-    We will prove by a sequence of games. A summary can be found in Figure \ref{fig:elgamal-pca-games}
-
-    \begin{figure}[h]
-        \centering
-
-        \begin{minipage}[t]{0.4\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$G_0 - G_2$}
-                \begin{algorithmic}[1]
-                    \State $x \leftsample \mathbb{Z}_q$
-                    \State $m^\ast \leftsample G$
-                    \State $y \leftsample \mathbb{Z}_q, w \leftarrow g^y$
-                    \State $v \leftarrow m^\ast \cdot (g^x)^y$
-                        \Comment{$G_0$ - $G_1$}
-                    \State $v \leftsample G$
-                        \Comment{$G_2$}
-                    \State $c^\ast \leftarrow (w, v)$
-                    \State $\hat{m} \leftsample A^{\pco}(g^x, c^\ast)$
-                        \Comment{$G_0$}
-                    \State $\hat{m} \leftsample A^{\pco_1}(g^x, c^\ast)$
-                        \Comment{$G_1$ - $G_2$}
-                    \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
-                        \Comment{$G_0$ - $G_1$}
-                    \State \Return $\llbrack \hat{m} = w^{-x}\cdot v \rrbrack$
-                        \Comment{$G_2$}
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
-        \begin{minipage}[t]{0.4\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\pco(m, c=(w, v))$}
-                \begin{algorithmic}[1]
-                    \State \Return $\llbrack m = (w^x)^{-1}\cdot v\rrbrack$
-                \end{algorithmic}
-            \end{algorithm}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\pco_1(m, c=(w, v))$}
-                \begin{algorithmic}[1]
-                    \State \Return $\llbrack (w^x) = m^{-1} \cdot v \rrbrack$
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
-
-        \caption{ The sequence of games in proving Lemma \ref{lemma:elgamal-is-ow-pca}}\label{fig:elgamal-pca-games}
-    \end{figure}
-
-    \emph{Game 0} is the OW-PCA game. Adversary $A$ has access to the plaintext-checking oracle $\mathcal{O}^\pco$ and wins the game if it can correctly recover the challenge plaintext $m^\ast$.
-
-    \emph{Game 1} is identical to game 0, except that the formulation of the $\mathcal{O}^\pco$ is changed. When servicing the plaintext-checking query $(m, c = (w, v))$, $\pco_1$ checks whether $w^x$ is equal to $m^{-1} \cdot v$. Observe that in the cyclic group $G$, the algebraic expressions in $\mathcal{O}^\pco$ and $\mathcal{O}^\pco_1$ are equivalent, which means that $\mathcal{O}^\pco_1$ behaves identically to $\mathcal{O}^\pco$.
-
-    \emph{Game 2} is identical to game 1 except for two modifications: first, when computing the challenge ciphertext, $v$ is no longer computed from $m^\ast$ but is randomly sampled; second, the win condition changed from $\hat{m} = m^\ast$ to $\hat{m} = w^{-x}\cdot v$. It is easy to verify that Game 0 through Game 2 are algebraically equivalent:
-
-    \begin{equation*}
-        \adv_0(A) = \adv_1(A) = \adv_2(A). 
-    \end{equation*}
-
-    The Gap Diffie-Hellman adversary $B$ can perfectly simulate game 2 for $A$ (see Figure \ref{fig:ow-pca-to-gap-dh}): $B$ receives as the Gap Diffie-Hellman problem inputs $g^x$ and $g^y$. $g^x$ simulates an ElGamal public key, where as $g^y$ simulates the first component of the challenge ciphertext. As in game 2, the second component of the challenge ciphertext can be randomly sampled. Finally, the $\mathcal{O}^\pco_1$ from game 2 can be perfectly simulated using the restricted DDH oracle $\mathcal{O}^\text{DDH}$.
-
-    \begin{figure}[h]
-        \centering
-
-        \begin{minipage}[t]{0.45\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$B^{\mathcal{O}^\text{DDH}}(g, g^x, g^y)$}
-                \begin{algorithmic}[1]
-                    \State $w \leftarrow g^y$
-                    \State $v \leftsample G$
-                    \State $c^\ast \leftarrow (w, v)$
-                    \State $\hat{m} \leftsample A^{\pco_2}(g^x, c^\ast)$
-                    \State \Return $\hat{m}^{-1}\cdot v$
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
-        \begin{minipage}[t]{0.45\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\text{DDH}(u, v)$}
-                \begin{algorithmic}[1]
-                    \State \Return $\llbrack u^x = v \rrbrack$
-                \end{algorithmic}
-            \end{algorithm}\vspace{-1.13cm}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\pco_2(m, c=(w, v))$}
-                \begin{algorithmic}[1]
-                    \State \Return $\mathcal{O}^\text{DDH}(w, m^{-1}\cdot v)$
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
-
-        \caption{Gap Diffie-Hellman adversary $B$ simulates game 2 for $A$}\label{fig:ow-pca-to-gap-dh}
-    \end{figure}
-
-    If $A$ wins game 2, then its output is $\hat{m} = w^{-x}\cdot v = g^{-xy}\cdot v$, so $m^{-1}\cdot v$ is $g^{xy}$, the correct answer to the Gap Diffie-Hellman problem. In other words, $B$ solves its Gap Diffie-Hellman problem if and only if $A$ wins the simulated game 2: 
-    
-    $$\adv_2(A) = \adv_\text{GapDH}(B).$$
-\end{proof}
-
 % TODO: move this section before the ElGamal section
 \section{Applying encrypt-then-MAC to code-based cryptosystem}\label{sec:application-to-mceliece}
 Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow PGS$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P, S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, finally the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{Niederreiter1986} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard. Compared to the McEliece formulation, the Niederreiter variant enjoys smaller public key and smaller ciphertexts.
 
 \subsection{Classic McEliece}\label{sec:classic-mceliece}
-Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layer. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$. Table \ref{tab:mceliece-parameters} summarizes the prameter sets.
+Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layer. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$.
 
-\begin{table}
-    \centering
-    \begin{tabular}{|c|c|c|c|}
-        \hline
-        Parameter set & $m$ & $n$ & $t$ \\
-        \hline
-        \texttt{mceliece348864/348864f} & 12 & 3488 & 64 \\
-        \hline
-        \texttt{mceliece460896/460896f} & 13 & 4608 & 96 \\
-        \hline
-        \texttt{mceliece6688128/6688128f} & 13 & 6688 & 128 \\
-        \hline
-        \texttt{mceliece6960119/6960119f} & 13 & 6960 & 119 \\
-        \hline
-        \texttt{mceliece8192128/8192128f} & 13 & 8192 & 128 \\
-        \hline
-    \end{tabular}
-    \caption{Classic McEliece parameter sets}\label{tab:mceliece-parameters}
-\end{table}
+% \begin{table}
+%     \centering
+%     \begin{tabular}{|c|c|c|c|}
+%         \hline
+%         Parameter set & $m$ & $n$ & $t$ \\
+%         \hline
+%         \texttt{mceliece348864/348864f} & 12 & 3488 & 64 \\
+%         \hline
+%         \texttt{mceliece460896/460896f} & 13 & 4608 & 96 \\
+%         \hline
+%         \texttt{mceliece6688128/6688128f} & 13 & 6688 & 128 \\
+%         \hline
+%         \texttt{mceliece6960119/6960119f} & 13 & 6960 & 119 \\
+%         \hline
+%         \texttt{mceliece8192128/8192128f} & 13 & 8192 & 128 \\
+%         \hline
+%     \end{tabular}
+%     \caption{Classic McEliece parameter sets}\label{tab:mceliece-parameters}
+% \end{table}
 
 Algorithm \ref{alg:mceliece-seeded-keygen} describes the key generation routine of Classic McEliece. In step 4, \texttt{FieldOrdering} takes the input bits and outputs either $\bot$ or a sequence $(\alpha_0, \ldots, \alpha_{q-1})$ distinct elements of $\mathbb{F}_q$. In step 5, \texttt{Irreducible}  takes the input bits and outputs either $\bot$ or a monic irreducible degree-$t$ polynomial $g \in \mathbb{F}_q[x]$. In step 7, \texttt{MatGen} outputs either $\bot$ or an $mt \times k$ matrix over $\mathbb{F}_2$. We refer readers to \cite{ClassicMcEliece2022} for details of these subroutines.
 
@@ -1092,6 +923,175 @@ We implemented McEliece+ by modifying the reference implementation. MAC implemen
     \end{tabular}\vspace{1em}
     \caption{McEliece+ achieves 9-12\% speedup in combined ``encapsulate + decapsulate'' compared to Classic McEliece}\label{tbl:mceliece-plus-performance}
 \end{table}
+
+\section{Application to ElGamal}\label{sec:application-to-elgamal}
+Applying the encrypt-then-MAC KEM transformation to the ElGamal cryptosystem results in a construction that is highly similar to DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01}. In this section, we will show that the encrypt-then-MAC KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of OW-PCA security. Specifically we will sketch a proof of the following Lemma:
+
+\begin{lemma}\label{lemma:elgamal-is-ow-pca}
+    For every OW-PCA adversary $A$ against the ElGamal cryptosystem, there exists a Gap Diffie-Hellman problem solver $B$ such that:
+
+    \begin{equation*}
+        \text{Adv}_\text{GapDH}(B) = \text{Adv}_\text{ElGamal}^\texttt{OW-PCA}(A).
+    \end{equation*}
+\end{lemma}
+
+Each ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is parameterized by a cyclic group $G = \langle g \rangle$ of prime order $q > 2$. A summary of the routine is shown in Figure \ref{fig:elgamal-routines}:
+
+\begin{figure}[H]
+    \centering
+
+    \begin{minipage}[t]{0.32\textwidth}
+        \begin{algorithm}[H]
+            \caption*{\texttt{KeyGen()}}
+            \begin{algorithmic}[1]
+                \State $x \leftsample \mathbb{Z}_q$
+                \State $\sk \leftarrow x$
+                \State $\pk \leftarrow g^x$
+                \State \Return $(\pk, \sk)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.31\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\encrypt(\pk, m)$}
+            \begin{algorithmic}[1]
+                \Require $m \in G$
+                \Require $\pk = g^x \in G$
+                \State $y \leftsample \mathbb{Z}_q$
+                \State $w \leftarrow g^y$
+                \State $v \leftarrow m \cdot (g^x)^y$
+                \State \Return $(w, v)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.35\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\decrypt(\sk, c)$}
+            \begin{algorithmic}[1]
+                \Require $\sk = x \in \mathbb{Z}_q$
+                \Require $c = (w, v) \in G \times G$
+                \State $\hat{m} \leftarrow (w^x)^{-1}\cdot v$
+                \State \Return $\hat{m}$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    
+    \caption{ElGamal cryptosystem over cyclic group $G = \langle g \rangle$ of prime order $q$}\label{fig:elgamal-routines}
+\end{figure}
+
+The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational and decisional Diffie-Hellman problem:
+
+\begin{definition}[\textbf{computational Diffie-Hellman problem}]
+    Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$, compute $g^{xy}$.
+\end{definition}
+\begin{definition}[\textbf{decisional Diffie-Hellman problem}]
+    Let $x, y, z \leftsample \mathbb{Z}_q$ be uniformly random samples. Let $h \leftsample \{g^z, g^{xy}\}$ be randomly chosen between $g^z$ and $g^{xy}$. Given $(g, g^x, g^y, h)$, determine whether $h$ is $g^{xy}$ or $g^z$
+\end{definition}
+
+It is also conjectured in \cite{DBLP:conf/ctrsa/AbdallaBR01} (and later extensively studied in \cite{DBLP:conf/pkc/OkamotoP01}) that for certain choice of cyclic group $G$, the computational Diffie-Hellman problem remains intractable even if the adversary as access to a restricted decisional Diffie-Hellman oracle. This assumption is captured in the Gap Diffie-Hellman problem:
+
+\begin{definition}[\textbf{Gap Diffie-Hellman problem}]
+    Let $G = \langle g \rangle$ be a cyclic group of prime order $q > 2$. Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$ and a restricted DDH oracle $\mathcal{O}^\text{DDH}: (u, v) \mapsto \llbrack u^x = v \rrbrack$, compute $g^{xy}$.
+\end{definition}
+
+We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}. 
+\begin{proof}
+    We will prove by a sequence of games. A summary can be found in Figure \ref{fig:elgamal-pca-games}
+
+    \begin{figure}[h]
+        \centering
+
+        \begin{minipage}[t]{0.4\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$G_0 - G_2$}
+                \begin{algorithmic}[1]
+                    \State $x \leftsample \mathbb{Z}_q$
+                    \State $m^\ast \leftsample G$
+                    \State $y \leftsample \mathbb{Z}_q, w \leftarrow g^y$
+                    \State $v \leftarrow m^\ast \cdot (g^x)^y$
+                        \Comment{$G_0$ - $G_1$}
+                    \State $v \leftsample G$
+                        \Comment{$G_2$}
+                    \State $c^\ast \leftarrow (w, v)$
+                    \State $\hat{m} \leftsample A^{\pco}(g^x, c^\ast)$
+                        \Comment{$G_0$}
+                    \State $\hat{m} \leftsample A^{\pco_1}(g^x, c^\ast)$
+                        \Comment{$G_1$ - $G_2$}
+                    \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
+                        \Comment{$G_0$ - $G_1$}
+                    \State \Return $\llbrack \hat{m} = w^{-x}\cdot v \rrbrack$
+                        \Comment{$G_2$}
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+        \begin{minipage}[t]{0.4\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$\mathcal{O}^\pco(m, c=(w, v))$}
+                \begin{algorithmic}[1]
+                    \State \Return $\llbrack m = (w^x)^{-1}\cdot v\rrbrack$
+                \end{algorithmic}
+            \end{algorithm}
+            \begin{algorithm}[H]
+                \caption*{$\mathcal{O}^\pco_1(m, c=(w, v))$}
+                \begin{algorithmic}[1]
+                    \State \Return $\llbrack (w^x) = m^{-1} \cdot v \rrbrack$
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+
+        \caption{ The sequence of games in proving Lemma \ref{lemma:elgamal-is-ow-pca}}\label{fig:elgamal-pca-games}
+    \end{figure}
+
+    \emph{Game 0} is the OW-PCA game. Adversary $A$ has access to the plaintext-checking oracle $\mathcal{O}^\pco$ and wins the game if it can correctly recover the challenge plaintext $m^\ast$.
+
+    \emph{Game 1} is identical to game 0, except that the formulation of the $\mathcal{O}^\pco$ is changed. When servicing the plaintext-checking query $(m, c = (w, v))$, $\pco_1$ checks whether $w^x$ is equal to $m^{-1} \cdot v$. Observe that in the cyclic group $G$, the algebraic expressions in $\mathcal{O}^\pco$ and $\mathcal{O}^\pco_1$ are equivalent, which means that $\mathcal{O}^\pco_1$ behaves identically to $\mathcal{O}^\pco$.
+
+    \emph{Game 2} is identical to game 1 except for two modifications: first, when computing the challenge ciphertext, $v$ is no longer computed from $m^\ast$ but is randomly sampled; second, the win condition changed from $\hat{m} = m^\ast$ to $\hat{m} = w^{-x}\cdot v$. It is easy to verify that Game 0 through Game 2 are algebraically equivalent:
+
+    \begin{equation*}
+        \adv_0(A) = \adv_1(A) = \adv_2(A). 
+    \end{equation*}
+
+    The Gap Diffie-Hellman adversary $B$ can perfectly simulate game 2 for $A$ (see Figure \ref{fig:ow-pca-to-gap-dh}): $B$ receives as the Gap Diffie-Hellman problem inputs $g^x$ and $g^y$. $g^x$ simulates an ElGamal public key, where as $g^y$ simulates the first component of the challenge ciphertext. As in game 2, the second component of the challenge ciphertext can be randomly sampled. Finally, the $\mathcal{O}^\pco_1$ from game 2 can be perfectly simulated using the restricted DDH oracle $\mathcal{O}^\text{DDH}$.
+
+    \begin{figure}[h]
+        \centering
+
+        \begin{minipage}[t]{0.45\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$B^{\mathcal{O}^\text{DDH}}(g, g^x, g^y)$}
+                \begin{algorithmic}[1]
+                    \State $w \leftarrow g^y$
+                    \State $v \leftsample G$
+                    \State $c^\ast \leftarrow (w, v)$
+                    \State $\hat{m} \leftsample A^{\pco_2}(g^x, c^\ast)$
+                    \State \Return $\hat{m}^{-1}\cdot v$
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+        \begin{minipage}[t]{0.45\textwidth}
+            \begin{algorithm}[H]
+                \caption*{$\mathcal{O}^\text{DDH}(u, v)$}
+                \begin{algorithmic}[1]
+                    \State \Return $\llbrack u^x = v \rrbrack$
+                \end{algorithmic}
+            \end{algorithm}\vspace{-1.13cm}
+            \begin{algorithm}[H]
+                \caption*{$\mathcal{O}^\pco_2(m, c=(w, v))$}
+                \begin{algorithmic}[1]
+                    \State \Return $\mathcal{O}^\text{DDH}(w, m^{-1}\cdot v)$
+                \end{algorithmic}
+            \end{algorithm}
+        \end{minipage}
+
+        \caption{Gap Diffie-Hellman adversary $B$ simulates game 2 for $A$}\label{fig:ow-pca-to-gap-dh}
+    \end{figure}
+
+    If $A$ wins game 2, then its output is $\hat{m} = w^{-x}\cdot v = g^{-xy}\cdot v$, so $m^{-1}\cdot v$ is $g^{xy}$, the correct answer to the Gap Diffie-Hellman problem. In other words, $B$ solves its Gap Diffie-Hellman problem if and only if $A$ wins the simulated game 2: 
+    
+    $$\adv_2(A) = \adv_\text{GapDH}(B).$$
+\end{proof}
+
 
 % TODO: mention how applying encrypt-then-MAC to Kyber can be used in ephemeral key exchange and will still have performance savings, include performance numbers in appendix
 \section{Conclusion and future works}\label{sec:conclusion}
