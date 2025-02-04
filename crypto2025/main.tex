@@ -1,7 +1,8 @@
+% Feb 4, 2025
 % DONE: fix performance table
 % DONE: include Kyber discussion in conclusion
 % DONE: fix capitalizations in bibliographies
-% TODO: find reference to EliMAC (maybe include it in CMAC section?)
+% DONE: find reference to EliMAC (maybe include it in CMAC section?)
 
 \documentclass[runningheads]{llncs}
 \usepackage[T1]{fontenc}
@@ -849,7 +850,7 @@ In implementation, we used OpenSSL 3.3.1's \texttt{EVP\_MAC} interface. Within t
 
 \paragraph{KMAC256 \cite{NIST800185}} is a pseudorandom function and keyed hash function based on \textit{KECCAK} \cite{NISTFIPS202}, although unlike SHAKE, altering the requested output length generates a new unrelated output. KMAC256 generally has worse performance than other MACs, but it is the only construction with flexible key and tag length. We fixed the key length at 256 bits, and varied the tag length to 128, 192, and 256 bits depending on the desired security levels.
 
-% \subsubsection{Other MACs} TODO: Kali's part
+\paragraph{Remark} There are new lightweight MACs such as EliMAC \cite{DBLP:journals/tosc/DobraunigMN23}, LightMAC \cite{DBLP:conf/fse/LuykxPTY16}, and ZMAC \cite{DBLP:conf/crypto/IwataMPS17}, which may offer better performance than the MACs listed above. However, the performance of the encrypt-then-MAC KEM is dominated by the public-key cryptographic operations and the key-derivation functions. For KEMs with relatively short ciphertext, such as Classic McEliece, the performance impact of the MAC is insignificant.
 
 \subsection{Performance benchmark}
 The subroutines \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} were taken from the \texttt{vec} implementation submitted to the fourth round of NIST PQC standardization project\footnote{\url{https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-Round4.tar.gz}}. While there are a total of 10 sets of parameters in Classic McEliece (see Section \ref{sec:classic-mceliece-parameter-sets}), we only modified the 5 standard parameter variants. The only difference between the standard variants and the f-variants is the key generation routine, which is not the focus of this paper. Key pairs are fully interoperable between the standard and the f variants, and the encapsulation/decapsulation routines are entirely identical.
