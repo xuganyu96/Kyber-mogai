@@ -1,5 +1,5 @@
-% TODO: fix performance table
-% TODO: include Kyber discussion in conclusion
+% DONE: fix performance table
+% DONE: include Kyber discussion in conclusion
 % TODO: fix capitalizations in bibliographies
 % TODO: find reference to EliMAC (maybe include it in CMAC section?)
 
@@ -722,9 +722,6 @@ NTRU is another family of lattice-based cryptosystems. Hoffstein and Silverman \
 
 \subsubsection{Deriving shared secret} If the decryption routine of the underlying PKE is not injective, then the shared secret must be derived from both the PKE plaintext and the ciphertext: if the shared secret is derived from the plaintext alone, and the KEM adversary $A$ can find a modified ciphertext that decrypts back to the same PKE plaintext, then $A$ can query the decapsulation oracle with the modified ciphertext and obtain the true decapsulation. However, the shared secret does not have to be derived from hashing the entire ciphertext. Instead, we propose to derive the shared secret from the MAC tag, which is functionally equivalent to a keyed hash of the ciphertext. Since the MAC tag is usually much smaller than the ciphertext, hashing the tag instead of the entire ciphertext can lead to meaningful speedup.
 
-% \subsubsection{Side-channel attacks} We speculate that the encrypt-then-MAC transformation carries less risk for side-channels than the Fujisaki-Okamoto transformation. This is because Fujisaki-Okamoto transformation re-encrypts the decrypted plaintext in the decapsulation routine, which is more complex than computing a MAC tag. In fact, a number of side-channel attacks \cite{cryptoeprint:2024/1049,cryptoeprint:2024/2051,clangover} successfully target insecure implementation of the PKE encryption sub-routine. On the other hand, MAC implementation is usually simpler and thus easier to verify. Furthermore, many MAC constructions such as HMAC and CBC-MAC and benefit from hardware support for SHA-256, AES, or finite field arithmetic, which further decreases the risk of side-channels introduced in software.
-
-% TODO: move this section before the ElGamal section
 \section{Applying encrypt-then-MAC to code-based cryptosystem}\label{sec:application-to-mceliece}
 Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow PGS$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P, S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, finally the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{Niederreiter1986} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard. Compared to the McEliece formulation, the Niederreiter variant enjoys smaller public key and smaller ciphertexts.
 
@@ -1110,10 +1107,12 @@ We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}.
 
 
 % TODO: mention how applying encrypt-then-MAC to Kyber can be used in ephemeral key exchange and will still have performance savings, include performance numbers in appendix
-\section{Conclusion and future works}\label{sec:conclusion}
+\section{Concluding remarks}\label{sec:conclusion}
 In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then applie the encrypt-then-MAC transformation to the ElGamal cryptosystem and the McEliece cryptosystem, and implemented the transformed McElieceEtM in C using a variety of MACs. On average, McElieceEtM achieved 9-12\% increase in throughput compared to Classic McEliece, which uses the Fujisaki-Okamoto transformation to convert OW-CPA encryption scheme into a CCA secure KEM.
 
-We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:journals/siamcomp/Shor97} is inapplicable to most MAC constructions, the encrypt-then-MAC KEM transformation can be applied to a quantum-resistant PKE scheme to derive a post-quantum CCA-secure KEM scheme. In future works, we plan to analyze the security reduction under the quantum random oracle model, which can inform us of the appropriate parameters for the MAC.
+In Section \ref{sec:ow-pca-security} we mentioned that Kyber/ML-KEM's underlying PKE subroutines are not OW-PCA secure, which means that applying the encrypt-then-MAC KEM transformation to the PKE subroutines will not achieve full IND-CCA security. However, the plaintext-checking attack against Kyber requires several thousands of oracle queries, which translates to equivalent complexity of any chosen-ciphertext attacks. Therefore, it may be safe to apply the encrypt-then-MAC transformation to Kyber/ML-KEM with the restriction that each key pair is used at most once, such as in TLS 1.3 handshake. In Kyber/ML-KEM, the encryption routine is significantly slower than the decryption routine, so the encrypt-then-MAC transformation achieves significant performance improvements over the Fujisaki-Okamoto transformation (See Appendix \ref{sec:applying-encrypt-then-mac-to-ml-kem}).
+
+% We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:journals/siamcomp/Shor97} is inapplicable to most MAC constructions, the encrypt-then-MAC KEM transformation can be applied to a quantum-resistant PKE scheme to derive a post-quantum CCA-secure KEM scheme. In future works, we plan to analyze the security reduction under the quantum random oracle model, which can inform us of the appropriate parameters for the MAC.
 
 \bibliographystyle{splncs04}
 \bibliography{biblio.bib}
@@ -1150,7 +1149,7 @@ NIST evaluates concrete security levels against the difficulty of AES brute-forc
     \item Key search on AES-256, $2^{272}$ classical gates.
 \end{enumerate}
 
-\section{ML-KEM+: applying encrypt-then-MAC to ML-KEM}
+\section{ML-KEM+: applying encrypt-then-MAC to ML-KEM}\label{sec:applying-encrypt-then-mac-to-ml-kem}
 We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM. The resulting KEM is called $\mlkemplus$ (See Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between $\mlkemplus$ and ML-KEM. The $\mlkemplus$  encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
 
 \begin{figure}[h]
@@ -1204,11 +1203,9 @@ We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM. Th
     \caption{$\mlkemplus$ applies our encrypt-then-MAC transformation to the K-PKE sub-routines of ML-KEM. $G$ is SHA3-512, $H$ is SHA3-256, $\texttt{KDF}$ is SHAKE256}\label{fig:ml-kem-plus-routines}
 \end{figure}
 
-We measured the real-world performance of the individual routines of our $\mlkemplus$ construction. Our implementation extended from the Kyber implementation \cite{kyberrefimpl}. All C code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region.
+We measured the CPU cycles of the individual routines of $\mlkemplus$. Our implementation extended from Kyber's reference implementation \footnote{\url{https://github.com/pq-crystals/kyber}}. All C code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region.
 
-Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used in ML-KEM, the encrypt-then-MAC transformation achieves massive CPU cycle count reduction in decapsulation while incurring only a minimal increase of encapsulation cycle count and ciphertext size. Since \texttt{K-PKE.\encrypt} carries significantly more computational complexity than \texttt{K-PKE.\decrypt} or any MAC we chose, the performance advantage of the encrypt-then-MAC transformation over the $\kem^{\not\bot}_m$ transformation is dominated by the runtime saving gained from replacing \emph{re-encryption} with MAC. A comparison between ML-KEM and variations of the $\mlkemplus$ can be found in Table \ref{tbl:kem-performance}.
-
-\emph{Remark.} We also included the performance of Kyber as it is submitted to the third round of the NIST PQC standardization project, which differs from ML-KEM by deriving the shared secret from hashing the public key, the PKE plaintext, and the PKE ciphertext, while ML-KEM derives its shared secret by hashing only the public key and the PKE plaintext. This results in ML-KEM having meaningful performance improvement in encapsulation over Kyber, though the performance difference in decapsulation is negligible.
+Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then-MAC transformation achieves massive CPU cycle count reduction in decapsulation while incurring only a minimal increase of encapsulation cycle count and ciphertext size. Since \texttt{K-PKE.\encrypt} carries significantly more computational complexity than \texttt{K-PKE.\decrypt} or any MAC we chose, the performance advantage of the encrypt-then-MAC transformation over the Fujisaki-Okamoto transformation is dominated by the runtime saving gained from replacing \emph{re-encryption} with MAC. A comparison between ML-KEM and variations of the $\mlkemplus$ can be found in Table \ref{tbl:kem-performance}.
 
 \begin{table}[h]
     \centering
@@ -1239,8 +1236,8 @@ Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used
         \hline
         \text{ML-KEM-512} & 91467 & 92065 & 121185 & 121650 \\
         \hline
-        \text{Kyber512} & 97811 & 98090 & 119937 & 120299 \\
-        \hline
+        % \text{Kyber512} & 97811 & 98090 & 119937 & 120299 \\
+        % \hline
         % ML-KEM+-512
         $\mlkemplus$-512 w/ Poly1305 & 93157 & 93626 & 33733 & 33908 \\
         \hline
@@ -1277,14 +1274,12 @@ Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used
         \hline
         \text{ML-KEM-768} & 136405 & 147400 & 186445 & 187529 \\
         \hline
-        \text{Kyber768} & 153061 & 153670 & 182129 & 182755 \\
+        $\mlkemplus$-768 w/ Poly1305 & 146405 & 146860 & 43315 & 43463 \\
         \hline
-        % $\mlkemplus$-768 w/ Poly1305 & 146405 & 146860 & 43315 & 43463 \\
-        % \hline
-        % $\mlkemplus$-768 w/ GMAC & 149525 & 150128 & 46513 & 46706 \\
-        % \hline
-        % $\mlkemplus$-768 w/ CMAC & 153139 & 153735 & 49841 & 50074 \\
-        % \hline
+        $\mlkemplus$-768 w/ GMAC & 149525 & 150128 & 46513 & 46706 \\
+        \hline
+        $\mlkemplus$-768 w/ CMAC & 153139 & 153735 & 49841 & 50074 \\
+        \hline
         $\mlkemplus$-768 w/ KMAC256 & 155219 & 155848 & 52415 & 52611 \\
         \hline
     \end{tabular}\vspace{0.3cm}
@@ -1313,14 +1308,12 @@ Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used
         \hline
         \text{ML-KEM-1024} & 199185 & 199903 & 246245 & 247320 \\
         \hline
-        \text{Kyber1024} & 222351 & 223260 & 258231 & 259067 \\
+        $\mlkemplus$-1024 w/ Poly1305 & 205763 & 206499 & 51375 & 51562 \\
         \hline
-        % $\mlkemplus$-1024 w/ Poly1305 & 205763 & 206499 & 51375 & 51562 \\
-        % \hline
-        % $\mlkemplus$-1024 w/ GMAC & 208805 & 209681 & 54573 & 54780 \\
-        % \hline
-        % $\mlkemplus$-1024 w/ CMAC & 213667 & 214483 & 59175 & 59408 \\
-        % \hline
+        $\mlkemplus$-1024 w/ GMAC & 208805 & 209681 & 54573 & 54780 \\
+        \hline
+        $\mlkemplus$-1024 w/ CMAC & 213667 & 214483 & 59175 & 59408 \\
+        \hline
         $\mlkemplus$-1024 w/ KMAC256 & 216761 & 217468 & 62269 & 62516 \\
         \hline
     \end{tabular}
