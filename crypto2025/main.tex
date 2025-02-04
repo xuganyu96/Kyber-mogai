@@ -1,3 +1,8 @@
+% TODO: fix performance table
+% TODO: include Kyber discussion in conclusion
+% TODO: fix capitalizations in bibliographies
+% TODO: find reference to EliMAC (maybe include it in CMAC section?)
+
 \documentclass[runningheads]{llncs}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
@@ -36,6 +41,7 @@
 \newcommand{\us}{\mu s}
 \newcommand{\wt}{\mathop{wt}}
 \def\mlkemplus{\text{ML-KEM}^+}
+\Urlmuskip=0mu  plus 10mu  % fix underfull hbox for URL in footnote
 
 \begin{document}
 
@@ -725,26 +731,6 @@ Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite
 \subsection{Classic McEliece}\label{sec:classic-mceliece}
 Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layer. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$.
 
-% \begin{table}
-%     \centering
-%     \begin{tabular}{|c|c|c|c|}
-%         \hline
-%         Parameter set & $m$ & $n$ & $t$ \\
-%         \hline
-%         \texttt{mceliece348864/348864f} & 12 & 3488 & 64 \\
-%         \hline
-%         \texttt{mceliece460896/460896f} & 13 & 4608 & 96 \\
-%         \hline
-%         \texttt{mceliece6688128/6688128f} & 13 & 6688 & 128 \\
-%         \hline
-%         \texttt{mceliece6960119/6960119f} & 13 & 6960 & 119 \\
-%         \hline
-%         \texttt{mceliece8192128/8192128f} & 13 & 8192 & 128 \\
-%         \hline
-%     \end{tabular}
-%     \caption{Classic McEliece parameter sets}\label{tab:mceliece-parameters}
-% \end{table}
-
 Algorithm \ref{alg:mceliece-seeded-keygen} describes the key generation routine of Classic McEliece. In step 4, \texttt{FieldOrdering} takes the input bits and outputs either $\bot$ or a sequence $(\alpha_0, \ldots, \alpha_{q-1})$ distinct elements of $\mathbb{F}_q$. In step 5, \texttt{Irreducible}  takes the input bits and outputs either $\bot$ or a monic irreducible degree-$t$ polynomial $g \in \mathbb{F}_q[x]$. In step 7, \texttt{MatGen} outputs either $\bot$ or an $mt \times k$ matrix over $\mathbb{F}_2$. We refer readers to \cite{ClassicMcEliece2022} for details of these subroutines.
 
 Algorithms \ref{alg:mceliece-encode} and \ref{alg:mceliece-decode} describe the encoding and decoding subroutines of the Niederreiter layer. Note that our description of the decoding routine differs from \cite{ClassicMcEliece2022} in that we did not include the weight and/or re-encryption check. Instead, they are included in the description of the KEM subroutines. This is because we later plan to substitute these checks with computing a MAC tag when applying the encrypt-then-MAC KEM transformation.
@@ -856,20 +842,22 @@ We instantiated the encrypt-then-MAC KEM transformation using \\ \texttt{SeededK
 \end{figure}
 
 \subsection{Choosing MAC}\label{sec:choosing-mac}
-For concrete instantiation of McElieceEtM, we chose four MACs covering a variety of architectures. All MACs are parameterized with a 256-bit key and 128-bit tag, except for KMAC-256, which can have variable key and tag length.
+For concrete instantiation of McElieceEtM, we chose four MACs covering a variety of architectures. All MACs are parameterized with a 256-bit key and 128-bit tag, except for KMAC256, which can have variable key and tag length.
 
 \paragraph{Poly1305 \cite{bernstein2005poly1305} and GMAC \cite{NIST80038D}} are both Carter-Wegman style MACs \cite{DBLP:journals/jcss/CarterW79,DBLP:journals/jcss/WegmanC81}, which compute the tag using finite field arithmetic. It first parses the message into a sequence of finite field elements, then evalutes a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key. Specifically, Poly1305 oerates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$. GMAC operates in the binary extension field $\mathbb{F}_{2^{128}}$.
 
-In implementation, we used OpenSSL 3.3.1's \texttt{EVP\_MAC} interface. Within this interface, the Poly1305 implementation does not include a nonce and is thus only one-time secure. On the other hand, GMAC is implemented by passing all data into the ``associated data'' field of the authenticated encryption scheme AES-256-GCM, which includes a nonce and is therefore many-time secure.
+In implementation, we used OpenSSL 3.3.1's \texttt{EVP\_MAC} interface. Within this interface, the Poly1305 implementation does not include a nonce and is thus only one-time secure. On the other hand, GMAC is implemented by passing all data into the ``associated data'' field of the authenticated encryption scheme AES-256-GCM. Assuming that nonce does not repeat within the lifetime of the symmetric key, GMAC is many-time secure.
 
 \paragraph{CMAC \cite{NIST80038B}} is based on the CBC-MAC \cite{black2000cbc}. To compute a CMAC tag, the message is first padded and parsed into blocks. Each block is first XOR'ed with the previous block's output, then encrypted under a block cipher using the secret key. The final output is XOR'ed with a sub-key derived from the secret key before being encrypted for one last time. In our implementation, the block cipher is instantiated with AES-256, which makes it particularly suitable for embedded devices with constrainted computing capacity but hardware support for AES. CMAC is many-time secure.
 
-\paragraph{KMAC \cite{NIST800185}} is based on the SHA-3 family of sponge functions \cite{NISTFIPS202}. We chose KMAC-256, which uses Shake256 as the underlying extendasble output function. Although KMAC generally has worse performance than other MACs, it is the only construction with flexible key and tag length. We fixed the key length at 256 bits, and varied the tag length to 128, 192, and 256 bits depending on the desired security levels.
+\paragraph{KMAC256 \cite{NIST800185}} is a pseudorandom function and keyed hash function based on \textit{KECCAK} \cite{NISTFIPS202}, although unlike SHAKE, altering the requested output length generates a new unrelated output. KMAC256 generally has worse performance than other MACs, but it is the only construction with flexible key and tag length. We fixed the key length at 256 bits, and varied the tag length to 128, 192, and 256 bits depending on the desired security levels.
 
 % \subsubsection{Other MACs} TODO: Kali's part
 
 \subsection{Performance benchmark}
-The subroutines \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} were taken from the \texttt{vec} implementation submitted to the fourth round of NIST PQC standardization project\footnote{\url{https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-Round4.tar.gz}}. MAC implementations are taken from OpenSSL 3.5.0. C code is compiled using Apple Clang 15.0.0. Performance measurement is run on Apple Silicon M1 chip. CPU clock is measured using \texttt{mach\_absolute\_time}. Each routine is run 10000 times, with median times reported in Table \ref{tbl:mceliece-plus-performance}.
+The subroutines \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} were taken from the \texttt{vec} implementation submitted to the fourth round of NIST PQC standardization project\footnote{\url{https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-Round4.tar.gz}}. While there are a total of 10 sets of parameters in Classic McEliece (see Section \ref{sec:classic-mceliece-parameter-sets}), we only modified the 5 standard parameter variants. The only difference between the standard variants and the f-variants is the key generation routine, which is not the focus of this paper. Key pairs are fully interoperable between the standard and the f variants, and the encapsulation/decapsulation routines are entirely identical.
+
+MAC implementations are taken from OpenSSL 3.5.0. C code is compiled using Apple Clang 15.0.0. Performance measurement is run on Apple Silicon M1 chip. CPU clock is measured using \texttt{mach\_absolute\_time}. Each routine is run 10000 times, with median times reported in Table \ref{tbl:mceliece-plus-performance}.
 
 \begin{table}[hp]
     \centering
@@ -1131,6 +1119,37 @@ We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:jour
 \bibliography{biblio.bib}
 
 \appendix
+\section{Classic McEliece parameter sets}\label{sec:classic-mceliece-parameter-sets}
+Classic McEliece has a total of 10 parameter sets. Five of them are presented in Table \ref{tab:classic-mceliece-parameter-sets}. The other five (called ``f-variants'') are identical to the five presented here, except for that the key generation routines differ from their canonical variants for performance reasons: in fact, the f-variants are fully interoperable with their normal counterparts.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|p{8em}|p{5em}|p{5em}|p{5em}|p{8em}|}
+        \hline
+        Parameter set & public key & secret key & ciphertext & security level \cite{classic-mceliece-security-guide} \\
+        \hline
+        \texttt{mceliece348864} & 261120 & 6492 & 96 & category 1 \\
+        \hline
+        \texttt{mceliece460896} & 524160 & 13608 & 156 & category 3 \\
+        \hline
+        \texttt{mceliece6688128} & 1044992 & 13932 & 208 & category 5 \\
+        \hline
+        \texttt{mceliece6960119} & 1047319 & 13948 & 194 & category 5 \\
+        \hline
+        \texttt{mceliece8192128} & 1357824 & 14120 & 208 & category 5 \\
+        \hline
+    \end{tabular}
+    \caption{Public key, secret key, and ciphertext sizes are measured in bytes.}\label{tab:classic-mceliece-parameter-sets}
+\end{table}
+
+NIST evaluates concrete security levels against the difficulty of AES brute-force attack and/or SHA-2 collision attacks \cite{NIST_PQC_Evaluation}. There are five categories of concrete securities (in increasing security levels): \begin{enumerate}
+    \item Key search on AES-128, $2^{143}$ classical gates.
+    \item Finding collision on SHA256/SHA3-256, $2^{146}$ classical gates.
+    \item Key search on AES-192, $2^{207}$ classical gates.
+    \item Finding collision on SHA384/SHA3-384, $2^{210}$ classical gates.
+    \item Key search on AES-256, $2^{272}$ classical gates.
+\end{enumerate}
+
 \section{ML-KEM+: applying encrypt-then-MAC to ML-KEM}
 We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM. The resulting KEM is called $\mlkemplus$ (See Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between $\mlkemplus$ and ML-KEM. The $\mlkemplus$  encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
 
@@ -1182,7 +1201,7 @@ We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM. Th
         \end{algorithm}
     \end{minipage}
 
-    \caption{$\mlkemplus$ applies our encrypt-then-MAC transformation to the K-PKE sub-routines of ML-KEM. $G$ is SHA3-512, $H$ is SHA3-256, $\texttt{KDF}$ is Shake256}\label{fig:ml-kem-plus-routines}
+    \caption{$\mlkemplus$ applies our encrypt-then-MAC transformation to the K-PKE sub-routines of ML-KEM. $G$ is SHA3-512, $H$ is SHA3-256, $\texttt{KDF}$ is SHAKE256}\label{fig:ml-kem-plus-routines}
 \end{figure}
 
 We measured the real-world performance of the individual routines of our $\mlkemplus$ construction. Our implementation extended from the Kyber implementation \cite{kyberrefimpl}. All C code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region.
@@ -1229,7 +1248,7 @@ Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used
         \hline
         $\mlkemplus$-512 w/ CMAC & 99739 & 99959 & 40117 & 39943 \\
         \hline
-        $\mlkemplus$-512 w/ KMAC & 101009 & 101313 & 40741 & 40916 \\
+        $\mlkemplus$-512 w/ KMAC256 & 101009 & 101313 & 40741 & 40916 \\
         \hline
     \end{tabular}\vspace{0.3cm}
 
@@ -1266,7 +1285,7 @@ Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used
         % \hline
         % $\mlkemplus$-768 w/ CMAC & 153139 & 153735 & 49841 & 50074 \\
         % \hline
-        $\mlkemplus$-768 w/ KMAC & 155219 & 155848 & 52415 & 52611 \\
+        $\mlkemplus$-768 w/ KMAC256 & 155219 & 155848 & 52415 & 52611 \\
         \hline
     \end{tabular}\vspace{0.3cm}
 
@@ -1302,7 +1321,7 @@ Compared to the $\kem^{\not\bot}_m$ variant of Fujisaki-Okamoto transformed used
         % \hline
         % $\mlkemplus$-1024 w/ CMAC & 213667 & 214483 & 59175 & 59408 \\
         % \hline
-        $\mlkemplus$-1024 w/ KMAC & 216761 & 217468 & 62269 & 62516 \\
+        $\mlkemplus$-1024 w/ KMAC256 & 216761 & 217468 & 62269 & 62516 \\
         \hline
     \end{tabular}
 \end{table}
