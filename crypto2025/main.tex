@@ -732,13 +732,8 @@ Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite
 \subsection{Classic McEliece}\label{sec:classic-mceliece}
 Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layer. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$.
 
-Algorithm \ref{alg:mceliece-seeded-keygen} describes the key generation routine of Classic McEliece. In step 4, \texttt{FieldOrdering} takes the input bits and outputs either $\bot$ or a sequence $(\alpha_0, \ldots, \alpha_{q-1})$ distinct elements of $\mathbb{F}_q$. In step 5, \texttt{Irreducible}  takes the input bits and outputs either $\bot$ or a monic irreducible degree-$t$ polynomial $g \in \mathbb{F}_q[x]$. In step 7, \texttt{MatGen} outputs either $\bot$ or an $mt \times k$ matrix over $\mathbb{F}_2$. We refer readers to \cite{ClassicMcEliece2022} for details of these subroutines.
-
-Algorithms \ref{alg:mceliece-encode} and \ref{alg:mceliece-decode} describe the encoding and decoding subroutines of the Niederreiter layer. Note that our description of the decoding routine differs from \cite{ClassicMcEliece2022} in that we did not include the weight and/or re-encryption check. Instead, they are included in the description of the KEM subroutines. This is because we later plan to substitute these checks with computing a MAC tag when applying the encrypt-then-MAC KEM transformation.
-
-Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classic McEliece's KEM construction using the CPA secure Niedereitter cryptosystem descrbied above. In step 1 of Algorithm \ref{alg:mceliece-encap}, \texttt{FixedWeight} samples a random vector $\mathbf{e}\in\mathbb{F}_2^n$ with Hamming weight $t$. In this KEM construction, Classic McEliece makes use of re-encryption (step 3 of Algorithm \ref{alg:mceliece-decap}) to ensure the integrity of the ciphertext.
-
-\begin{algorithm}
+\begin{figure}[hp]
+\begin{algorithm}[H]
     \caption{$\texttt{SeededKeyGen}(\delta)$}\label{alg:mceliece-seeded-keygen}
     \begin{algorithmic}[1]
         \Require $l$-bit seed $\delta$
@@ -754,8 +749,8 @@ Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classi
         \State Output $T$ as the public key and $(\delta, c, g, \alpha, s)$ as private key
     \end{algorithmic}
 \end{algorithm}
-
-\begin{algorithm}
+\vspace{-4em}
+\begin{algorithm}[H]
     \caption{$\texttt{Encode}(T, \mathbf{e})$}\label{alg:mceliece-encode}
     \begin{algorithmic}[1]
         \Require Public key $T\in\mathbb{F}_2^{mt \times (n - mt)}$
@@ -764,20 +759,19 @@ Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classi
         \State Compute and return $\mathbf{c} \leftarrow H\mathbf{e} \in \mathbb{F}_2^{mt}$
     \end{algorithmic}
 \end{algorithm}
-
-\begin{algorithm}
+\vspace{-4em}
+\begin{algorithm}[H]
     \caption{$\texttt{Decode}(\Gamma, \mathbf{c})$}\label{alg:mceliece-decode}
     \begin{algorithmic}[1]
         \Require Secret key $\Gamma = (g, \alpha_0, \ldots, \alpha_{n-1})$
         \Require Syndrome $\mathbf{c}\in\mathbb{F}_2^{mt}$
         \State Extend $\mathbf{c}$ to $\mathbf{v} \in\mathbb{F}_2^n$ by appending 0's 
         \State Find the unique Goppa codeword $\mathbf{w}\in\mathbb{F}_2^n$ such that $H\mathbf{w} = 0$ and $\mathbf{w}$ has Hamming distance no more than $t$ from $\mathbf{v}$. If there is no such $\mathbf{w}$, return $\bot$
-        \State Set $\mathbf{e} \leftarrow \mathbf{v} + \mathbf{w}$
-        \State \Return $\mathbf{e}$
+        \State \Return  $\mathbf{e} \leftarrow \mathbf{v} + \mathbf{w}$
     \end{algorithmic}
 \end{algorithm}
-
-\begin{algorithm}
+\vspace{-4em}
+\begin{algorithm}[H]
     \caption{$\texttt{Encap}(\pk)$}\label{alg:mceliece-encap}
     \begin{algorithmic}[1]
         \Require Public key $\pk = T\in\mathbb{F}_2^{mt \times (n - mt)}$
@@ -787,8 +781,8 @@ Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classi
         \State \Return $(\mathbf{c}, K)$
     \end{algorithmic}
 \end{algorithm}
-
-\begin{algorithm}
+\vspace{-4em}
+\begin{algorithm}[H]
     \caption{$\texttt{Decap}(\sk, \mathbf{c})$}\label{alg:mceliece-decap}
     \begin{algorithmic}[1]
         \Require Secret key $\sk$ contains $s \in \mathbb{F}_2^n$ and $\Gamma = (g, \alpha_0, \alpha_1, \ldots, \alpha_{n-1})$
@@ -801,8 +795,15 @@ Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classi
         \State \Return $K \leftarrow H(b, \mathbf{e}, \mathbf{c})$
     \end{algorithmic}
 \end{algorithm}
+\end{figure}
 
-We instantiated the encrypt-then-MAC KEM transformation using \\ \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} as subroutines. The result is called McElieceEtM. Its key generation routine is identical to the key generation of Classic McEliece. Its encapsulation derives a MAC key from the output of \texttt{FixedWeight} and signs the syndrome computed from \texttt{Encode}. In decapsulation, weight and syndrome check is replaced with re-deriving the MAC key and checking the tag.
+Algorithm \ref{alg:mceliece-seeded-keygen} describes the key generation routine of Classic McEliece. In step 4, \texttt{FieldOrdering} takes the input bits and outputs either $\bot$ or a sequence $(\alpha_0, \ldots, \alpha_{q-1})$ distinct elements of $\mathbb{F}_q$. In step 5, \texttt{Irreducible}  takes the input bits and outputs either $\bot$ or a monic irreducible degree-$t$ polynomial $g \in \mathbb{F}_q[x]$. In step 7, \texttt{MatGen} outputs either $\bot$ or an $mt \times k$ matrix over $\mathbb{F}_2$. We refer readers to \cite{ClassicMcEliece2022} for details of these subroutines.
+
+Algorithms \ref{alg:mceliece-encode} and \ref{alg:mceliece-decode} describe the encoding and decoding subroutines of the Niederreiter layer. Note that our description of the decoding routine differs from \cite{ClassicMcEliece2022} in that we did not include the weight and/or re-encryption check. Instead, they are included in the description of the decapsulation subroutines (Algorithm \ref{alg:mceliece-decap}). This is because we later plan to substitute these checks with computing a MAC tag when applying the encrypt-then-MAC KEM transformation.
+
+Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classic McEliece's KEM construction using the CPA secure Niedereitter cryptosystem descrbied above. In step 1 of Algorithm \ref{alg:mceliece-encap}, \texttt{FixedWeight} samples a random vector $\mathbf{e}\in\mathbb{F}_2^n$ with Hamming weight $t$. In this KEM construction, Classic McEliece makes use of re-encryption (step 3 of Algorithm \ref{alg:mceliece-decap}) to ensure the integrity of the ciphertext.
+
+We instantiated the encrypt-then-MAC KEM transformation using \\ \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} as subroutines. The result is called McElieceEtM (Figure \ref{fig:mceliece-plus}). Its key generation routine is identical to the key generation of Classic McEliece. Its encapsulation derives a MAC key from the output of \texttt{FixedWeight} and signs the syndrome computed from \texttt{Encode}. In decapsulation, weight and syndrome check is replaced with re-deriving the MAC key and checking the tag.
 
 \begin{figure}[h]
     \centering
@@ -1153,7 +1154,7 @@ NIST evaluates concrete security levels against the difficulty of AES brute-forc
 \end{enumerate}
 
 \section{ML-KEM+: applying encrypt-then-MAC to ML-KEM}\label{sec:applying-encrypt-then-mac-to-ml-kem}
-We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM. The resulting KEM is called $\mlkemplus$ (See Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between $\mlkemplus$ and ML-KEM. The $\mlkemplus$  encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
+We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM. The resulting KEM is called $\mlkemplus$ (Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between $\mlkemplus$ and ML-KEM. The $\mlkemplus$  encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
 
 \begin{figure}[h]
     \centering
