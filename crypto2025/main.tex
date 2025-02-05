@@ -68,7 +68,9 @@
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-    {\color{red} TODO: write abstract later}
+    We present a new generic CCA-secure key encapsulation mechanism (KEM) conversion called the encrypt-then-MAC transformation. Under the random oracle model (ROM), the encrypt-then-MAC KEM transformation achieves IND-CCA security when combined with an OW-PCA secure public-key encryption scheme (PKE) and an existentially unforgeable message authentication code (MAC). Compared to the Fujisaki-Okamoto transformation, another generic CCA-secure KEM transformation used in many post-quantum KEMs, the encrypt-then-MAC transformation replaces de-randomization and re-encryption with computing a MAC tag, which leads to significant performance improvements in decapsulation. Our construction also improves on the Diffie-Hellman Integrated Encryption Scheme (DHIES) by generalizing its security assumption and proposing using one-time MAC for further efficiency gains.
+    
+    We instantiated our proposed KEM transformation using subroutines of Classic McEliece and called it McElieceEtM. We then implemented McElieceEtM with a wide selection of MACs including Poly1305, GMAC, CMAC, and KMAC256. Compared to Classic McEliece, which uses a modified FO transform, McElieceEtM achieves 9-12\% performance improvement in throughput (encapsulation + decapsulation time).
     \keywords{
     First keyword  \and Second keyword \and Another keyword.
 }
@@ -173,7 +175,7 @@ Fujisaki and Okamoto proposed to construct CCA secure hybrid PKE by combining a 
 
 Despite its widespread adoption, the Fujisaki-Okamoto transformation has many flaws: \begin{itemize}
     \item \textbf{Computational inefficiency.} In all variants of Fujisaki-Okamoto transformation, decapsulation routine needs to re-encrypt the decryption to ensure ciphertext non-malleability. For input PKE whose encryption routine carries significant computational cost, such as most lattice-based cryptosystems, re-encryption substantially slows down decapsulation.
-    \item \textbf{Side-channel vulnerability.} Re-encryption introduces side-channels that can leak information about the decrypted PKE plaintext. As demonstrated in \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20}, these side-channels can be converted into efficient plaintext-checking attacks that can fully recover the secret key
+    \item \textbf{Side-channel vulnerability.} Re-encryption introduces side channels that can leak information about the decrypted PKE plaintext. As demonstrated in \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/ccs/HermelinkN0S24}, these side channels can be converted into efficient key-recovery and/or message-recovery attacks.
     \item \textbf{Security degradation.} \textit{de-randomization} can degrade the security of a randomized PKE. Where the security parameters did not account for this loss, the security of the KEM can fall below the expected level. Consequently, larger parameters are necessary to account for the security loss, which slows down the cryptosystem \cite{cryptoeprint:2021/912,DBLP:journals/iacr/Bernstein21}.
 \end{itemize}
 
@@ -644,8 +646,6 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
     Combining all equations above produce the desired security bound.
 \end{proof}
 
-% TODO: PCA security should be separate subsection
-% TODO: The rest of the discussion should move to a "discussion" section, be made shorter, and have more references
 \subsection{OW-PCA security}\label{sec:ow-pca-security}
 The security notion of \textit{One-wayness under plaintext-checking attack (OW-PCA)} was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding (OAEP)\cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure, while there are cryptosystems that are OW-PCA secure but not one-way trapdoor permutation (Table \ref{tbl:ow-pca-candidates}). More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
 
@@ -715,7 +715,6 @@ NTRU is another family of lattice-based cryptosystems. Hoffstein and Silverman \
 
 \subsubsection{Code-based cryptosystems} HQC, despite being based on hard coding problems, has a structure that is similar to the lattice cryptosystems. Consequently, KR-PCA for lattice cryptosystems can be easily adapted to work on HQC \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19}. BIKE is based on the Niederreiter cryptosystem instantiated with quasi-cyclic moderate density parity check (QC-MDPC) code \cite{DBLP:conf/isit/MisoczkiTSB13}, and while \cite{DBLP:conf/asiacrypt/Guo0S16} described KR-PCA against QC-MDPC code, such attack can partially recover BIKE secret keys. There is no known adaptive attack against Classic McEliece  \cite{DBLP:journals/tches/UenoXTITH22}.
 
-% TODO: these attacks are too trivial, make them shorter, add more references
 \subsection{Additional implementation notes}\label{sec:discussion-on-real-world-attacks}
 \subsubsection{Securely deriving MAC key} Because the MAC key is pseudorandomly derived from the PKE plaintext (instead of uniformly and independently sampled), it is possible to construct a large lookup table mapping each PKE plaintext to a MAC key, then check the KEM ciphertext $(c, t)$ against each MAC key to recover the pre-image. As was pointed out in \cite{DBLP:journals/iacr/Bernstein21,cryptoeprint:2021/912}, this relationship between the MAC tag and the PKE plaintext could damage the security of the scheme. This can be mitigated by including the PKE public key when deriving the MAC key $k_\mac \leftarrow G(\pk, m)$ or even including random salt at each encapsulation $k_\mac \leftarrow G(\pk, m, \text{salt})$, which can increase the cost of such dictionary attacks.
 
@@ -1107,7 +1106,6 @@ We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}.
 \end{proof}
 
 
-% TODO: mention how applying encrypt-then-MAC to Kyber can be used in ephemeral key exchange and will still have performance savings, include performance numbers in appendix
 \section{Concluding remarks}\label{sec:conclusion}
 In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then applie the encrypt-then-MAC transformation to the ElGamal cryptosystem and the McEliece cryptosystem, and implemented the transformed McElieceEtM in C using a variety of MACs. On average, McElieceEtM achieved 9-12\% increase in throughput compared to Classic McEliece, which uses the Fujisaki-Okamoto transformation to convert OW-CPA encryption scheme into a CCA secure KEM.
 
@@ -1250,7 +1248,6 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
         \hline
     \end{tabular}\vspace{0.3cm}
 
-    % TODO: 128-bit tag size is unsuitable for higher security level
     % \begin{tabular}[t]{|cc|}
     %     \hline
     %     \multicolumn{2}{|c|}{\bf 192-bit security} \\
