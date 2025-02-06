@@ -12941,6 +12941,7 @@ KEM decap                        medium:           156000
                                  P90   :           156910
                                  P99   :           168402
 Done
+
 run 20
 mceliece348864_avx
 Ok.

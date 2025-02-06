@@ -36,7 +36,7 @@ static void etmkem_keypair(uint8_t *pk, uint8_t *sk) {
   memcpy(pk + CRYPTO_PUBLICKEYBYTES, sk + CRYPTO_SECRETKEYBYTES, CRYPTO_SYMBYTES);
 
   // rejection symbol should be independently sampled from PKE key pair
-  gen_e(sk + CRYPTO_SECRETKEYBYTES + CRYPTO_SYMBYTES);
+  // gen_e(sk + CRYPTO_SECRETKEYBYTES + CRYPTO_SYMBYTES);
 }
 
 /**
@@ -98,8 +98,8 @@ static void etmkem_decap(uint8_t *ss, const uint8_t *ct, const uint8_t *sk) {
   memcpy(rejection_ct, sk + CRYPTO_SECRETKEYBYTES + CRYPTO_SYMBYTES,
          CRYPTO_PLAINTEXTBYTES);
   memcpy(rejection_ct, ct, ETMKEM_CIPHERTEXTBYTES);
-  shake256(false_ss, ETMKEM_SSBYTES, rejection_ct,
-           CRYPTO_PLAINTEXTBYTES + CRYPTO_CIPHERTEXTBYTES + MAC_TAGBYTES);
+  // shake256(false_ss, ETMKEM_SSBYTES, rejection_ct,
+  //          CRYPTO_PLAINTEXTBYTES + CRYPTO_CIPHERTEXTBYTES + MAC_TAGBYTES);
 
   if (mac_cmp(ct + CRYPTO_CIPHERTEXTBYTES, prekey_mackey_maciv + ETMKEM_SSBYTES,
               prekey_mackey_maciv + ETMKEM_SSBYTES + MAC_KEYBYTES, ct,
