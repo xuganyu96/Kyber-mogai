@@ -684,30 +684,31 @@ For the remainder of this section, we will review the OW-PCA security of some we
 
 \begin{table}
     \centering
-    \begin{tabular}{|p{17em}|p{14em}|}
+    \begin{tabular}{|p{9em}|p{10em}|p{14em}|}
         \hline
-        \centering\textbf{PKE} & \textbf{is it OW-PCA?} \\
+        \centering\textbf{PKE} & \textbf{Category} & \textbf{Is it OW-PCA?} \\
         \hline
-        RSA & Yes \cite{DBLP:conf/ima/Dent03,DBLP:journals/iacr/Shoup01}\\
+        RSA & Number theoretic & Yes \cite{DBLP:conf/ima/Dent03,DBLP:journals/iacr/Shoup01} \\
         \hline
-        ElGamal & If Gap Diffie-Hellman assumption holds \cite{DBLP:conf/ctrsa/AbdallaBR01,DBLP:conf/pkc/OkamotoP01}\\
+        ElGamal & {Number theoretic or \newline elliptic curve} & If Gap Diffie-Hellman assumption holds \cite{DBLP:conf/ctrsa/AbdallaBR01,DBLP:conf/pkc/OkamotoP01} \\
+        \hline\hline
+        FrodoKEM & Lattice-based & No, full key recovery \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19} \\
         \hline
-        FrodoKEM & No: full key recovery \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19} \\
+        Kyber/Saber & Lattice-based & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23} \\
         \hline
-        Kyber/Saber & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23}\\
+        NTRU & Lattice-based & No, full key recovery \cite{hoffstein1999reaction,DBLP:conf/crypto/JaulmesJ00,DBLP:journals/tches/UenoXTITH22} \\
+        \hline\hline
+        HQC & Code-based & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19} \\
         \hline
-        NTRU & No, full key recovery \cite{hoffstein1999reaction,DBLP:conf/crypto/JaulmesJ00,DBLP:journals/tches/UenoXTITH22} \\
+        BIKE & Code-based & No, partial key recovery \cite{DBLP:conf/asiacrypt/Guo0S16} \\
         \hline
-        HQC & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19}\\
+        Classic McEliece & Code-based & Unknown, but there is no known attack \cite{DBLP:journals/tches/UenoXTITH22} \\
         \hline
-        BIKE (with MDPC) & No, partial key recovery \cite{DBLP:conf/asiacrypt/Guo0S16} \\
-        \hline
-        Classic McEliece (binary Goppa code) & Unknown, but there is no known attack \cite{DBLP:journals/tches/UenoXTITH22}\\
-        \hline
-        
     \end{tabular}
     \caption{The landscape of OW-PCA security}\label{tbl:ow-pca-candidates}
 \end{table}
+
+
 
 \subsubsection{Number-theoretic cryptosystems} The RSA cryptosystem as it was originally proposed in \cite{DBLP:journals/cacm/RivestSA78} is OW-PCA secure. This is because the RSA cryptosystem is a one-way trapdoor permutation \cite{DBLP:conf/crypto/FujisakiOPS01}, meaning that encryption and decryption are both injective. Given some public key $(N=pq, e)$ and a plaintext-ciphertext pair $(m, c)$, one can check that $m$ is the decryption of $c$ by checking that $c \equiv m^e \mod N$, which renders a plaintext-checking oracle completely useless.
 
@@ -722,12 +723,14 @@ NTRU is another family of lattice-based cryptosystems. Hoffstein and Silverman \
 \subsection{Additional implementation notes}\label{sec:discussion-on-real-world-attacks}
 \subsubsection{Securely deriving MAC key} Because the MAC key is pseudorandomly derived from the PKE plaintext (instead of uniformly and independently sampled), it is possible to construct a large lookup table mapping each PKE plaintext to a MAC key, then check the KEM ciphertext $(c, t)$ against each MAC key to recover the pre-image. As was pointed out in \cite{DBLP:journals/iacr/Bernstein21,cryptoeprint:2021/912}, this relationship between the MAC tag and the PKE plaintext could damage the security of the scheme. This can be mitigated by including the PKE public key when deriving the MAC key $k_\mac \leftarrow G(\pk, m)$ or even including random salt at each encapsulation $k_\mac \leftarrow G(\pk, m, \text{salt})$, which can increase the cost of such dictionary attacks.
 
-\subsubsection{One-time MAC} When the encrypt-then-MAC KEM is instantiated with a PKE with a sufficiently large plaintext space, we expect the probability of two encapsulations sampling the same PKE plaintext to be negligible within some reasonable keypair lifetime, and if the hash function is collision resistant, then the probability of two encapsulations deriving the same MAC key is also negligible. Therefore, we speculate that the encrypt-then-MAC KEM can be instantiated with one-time MACs \cite{DBLP:journals/jcss/CarterW79} with no security impact, while one-time MACs can be computationally more efficient than many-time secure MACs such as CBC-MAC and HMAC (as used in DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01}).
+\subsubsection{One-time MAC} When the encrypt-then-MAC KEM is instantiated with a PKE with a sufficiently large plaintext space, we expect the probability of two encapsulations sampling the same PKE plaintext to be negligible within some reasonable keypair lifetime, and if the hash function is collision resistant, then the probability of two encapsulations deriving the same MAC key is also negligible. Therefore, we speculate that the encrypt-then-MAC KEM can be instantiated with one-time MACs \cite{DBLP:journals/jcss/CarterW79} with no security impact, while one-time MACs can be computationally more efficient than many-time secure MACs(e.g. DHIES proposed to use HMAC and CBC-MAC \cite{DBLP:conf/ctrsa/AbdallaBR01}).
 
 \subsubsection{Deriving shared secret} If the decryption routine of the underlying PKE is not injective, then the shared secret must be derived from both the PKE plaintext and the ciphertext: if the shared secret is derived from the plaintext alone, and the KEM adversary $A$ can find a modified ciphertext that decrypts back to the same PKE plaintext, then $A$ can query the decapsulation oracle with the modified ciphertext and obtain the true decapsulation. However, the shared secret does not have to be derived from hashing the entire ciphertext. Instead, we propose to derive the shared secret from the MAC tag, which is functionally equivalent to a keyed hash of the ciphertext. Since the MAC tag is usually much smaller than the ciphertext, hashing the tag instead of the entire ciphertext can lead to meaningful speedup.
 
 \section{Applying encrypt-then-MAC to code-based cryptosystem}\label{sec:application-to-mceliece}
-Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow PGS$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P, S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, finally the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{niederreiter1986knapsack} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard. Compared to the McEliece formulation, the Niederreiter variant enjoys smaller public key and smaller ciphertexts.
+Code-based cryptography was first introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow PGS$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P, S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, finally the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code \cite{DBLP:journals/tit/BerlekampMT78}. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{niederreiter1986knapsack} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard \cite{DBLP:journals/tit/BerlekampMT78}. Compared to the McEliece formulation, the Niederreiter variant enjoys smaller public key and smaller ciphertexts.
+
+\textit{Remark.} There are three code-based post-quantum KEM candidates in the fourth round of NIST's PQC standardization project: HQC \cite{hamming-quasi-cyclic-4th-round-submission}, BIKE \cite{bike-4th-round-submission}, and Classic McEliece \cite{ClassicMcEliece2022}. As discussed in Section \ref{sec:ow-pca-security}, there exist full or partial key recovery plaintext checking attacks against HQC and BIKE. While there is no rigorous proof that Classic McEliece is OW-PCA, there is also no known plaintext checking attack. The CCA security of instantiating the encrypt-then-MAC KEM with Classic McEliece is thus based on the conjectured OW-PCA security of the one-way subroutines described in Section \ref{sec:classic-mceliece}.
 
 \subsection{Classic McEliece}\label{sec:classic-mceliece}
 Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layer. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$.
