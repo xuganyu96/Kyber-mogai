@@ -3,8 +3,8 @@
 % DONE: what is the main result of section 3.3? Added sentence at the beginning of the section
 % TODO: consider referencing more MAC attacks, but are they really meaningful?
 % DONE: "we conjecture McElieceEtM to be IND-CCA" is weak and should be removed. This statement was removed in the contribution section, but I want to keep a similar statement in the "remarks" at the beginning of Section 4 because one of TCHES' feedbacks focused on "missing CCA security of the implementation"
-% TODO: rework the "related works" section: clarify OAEP's requirement for one-way trapdoor permutation, merge OAEP/GEM/REACT into a single paragraph, move FO transform to the beginning of the section
-% TODO: change ML-KEM+ to ML-KEM-EtM
+% DONE: rework the "related works" section: clarify OAEP's requirement for one-way trapdoor permutation, merge OAEP/GEM/REACT into a single paragraph, move FO transform to the beginning of the section
+% DONE: change ML-KEM+ to ML-KEM-EtM
 % Feb 4, 2025
 % DONE: fix performance table
 % DONE: include Kyber discussion in conclusion
@@ -105,10 +105,19 @@ Our contributions are as follows:
 % \subsubsection{C implementation of McElieceEtM.} We implemented McElieceEtM in C and benchmarked its performance. Compared to the reference implementation of Classic McEliece (which uses re-encryption), McElieceEtm achieves significant decapsulation speedup at some minimal cost of encapsulation overhead, which results in 9-12\% increase in throughput (encapsulation + decapsulation time).
 
 \subsection{Related works}\label{sec:related-works}
-\subsubsection{OAEP}
-\textit{Optimal Asymmetric Encryption Padding (OAEP)} \cite{DBLP:conf/eurocrypt/BellareR94}, proposed by Mihir Bellare and Phillip Rogaway in 1994, was one of the earliest provably secure CCA transformations. However, Victor Shoup identified a non-trivial gap in OAEP's security proof that cannot be filled under ROM\cite{DBLP:conf/crypto/Shoup01}, although Fujisaki et al. later proved that RSA-OAEP is secure under the RSA assumption \cite{DBLP:conf/crypto/FujisakiOPS01}. RSA-OAEP is widely used in secure communication protocols such as TLS 1.2. The main drawback of OAEP is that it requires its input to be an one-way trapdoor permutation, which is difficult to find. To this day, RSA remains the only viable candidate to apply OAEP to.
+\subsubsection{Fujisaki-Okamoto transformation}
+Fujisaki and Okamoto proposed to construct CCA secure hybrid PKE by combining a OW-CPA secure PKE and a semantically secure symmetric-key encryption (SKE) scheme \cite{DBLP:conf/crypto/FujisakiO99}. The main techniques, namely \textit{de-randomization} and \textit{re-encrytion} were both introduced in the original proposal. Under ROM, Fujisaki and Okamoto reduced the CCA security of the hybrid PKE tightly to the semantic security of the input SKE and \textit{non-tightly} to the OW-CPA security of the input PKE (with loss factor $q$, the number of hash oracle queries). Later works extended the original proposal to build CCA secure KEM: KEM's security model makes building secure KEM simpler than building secure PKE, and it is well-known that combining a CCA secure KEM with a CCA secure data encapsulation mechanism (DEM), such as some authenticated encryption scheme (e.g. AES-GCM, AES-CCM, ChaCha20-Poly1305), results in a CCA secure hybrid PKE \cite{DBLP:journals/iacr/Shoup01,DBLP:conf/eurocrypt/Shoup00a}. Further studies \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17,DBLP:journals/iacr/BernsteinP18,DBLP:conf/asiacrypt/HovelmannsHM22,DBLP:conf/pqcrypto/XagawaY19,DBLP:conf/crypto/JiangZCWM18} gave tighter security bounds, accounted for decryption failures in the underlying PKE, and analyzed the security under quantum random oracle model (QROM). To this day, the Fujisaki-Okamoto transformation is the only known generic CCA secure transformation that can convert OW-CPA/IND-CPA PKE into a CCA secure KEM. Because of the minimal input requirement and the simple construction, the Fujisaki-Okamoto transformation was widely adopted among post-quantum KEM candidates submitted to the PQC standardization project, including Kyber \cite{DBLP:conf/eurosp/BosDKLLSSSS18}, Saber \cite{DBLP:conf/africacrypt/DAnversKRV18}, FrodoKEM \cite{DBLP:conf/ccs/BosCDMNNRS16}, and Classic McEliece \cite{DBLP:conf/ches/BernsteinCS13,DBLP:conf/ches/Chou17,ClassicMcEliece2022}.
 
-\subsubsection{REACT/GEM} Okamoto and Pointchval proposed REACT \cite{DBLP:conf/ctrsa/OkamotoP01} in 2001, followed by GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02} in 2002. Both are generic CCA transformation with security proved under ROM. Okamoto and Pointcheval first defined the security notion of one-wayness under plaintext checking attack (OW-PCA) and reduced the CCA security of the transformation to the OW-PCA security of the input public-key cryptosystem.
+Despite its widespread adoption, the Fujisaki-Okamoto transformation has many flaws: \begin{itemize}
+    \item \textbf{Computational inefficiency.} In all variants of Fujisaki-Okamoto transformation, decapsulation routine needs to re-encrypt the decryption to ensure ciphertext non-malleability. For input PKE whose encryption routine carries significant computational cost, such as most lattice-based cryptosystems, re-encryption substantially slows down decapsulation.
+    \item \textbf{Side-channel vulnerability.} Re-encryption introduces side channels that can leak information about the decrypted PKE plaintext. As demonstrated in \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/ccs/HermelinkN0S24,DBLP:journals/tches/GoyMGL24,DBLP:journals/iacr/LiCSCGLWW24,DBLP:journals/tches/KunduCSKMV24,DBLP:conf/acns/MondalKBKV24,DBLP:journals/tches/DongG25,DBLP:conf/acns/WangBD24}, these side channels can be converted into efficient key-recovery and/or message-recovery attacks.
+    \item \textbf{Security degradation.} \textit{de-randomization} can degrade the security of a randomized PKE. Where the security parameters did not account for this loss, the security of the KEM can fall below the expected level. Consequently, larger parameters are necessary to account for the security loss, which slows down the cryptosystem \cite{cryptoeprint:2021/912,DBLP:journals/iacr/Bernstein21}.
+\end{itemize}
+
+\subsubsection{Other generic CCA transformations}
+Mihir Bellare and Phillip Rogaway proposed \textit{Optimal Asymmetric Encryption Padding (OAEP)} in 1994 \cite{DBLP:conf/eurocrypt/BellareR94} and reduced its CCA security to the one-wayness of the underlying trapdoor permutation under the random oracle model. However, Victor Shoup identified a non-trivial gap in OAEP's security proof that cannot be filled under ROM \cite{DBLP:conf/crypto/Shoup01}, although Fujisaki et al. later proved that RSA-OAEP is secure under the RSA assumption \cite{DBLP:conf/crypto/FujisakiOPS01}. RSA-OAEP is widely used in secure communication protocols such as TLS 1.2. The main drawback of OAEP is that it requires its input to be an one-way trapdoor permutation, which is difficult to find: to this day, RSA remains the only viable candidate to apply OAEP to.
+
+Okamoto and Pointchval proposed REACT \cite{DBLP:conf/ctrsa/OkamotoP01} in 2001, followed by GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02} in 2002. Both are generic CCA transformation with security proved under ROM. Okamoto and Pointcheval first defined the security notion of one-wayness under plaintext checking attack (OW-PCA) and reduced the CCA security of the transformation to the OW-PCA security of the input public-key cryptosystem.
 
 % \begin{figure}[h]
 %     \centering
@@ -179,15 +188,6 @@ Our contributions are as follows:
 %     \end{minipage}
 %     \caption{Given PKE $(\keygen, \encrypt, \decrypt)$, SKE $(\mathcal{E}, \mathcal{D})$, and hash functions $F, G, H$, GEM constructs a hybrid PKE $(\keygen_\text{GEM}, \encrypt_\text{GEM}, \decrypt_\text{GEM})$}\label{fig:gem}
 % \end{figure}
-
-\subsubsection{Fujisaki-Okamoto transformation}
-Fujisaki and Okamoto proposed to construct CCA secure hybrid PKE by combining a OW-CPA secure PKE and a semantically secure symmetric-key encryption (SKE) scheme \cite{DBLP:conf/crypto/FujisakiO99}. The main techniques, namely \textit{de-randomization} and \textit{re-encrytion} were both introduced in the original proposal. Under ROM, Fujisaki and Okamoto reduced the CCA security of the hybrid PKE tightly to the semantic security of the input SKE and \textit{non-tightly} to the OW-CPA security of the input PKE (with loss factor $q$, the number of hash oracle queries). Later works extended the original proposal to build CCA secure KEM: KEM's security model makes building secure KEM simpler than building secure PKE, and it is well-known that combining a CCA secure KEM with a CCA secure data encapsulation mechanism (DEM), such as some authenticated encryption scheme (e.g. AES-GCM, AES-CCM, ChaCha20-Poly1305), results in a CCA secure hybrid PKE \cite{DBLP:journals/iacr/Shoup01,DBLP:conf/eurocrypt/Shoup00a}. Further studies \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17,DBLP:journals/iacr/BernsteinP18,DBLP:conf/asiacrypt/HovelmannsHM22,DBLP:conf/pqcrypto/XagawaY19,DBLP:conf/crypto/JiangZCWM18} gave tighter security bounds, accounted for decryption failures in the underlying PKE, and analyzed the security under quantum random oracle model (QROM). To this day, the Fujisaki-Okamoto transformation is the only known generic CCA secure transformation that can convert OW-CPA/IND-CPA PKE into a CCA secure KEM. Because of the minimal input requirement and the simple construction, the Fujisaki-Okamoto transformation was widely adopted among post-quantum KEM candidates submitted to the PQC standardization project, including Kyber \cite{DBLP:conf/eurosp/BosDKLLSSSS18}, Saber \cite{DBLP:conf/africacrypt/DAnversKRV18}, FrodoKEM \cite{DBLP:conf/ccs/BosCDMNNRS16}, and Classic McEliece \cite{DBLP:conf/ches/BernsteinCS13,DBLP:conf/ches/Chou17,ClassicMcEliece2022}.
-
-Despite its widespread adoption, the Fujisaki-Okamoto transformation has many flaws: \begin{itemize}
-    \item \textbf{Computational inefficiency.} In all variants of Fujisaki-Okamoto transformation, decapsulation routine needs to re-encrypt the decryption to ensure ciphertext non-malleability. For input PKE whose encryption routine carries significant computational cost, such as most lattice-based cryptosystems, re-encryption substantially slows down decapsulation.
-    \item \textbf{Side-channel vulnerability.} Re-encryption introduces side channels that can leak information about the decrypted PKE plaintext. As demonstrated in \cite{DBLP:journals/tches/UenoXTITH22,DBLP:journals/tches/TanakaUXITH23,DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/ccs/HermelinkN0S24,DBLP:journals/tches/GoyMGL24,DBLP:journals/iacr/LiCSCGLWW24,DBLP:journals/tches/KunduCSKMV24,DBLP:conf/acns/MondalKBKV24,DBLP:journals/tches/DongG25,DBLP:conf/acns/WangBD24}, these side channels can be converted into efficient key-recovery and/or message-recovery attacks.
-    \item \textbf{Security degradation.} \textit{de-randomization} can degrade the security of a randomized PKE. Where the security parameters did not account for this loss, the security of the KEM can fall below the expected level. Consequently, larger parameters are necessary to account for the security loss, which slows down the cryptosystem \cite{cryptoeprint:2021/912,DBLP:journals/iacr/Bernstein21}.
-\end{itemize}
 
 \subsection{Paper organization}\label{sec:paper-organization}
 In Section \ref{sec:preliminaries}, we review the preliminary definitions and theorems. In Section \ref{sec:the-enc-then-mac-transformation}, we present the encrypt-then-MAC KEM transformation, proves its CCA security, and discusses practical attacks. In Section \ref{sec:application-to-mceliece}, we present McElieceEtM, an instantiation of the encrypt-then-MAC transformation using subroutines from Classic McEliece. In Section \ref{sec:application-to-elgamal}, we show that the encrypt-then-MAC transformation is a generalization of DHIES. 
@@ -873,14 +873,14 @@ In our implementation, we used {\tt OpenSSL 3.3.1}'s \texttt{EVP\_MAC} interface
 The subroutines \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} were taken from the \texttt{vec} implementation submitted to the fourth round of NIST PQC standardization project\footnote{\url{https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-Round4.tar.gz}}. While there are a total of 10 sets of parameters in Classic McEliece (see Section \ref{sec:classic-mceliece-parameter-sets}), we only modified the 5 standard parameter variants. The only difference between the standard variants and the f-variants is the key generation routine, which is not the focus of this paper. Key pairs are fully interoperable between the standard and the f-variants, and the encapsulation/decapsulation routines are entirely identical.
 
 We implement the McElieceEtM KEM in the {\tt C} language to benchmark the encapsulation and decapsulation algorithms for above four different MACs.  
-We leverate the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is compiled using Apple Clang 15.0.0. The performance measurement is run on Apple Silicon M1 chip. The CPU clock is measured using \texttt{mach\_absolute\_time}. Each routine is run 10000 times, with median times reported in Table \ref{tbl:mceliece-plus-performance}.
+We used the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is compiled using Apple Clang 15.0.0. The performance measurement is run on Apple Silicon M1 chip. The CPU clock is measured using \texttt{mach\_absolute\_time}. Each routine is run 10000 times, with median times reported in Table \ref{tbl:mceliece-plus-performance}.
 
 \begin{table}[hp]
     \centering
     % \footnotesize
-    \begin{tabular}[c]{|c|c|c|c|}
+    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
         \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
         \hline
         \texttt{mceliece348864} & 215 & 2471 & 2686 \\
         \hline
@@ -892,10 +892,10 @@ We leverate the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is comp
         \hline
         \texttt{mceliece348864 + kmac256} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
         \hline
-    \end{tabular}\vspace{1em}
-    \begin{tabular}[c]{|c|c|c|c|}
+    \end{tabular}\vspace{2em}
+    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
         \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
         \hline
         \texttt{mceliece460896} & 487 & 6694 & 7181 \\
         \hline
@@ -907,10 +907,10 @@ We leverate the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is comp
         \hline
         \texttt{mceliece460896 + kmac256} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
         \hline
-    \end{tabular}\vspace{1em}
-    \begin{tabular}[c]{|c|c|c|c|}
+    \end{tabular}\vspace{2em}
+    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
         \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
         \hline
         \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
         \hline
@@ -922,10 +922,10 @@ We leverate the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is comp
         \hline
         \texttt{mceliece6688128 + kmac256} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
         \hline
-    \end{tabular}\vspace{1em}
-    \begin{tabular}[c]{|c|c|c|c|}
+    \end{tabular}\vspace{2em}
+    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
         \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
         \hline
         \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
         \hline
@@ -937,10 +937,10 @@ We leverate the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is comp
         \hline
         \texttt{mceliece6960119 + kmac256} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
         \hline
-    \end{tabular}\vspace{1em}
-    \begin{tabular}[c]{|c|c|c|c|}
+    \end{tabular}\vspace{2em}
+    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
         \hline
-        KEM & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
         \hline
         \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
         \hline
@@ -952,7 +952,7 @@ We leverate the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is comp
         \hline
         \texttt{mceliece8192128 + kmac256} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
         \hline
-    \end{tabular}\vspace{1em}
+    \end{tabular}\vspace{2em}
     \caption{McElieceEtM achieves 9-12\% speedup in combined ``encapsulate + decapsulate'' compared to Classic McEliece}\label{tbl:mceliece-plus-performance}
 \end{table}
 
