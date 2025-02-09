@@ -48,7 +48,6 @@
 \newcommand{\fotplus}{\texttt{FOT+}}
 \newcommand{\us}{\mu s}
 \newcommand{\wt}{\mathop{wt}}
-\def\mlkemplus{\text{ML-KEM}^+}
 \Urlmuskip=0mu  plus 10mu  % fix underfull hbox for URL in footnote
 
 \begin{document}
@@ -1129,7 +1128,7 @@ We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}.
 \section{Concluding remarks}\label{sec:conclusion}
 In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then applied the encrypt-then-MAC transformation to the ElGamal cryptosystem and the McEliece cryptosystem, and implemented the transformed McElieceEtM in C using a variety of MACs. On average, McElieceEtM achieved 9-12\% increase in throughput compared to Classic McEliece, which uses the Fujisaki-Okamoto transformation to convert OW-CPA encryption scheme into a CCA secure KEM.
 
-In Section \ref{sec:ow-pca-security} we mentioned that Kyber/ML-KEM's underlying PKE subroutines are not OW-PCA secure, which means that applying the encrypt-then-MAC KEM transformation to the PKE subroutines will not achieve full IND-CCA security. However, the plaintext-checking attack against Kyber requires several thousands of oracle queries, which translates to equivalent complexity of any chosen-ciphertext attacks. Therefore, it may be safe to apply the encrypt-then-MAC transformation to Kyber/ML-KEM with the restriction that each key pair is used at most once, such as in TLS 1.3 handshake. In Kyber/ML-KEM, the encryption routine is significantly slower than the decryption routine, so the encrypt-then-MAC transformation achieves significant performance improvements over the Fujisaki-Okamoto transformation. We show this instanciation of encrypt-then-MAC transform over ML-KEM and their performances in  Appendix \ref{sec:applying-encrypt-then-mac-to-ml-kem}. 
+In Section \ref{sec:ow-pca-security} we mentioned that Kyber/ML-KEM's underlying PKE subroutines are not OW-PCA secure, which means that applying the encrypt-then-MAC KEM transformation to the PKE subroutines will not achieve full IND-CCA security. However, the plaintext-checking attack against Kyber requires several thousands of oracle queries, which translates to equivalent complexity of any chosen-ciphertext attacks. Therefore, it may be safe to apply the encrypt-then-MAC transformation to Kyber/ML-KEM with the restriction that each key pair is used at most once, such as in TLS 1.3 handshake. In Kyber/ML-KEM, the encryption routine is significantly slower than the decryption routine, so the encrypt-then-MAC transformation achieves significant performance improvements over the Fujisaki-Okamoto transformation. We show this instantiation of encrypt-then-MAC transform over ML-KEM and their performances in  Appendix \ref{sec:applying-encrypt-then-mac-to-ml-kem}. 
 
 % We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:journals/siamcomp/Shor97} is inapplicable to most MAC constructions, the encrypt-then-MAC KEM transformation can be applied to a quantum-resistant PKE scheme to derive a post-quantum CCA-secure KEM scheme. In future works, we plan to analyze the security reduction under the quantum random oracle model, which can inform us of the appropriate parameters for the MAC.
 
@@ -1138,7 +1137,7 @@ In Section \ref{sec:ow-pca-security} we mentioned that Kyber/ML-KEM's underlying
 
 \appendix
 \section{Classic McEliece parameter sets}\label{sec:classic-mceliece-parameter-sets}
-Classic McEliece has a total of 10 parameter sets. Five of them are presented in Table \ref{tab:classic-mceliece-parameter-sets}. The other five (called ``f-variants'') are identical to the five presented here, except for that the key generation routines differ from their canonical variants for performance reasons: in fact, the f-variants are fully interoperable with their normal counterparts.
+Classic McEliece has a total of 10 parameter sets. Five of them are presented in Table \ref{tab:classic-mceliece-parameter-sets}. The other five (called ``f-variants'') are identical to the five presented here, except for the internal implementation of the key generation routines. The f-variant key pairs and ciphertexts are fully interoperable with the normal variants, and the encapsulation/decapsulation routines are entirely identical.
 
 \begin{table}[h]
     \centering
@@ -1169,14 +1168,14 @@ NIST evaluates concrete security levels against the difficulty of AES brute-forc
 \end{enumerate}
 
 \section{ML-KEM-EtM: applying encrypt-then-MAC to ML-KEM}\label{sec:applying-encrypt-then-mac-to-ml-kem}
-We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM ({\color{blue}, put the reference FIPS 203 here}). The resulting KEM is called ML-KEM-EtM (Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between ML-KEM-EtM and ML-KEM. The ML-KEM-EtM   encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
+We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM \cite{FIPS203}. The resulting KEM is called ML-KEM-EtM (Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between ML-KEM-EtM and ML-KEM. The ML-KEM-EtM   encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
 
 \begin{figure}[h]
     \centering
 
     \begin{minipage}[t]{0.5\textwidth}
         \begin{algorithm}[H]
-            \caption*{$\texttt{ML-KEM}^\texttt{+}\texttt{.}\keygen\texttt{()}$}
+            \caption*{$\texttt{ML-KEM-EtM}\texttt{.}\keygen\texttt{()}$}
             \begin{algorithmic}[1]
                 \State $z \leftsample \{0,1\}^{256}$
                 \State $(\pk, \sk^\prime) \leftsample \texttt{K-PKE}.\keygen()$
@@ -1186,7 +1185,7 @@ We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM ({\
             \end{algorithmic}
         \end{algorithm}\vspace{-0.5cm}
         \begin{algorithm}[H]
-            \caption*{$\texttt{ML-KEM}^\texttt{+}\texttt{.}\encap\texttt{(\pk)}$}
+            \caption*{$\texttt{ML-KEM-EtM}\texttt{.}\encap\texttt{(\pk)}$}
             \begin{algorithmic}[1]
                 \State $m \leftsample \{0,1\}^{256}$
                 \State $(\overline{K}, k) \leftarrow G(m \Vert H(\pk))$
@@ -1200,7 +1199,7 @@ We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM ({\
     \end{minipage}\hfill
     \begin{minipage}[t]{0.49\textwidth}
         \begin{algorithm}[H]
-            \caption*{$\texttt{ML-KEM}^\texttt{+}\texttt{.}\decap\texttt{(\sk, c)}$}
+            \caption*{$\texttt{ML-KEM-EtM}\texttt{.}\decap\texttt{(\sk, c)}$}
             \begin{algorithmic}[1]
                 \Require Secret key $\sk = (\sk^\prime \Vert \pk \Vert h \Vert z)$
                 \Require Ciphertext $c = (c^\prime \Vert t)$
@@ -1219,14 +1218,14 @@ We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM ({\
         \end{algorithm}
     \end{minipage}
 
-    \caption{$\mlkemplus$ applies our encrypt-then-MAC transformation to the K-PKE sub-routines of ML-KEM. $G$ is SHA3-512, $H$ is SHA3-256, $\texttt{KDF}$ is SHAKE256}\label{fig:ml-kem-plus-routines}
+    \caption{\texttt{ML-KEM-EtM} applies the encrypt-then-MAC KEM transformation to the K-PKE sub-routines of ML-KEM. $G$ is SHA3-512, $H$ is SHA3-256, $\texttt{KDF}$ is SHAKE256}\label{fig:ml-kem-plus-routines}
 \end{figure}
 
-We measured the CPU cycles of the individual routines of $\mlkemplus$. Our implementation extended from Kyber's reference implementation \footnote{\url{https://github.com/pq-crystals/kyber}}. All C code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region.
+We measured the CPU cycles of the individual routines of \texttt{ML-KEM-EtM}. Our implementation extended from Kyber's reference implementation \footnote{\url{https://github.com/pq-crystals/kyber}}. All C code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region.
 
 Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then-MAC transformation achieves massive CPU cycle count reduction in decapsulation while incurring only a minimal increase of encapsulation cycle count and ciphertext size. Since \texttt{K-PKE.\encrypt} carries significantly more computational complexity than \texttt{K-PKE.\decrypt} or any MAC we chose, the performance advantage of the encrypt-then-MAC transformation over the Fujisaki-Okamoto transformation is dominated by the runtime saving gained from replacing \emph{re-encryption} with MAC. A comparison between ML-KEM and variations of the ML-KEM-EtM can be found in Table \ref{tbl:kem-performance}.
 
-\begin{table}[h]
+\begin{table}[hp]
     \centering
     \footnotesize
     \caption{CPU cycles of each KEM routine}\label{tbl:kem-performance}
@@ -1245,26 +1244,26 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
     %     Average & 76171 \\
     %     \hline
     % \end{tabular}
-    \begin{tabular}[t]{|c|c|c|c|c|}
+    \begin{tabular}[t]{|p{15em}|p{4em}|p{4em}|p{4em}|p{4em}|}
         \hline
-        \multirow{2}{*}{KEM variant} 
+        \multirow{2}{*}{\bf Parameters} 
         & \multicolumn{2}{|c|}{$\encap$ cycles/tick} 
         & \multicolumn{2}{|c|}{$\decap$ cycles/tick} \\
         \cline{2-5}
         & Median & Average & Median & Average \\
         \hline
-        \text{ML-KEM-512} & 91467 & 92065 & 121185 & 121650 \\
+        \texttt{ML-KEM-512} & 91467 & 92065 & 121185 & 121650 \\
         \hline
         % \text{Kyber512} & 97811 & 98090 & 119937 & 120299 \\
         % \hline
         % ML-KEM+-512
-        $\mlkemplus$-512 w/ Poly1305 & 93157 & 93626 & 33733 & 33908 \\
+        \texttt{ML-KEM-EtM-512} + Poly1305 & 93157 & 93626 & 33733 & 33908 \\
         \hline
-        $\mlkemplus$-512 w/ GMAC & 97369 & 97766 & 37725 & 37831 \\
+        \texttt{ML-KEM-EtM-512} + GMAC & 97369 & 97766 & 37725 & 37831 \\
         \hline
-        $\mlkemplus$-512 w/ CMAC & 99739 & 99959 & 40117 & 39943 \\
+        \texttt{ML-KEM-EtM-512} + CMAC & 99739 & 99959 & 40117 & 39943 \\
         \hline
-        $\mlkemplus$-512 w/ KMAC256 & 101009 & 101313 & 40741 & 40916 \\
+        \texttt{ML-KEM-EtM-512} + KMAC256 & 101009 & 101313 & 40741 & 40916 \\
         \hline
     \end{tabular}\vspace{0.3cm}
 
@@ -1282,23 +1281,23 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
     %     Average & 130650 \\
     %     \hline
     % \end{tabular}
-    \begin{tabular}[t]{|c|c|c|c|c|}
+    \begin{tabular}[t]{|p{15em}|p{4em}|p{4em}|p{4em}|p{4em}|}
         \hline
-        \multirow{2}{*}{KEM variant} 
+        \multirow{2}{*}{\bf Parameters} 
         & \multicolumn{2}{|c|}{$\encap$ cycles/tick} 
         & \multicolumn{2}{|c|}{$\decap$ cycles/tick} \\
         \cline{2-5}
         & Median & Average & Median & Average \\
         \hline
-        \text{ML-KEM-768} & 136405 & 147400 & 186445 & 187529 \\
+        \texttt{ML-KEM-768} & 136405 & 147400 & 186445 & 187529 \\
         \hline
-        $\mlkemplus$-768 w/ Poly1305 & 146405 & 146860 & 43315 & 43463 \\
+        \texttt{ML-KEM-EtM-768} + Poly1305 & 146405 & 146860 & 43315 & 43463 \\
         \hline
-        $\mlkemplus$-768 w/ GMAC & 149525 & 150128 & 46513 & 46706 \\
+        \texttt{ML-KEM-EtM-768} + GMAC & 149525 & 150128 & 46513 & 46706 \\
         \hline
-        $\mlkemplus$-768 w/ CMAC & 153139 & 153735 & 49841 & 50074 \\
+        \texttt{ML-KEM-EtM-768} + CMAC & 153139 & 153735 & 49841 & 50074 \\
         \hline
-        $\mlkemplus$-768 w/ KMAC256 & 155219 & 155848 & 52415 & 52611 \\
+        \texttt{ML-KEM-EtM-768} + KMAC256 & 155219 & 155848 & 52415 & 52611 \\
         \hline
     \end{tabular}\vspace{0.3cm}
 
@@ -1316,23 +1315,23 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
     %     Average & 195465 \\
     %     \hline
     % \end{tabular}
-    \begin{tabular}[t]{|c|c|c|c|c|}
+    \begin{tabular}[t]{|p{15em}|p{4em}|p{4em}|p{4em}|p{4em}|}
         \hline
-        \multirow{2}{*}{KEM variant} 
+        \multirow{2}{*}{\bf Parameters} 
         & \multicolumn{2}{|c|}{$\encap$ cycles/tick} 
         & \multicolumn{2}{|c|}{$\decap$ cycles/tick} \\
         \cline{2-5}
         & Median & Average & Median & Average \\
         \hline
-        \text{ML-KEM-1024} & 199185 & 199903 & 246245 & 247320 \\
+        \texttt{ML-KEM-1024} & 199185 & 199903 & 246245 & 247320 \\
         \hline
-        $\mlkemplus$-1024 w/ Poly1305 & 205763 & 206499 & 51375 & 51562 \\
+        \texttt{ML-KEM-EtM-1024} + Poly1305 & 205763 & 206499 & 51375 & 51562 \\
         \hline
-        $\mlkemplus$-1024 w/ GMAC & 208805 & 209681 & 54573 & 54780 \\
+        \texttt{ML-KEM-EtM-1024} + GMAC & 208805 & 209681 & 54573 & 54780 \\
         \hline
-        $\mlkemplus$-1024 w/ CMAC & 213667 & 214483 & 59175 & 59408 \\
+        \texttt{ML-KEM-EtM-1024} + CMAC & 213667 & 214483 & 59175 & 59408 \\
         \hline
-        $\mlkemplus$-1024 w/ KMAC256 & 216761 & 217468 & 62269 & 62516 \\
+        \texttt{ML-KEM-EtM-1024} + KMAC256 & 216761 & 217468 & 62269 & 62516 \\
         \hline
     \end{tabular}
 \end{table}
