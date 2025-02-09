@@ -691,7 +691,7 @@ For a sketch of proof, we observe that the IND-CCA adversary $B$ can perfectly s
 
 For the remainder of this section, we will review the OW-PCA security of some well-known cryptosystems. A summary can be found in Table \ref{tbl:ow-pca-candidates}.
 
-\begin{table}
+\begin{table}[h]
     \centering
     \begin{tabular}{|p{9em}|p{10em}|p{14em}|}
         \hline
@@ -700,23 +700,28 @@ For the remainder of this section, we will review the OW-PCA security of some we
         RSA & Number theoretic & Yes \cite{DBLP:conf/ima/Dent03,DBLP:journals/iacr/Shoup01} \\
         \hline
         ElGamal & {Number theoretic or \newline elliptic curve} & If Gap Diffie-Hellman assumption holds \cite{DBLP:conf/ctrsa/AbdallaBR01,DBLP:conf/pkc/OkamotoP01} \\
-        \hline\hline
+        \hline
+    \end{tabular}\vspace{0.8em}
+    \begin{tabular}{|p{9em}|p{10em}|p{14em}|}
+        \hline
         FrodoKEM & Lattice-based & No, full key recovery \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19} \\
         \hline
         Kyber/Saber & Lattice-based & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23} \\
         \hline
         NTRU & Lattice-based & No, full key recovery \cite{hoffstein1999reaction,DBLP:conf/crypto/JaulmesJ00,DBLP:journals/tches/UenoXTITH22} \\
-        \hline\hline
+        \hline
+    \end{tabular}\vspace{0.8em}
+    \begin{tabular}{|p{9em}|p{10em}|p{14em}|}
+        \hline
         HQC & Code-based & No, full key recovery \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19} \\
         \hline
         BIKE & Code-based & No, partial key recovery \cite{DBLP:conf/asiacrypt/Guo0S16} \\
         \hline
         Classic McEliece & Code-based & Unknown, but there is no known attack \cite{DBLP:journals/tches/UenoXTITH22} \\
         \hline
-    \end{tabular}
+    \end{tabular}\vspace{0.2em}
     \caption{The landscape of OW-PCA security}\label{tbl:ow-pca-candidates}
 \end{table}
-
 
 
 \subsubsection{Number-theoretic cryptosystems} The RSA cryptosystem as it was originally proposed in \cite{DBLP:journals/cacm/RivestSA78} is OW-PCA secure. This is because the RSA cryptosystem is a one-way trapdoor permutation \cite{DBLP:conf/crypto/FujisakiOPS01}, meaning that encryption and decryption are both injective. Given some public key $(N=pq, e)$ and a plaintext-ciphertext pair $(m, c)$, one can check that $m$ is the decryption of $c$ by checking that $c \equiv m^e \mod N$, which renders a plaintext-checking oracle completely useless.
@@ -859,9 +864,9 @@ Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classi
 \subsection{Choosing MAC}\label{sec:choosing-mac}
 For a concrete instantiation of McElieceEtM, we chose four MACs covering a variety of architectures. All MACs are parameterized with a 256-bit key and 128-bit tag, except for KMAC256, which can have a variable key and tag length.
 
-\paragraph{Poly1305 \cite{DBLP:conf/fse/Bernstein05} and GMAC \cite{NIST80038D}} are both Carter-Wegman style MACs \cite{DBLP:journals/jcss/CarterW79,DBLP:journals/jcss/WegmanC81}, which compute the tag using finite field arithmetic. It first parses the message into a sequence of finite field elements, then evalutes a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key. Specifically, Poly1305 oerates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$. GMAC operates in the binary extension field $\mathbb{F}_{2^{128}}$.
+\paragraph{Poly1305 \cite{DBLP:conf/fse/Bernstein05} and GMAC \cite{NIST80038D}} are both Carter-Wegman style MACs \cite{DBLP:journals/jcss/CarterW79,DBLP:journals/jcss/WegmanC81}, which compute the tag using finite field arithmetic. It first parses the message into a sequence of finite field elements, then evalutes a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key. Specifically, Poly1305 operates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$. GMAC operates in the binary extension field $\mathbb{F}_{2^{128}}$.
 
-In our implementation, we used {\tt OpenSSL 3.3.1}'s \texttt{EVP\_MAC} interface. Within this interface, the Poly1305 implementation does not include a nonce and is thus only one-time secure. On the other hand, GMAC is implemented by passing all data into the associated data field of the authenticated encryption scheme AES-256-GCM. Assuming that nonce does not repeat within the lifetime of the symmetric key, GMAC is many-time secure.
+\textit{Remark} In our implementation, we used {\tt OpenSSL 3.3.1}'s \texttt{EVP\_MAC} interface. Within this interface, the Poly1305 implementation does not include a nonce and is thus only one-time secure. On the other hand, GMAC is implemented by passing all data into the associated data field of the authenticated encryption scheme AES-256-GCM. Assuming that nonce does not repeat within the lifetime of the symmetric key, GMAC is many-time secure.
 
 \paragraph{CMAC \cite{NIST80038B}} is based on the CBC-MAC \cite{DBLP:conf/crypto/BlackR00}. To compute a CMAC tag, the message is first padded and parsed into blocks. Each block is first XOR'ed with the previous block's output, then encrypted under a block cipher using the secret key. The final output is XOR'ed with a sub-key derived from the secret key before being encrypted for one last time. In our implementation, the block cipher is instantiated with AES-256, which makes it particularly suitable for embedded devices with constrainted computing capacity but hardware support for AES. CMAC is many-time secure.
 
