@@ -93,18 +93,18 @@ static void etmkem_decap(uint8_t *ss, const uint8_t *ct, const uint8_t *sk) {
          MAC_TAGBYTES);
   shake256(true_ss, ETMKEM_SSBYTES, prekey_mactag,
            ETMKEM_SSBYTES + MAC_TAGBYTES);
-  uint8_t false_ss[ETMKEM_SSBYTES];
-  uint8_t rejection_ct[CRYPTO_PLAINTEXTBYTES + CRYPTO_CIPHERTEXTBYTES + MAC_TAGBYTES];
-  memcpy(rejection_ct, sk + CRYPTO_SECRETKEYBYTES + CRYPTO_SYMBYTES,
-         CRYPTO_PLAINTEXTBYTES);
-  memcpy(rejection_ct, ct, ETMKEM_CIPHERTEXTBYTES);
+  // uint8_t false_ss[ETMKEM_SSBYTES];
+  // uint8_t rejection_ct[CRYPTO_PLAINTEXTBYTES + CRYPTO_CIPHERTEXTBYTES + MAC_TAGBYTES];
+  // memcpy(rejection_ct, sk + CRYPTO_SECRETKEYBYTES + CRYPTO_SYMBYTES,
+  //        CRYPTO_PLAINTEXTBYTES);
+  // memcpy(rejection_ct, ct, ETMKEM_CIPHERTEXTBYTES);
   // shake256(false_ss, ETMKEM_SSBYTES, rejection_ct,
   //          CRYPTO_PLAINTEXTBYTES + CRYPTO_CIPHERTEXTBYTES + MAC_TAGBYTES);
 
   if (mac_cmp(ct + CRYPTO_CIPHERTEXTBYTES, prekey_mackey_maciv + ETMKEM_SSBYTES,
               prekey_mackey_maciv + ETMKEM_SSBYTES + MAC_KEYBYTES, ct,
               CRYPTO_CIPHERTEXTBYTES)) {
-    memcpy(ss, false_ss, ETMKEM_SSBYTES);
+    // memcpy(ss, false_ss, ETMKEM_SSBYTES);
   } else {
     memcpy(ss, true_ss, ETMKEM_SSBYTES);
   }
