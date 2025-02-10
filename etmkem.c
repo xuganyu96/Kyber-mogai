@@ -10,6 +10,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#ifdef __APPLE__
+#include <mach/mach_time.h>
+#endif
 
 #include "easy-mceliece.h"
 #include "authenticators.h"
@@ -20,6 +23,7 @@
 #define ETMKEM_CIPHERTEXTBYTES (CRYPTO_CIPHERTEXTBYTES + MAC_TAGBYTES)
 #define ETMKEM_SSBYTES 32
 
+#define WARMUP_ROUNDS 1000
 #define SPEED_ROUNDS 10000
 
 /**
@@ -230,6 +234,11 @@ static void benchmark_kem_enc(void) {
   uint8_t ss[ETMKEM_SSBYTES];
   etmkem_keypair(pk, sk);
 
+  // warmup
+  for (int i = 0; i < WARMUP_ROUNDS; i++) {
+    etmkem_encap(ct, ss, pk);
+  }
+
   timestamps[0] = get_clock_cpu();
   for (int i = 0; i < SPEED_ROUNDS; i++) {
     etmkem_encap(ct, ss, pk);
@@ -247,6 +256,10 @@ static void benchmark_kem_dec(void) {
   uint8_t ss_cmp[ETMKEM_SSBYTES];
   etmkem_keypair(pk, sk);
   etmkem_encap(ct, ss, pk);
+
+  for (int i = 0; i < WARMUP_ROUNDS; i++) {
+    etmkem_decap(ss_cmp, ct, sk);
+  }
 
   timestamps[0] = get_clock_cpu();
   for (int i = 0; i < SPEED_ROUNDS; i++) {
