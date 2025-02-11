@@ -1,22 +1,36 @@
-% Feb 9, 2025
+% >>>>>>> Feb 11, 2025
+% TODO: major re-write:
+%   - [ ] Remove the Classic McEliece section
+%   - [ ] Remove the ElGamal section, instead we will mention DHIES in Section 1.2
+%   - [ ] Re-instate ML-KEM and present encapsulation/decapsulation numbers; also include key exchange RTT in Appendix
+
+% >>>>>> Feb 10, 2025
+% DONE: fully state the name of OW-PCA in abstract
+% TODO: state the IND-CCA security of McElieceEtM more explicitly, at the end of Section 4.1
+% TODO: cite DHIES and where it as been standardized in the introduction (perhaps in related works?)
+% TODO: what is the point of the ElGamal section? I included it because our construction similar to that of DHIES, so I feel the need to discuss how it is different
+% TODO: regarding ML-KEM: there are some papers discussing how some weaker security notion is sufficient for ephemeral key exchange, but that is not the focus of this paper, so I prefer leaving ML-KEM-EtM in the concluding remark and the appendix instead of being its own section in the main body
+
+% >>>>>> Feb 9, 2025
 % DONE: section 3.3 syntax issue
 % DONE: what is the main result of section 3.3? Added sentence at the beginning of the section
 % TODO: consider referencing more MAC attacks, but are they really meaningful?
 % DONE: "we conjecture McElieceEtM to be IND-CCA" is weak and should be removed. This statement was removed in the contribution section, but I want to keep a similar statement in the "remarks" at the beginning of Section 4 because one of TCHES' feedbacks focused on "missing CCA security of the implementation"
 % DONE: rework the "related works" section: clarify OAEP's requirement for one-way trapdoor permutation, merge OAEP/GEM/REACT into a single paragraph, move FO transform to the beginning of the section
 % DONE: change ML-KEM+ to ML-KEM-EtM
-% Feb 4, 2025
+
+% >>>>>>> Feb 4, 2025
 % DONE: fix performance table
 % DONE: include Kyber discussion in conclusion
 % DONE: fix capitalizations in bibliographies
-% DONE: find reference to EliMAC (maybe include it in CMAC section?)
+% DONE: find reference to EliMAC (maybe include it in \texttt{CMAC} section?)
 
 \documentclass[runningheads]{llncs}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{color}
-\usepackage{amsmath,amsfonts}
+\usepackage{amsmath,amsfonts,amssymb}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{caption}
@@ -74,31 +88,29 @@
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-    We present a new generic CCA-secure key encapsulation mechanism (KEM) conversion called the encrypt-then-MAC transformation. Under the random oracle model (ROM), the encrypt-then-MAC KEM transformation achieves IND-CCA security when combined with a OW-PCA secure public-key encryption scheme (PKE) and an existentially unforgeable message authentication code (MAC). Compared to the Fujisaki-Okamoto (FO) transformation, another generic CCA-secure KEM transformation used in many post-quantum KEMs, the encrypt-then-MAC transformation replaces de-randomization and re-encryption with computing a MAC tag, which leads to significant performance improvements in decapsulation. Our construction also improves on the Diffie-Hellman Integrated Encryption Scheme (DHIES) by generalizing its security assumption and proposing using one-time MAC for further efficiency gains.
-    
-    We instantiate our proposed KEM transformation using the subroutines of Classic McEliece, and call it McElieceEtM. We then implement McElieceEtM with a wide selection of MACs including Poly1305, GMAC, CMAC, and KMAC256. Compared to Classic McEliece, which uses a modified FO transform, McElieceEtM achieves 9-12\% performance improvement in throughput (encapsulation + decapsulation time).
+    \texttt{ML-KEM} is a lattice-based IND-CCA secure key encapsulation mechanism (KEM) standardized by NIST in FIPS 203. \texttt{ML-KEM} achieves chosen-ciphertext security by applying the Fujisaki-Okamoto (FO) transformation to an IND-CPA secure public key encryption (PKE) scheme. The Fujisaki-Okamoto transformation uses de-randomization and re-encryption to ensure ciphertext non-malleability, but because \texttt{ML-KEM}'s underlying PKE encryption subroutine is slower than the decryption subroutine, \texttt{ML-KEM}'s decapsulation performance is dominated by re-encryption. In this paper, we propose a new generic IND-CCA secure KEM transformation that achieves chosen-ciphertext security by applying the ``encrypt-then-authenticate'' pattern to a PKE with one-wayness under plaintext-checking attack (OW-PCA) and an existentially unforgeable message authentication code (MAC). Compared to the FO transformation, our transformation replaces re-encryption with computing a MAC tag. We present \texttt{ML-KEM-EtM}, an IND-1CCA secure KEM derived from applying the encrypt-then-MAC transformation to the PKE subroutines of \texttt{ML-KEM}. We then implement \texttt{ML-KEM-EtM} with a wide selection of MACs including \texttt{Poly1305}, \texttt{\texttt{GMAC}}, \texttt{\texttt{CMAC}}, and \texttt{\texttt{KMAC256}}. At the cost of minimal increase in encapsulation CPU cycle count and ciphertext size, \texttt{ML-KEM-EtM} achieves substantial reduction of decapsulation CPU cycle count.
     \keywords{
-        Key encapsulation mechanism 
-        \and Fujisaki-Okamoto transformation
-        \and Message authentication code 
+        Key encapsulation mechanism
         \and Post-quantum cryptography
-        \and Code-based cryptography
+        \and Lattice cryptography
+        \and Message authentication code 
+        \and Fujisaki-Okamoto transformation
     }
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
 Key encapsulation mechanism (KEM) is a public-key cryptographic primitive that allows two parties to establish a shared secret over an insecure communication channel. The accepted security requirement of a KEM is \textit{indistinguishability under adaptive chosen ciphertext attack (IND-CCA)}. Intuitively speaking, IND-CCA security implies that no efficient adversary (usually defined as probabilistic polynomial time Turing machine) can distinguish a pseudorandom shared secret from a uniformly random bit string of identical length even with access to a decapsulation oracle. Unfortunately, CCA security is difficult to achieve from scratch. Early attempts at constructing CCA secure public-key cryptosystems using only heuristics argument and without using formal proof, such as RSA encryption in PKCS \#1 \cite{DBLP:journals/rfc/rfc2313} and RSA signature in ISO 9796 \cite{ISO9796-1}, were badly broken with sophisticated cryptanalysis \cite{DBLP:conf/crypto/Bleichenbacher98,DBLP:conf/eurocrypt/Grieu00,DBLP:conf/crypto/CoronNS99}. Afterwards, provable chosen ciphertext security became a necessity for new cryptographic protocols. There have been many provable CCA secure constructions since then. Notable examples include Optimal Asymmetric Encryption Padding (OAEP) \cite{DBLP:conf/eurocrypt/BellareR94}, which is combined with RSA \cite{DBLP:conf/crypto/FujisakiOPS01} into the widely adopted RSA-OAEP. The Fujisaki-Okamoto transformation \cite{DBLP:conf/crypto/FujisakiO99,DBLP:conf/tcc/HofheinzHK17} is another generic CCA secure transformation that was thoroughly studied and widely adopted, particularly by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project.
 
-Chosen ciphertext security is a solved problem within the context of symmetric cryptography. It is well understood that authenticated encryption can be achieved by combining a semantically secure symmetric encryption scheme with an existentially unforgeable message authentication code (MAC) using either the ``encrypt-then-MAC'' (AES-GCM, ChaCha20-Poly1305) or ``MAC-then-encrypt'' pattern (AES-CCM)\cite{DBLP:conf/asiacrypt/BellareN00,DBLP:conf/crypto/Krawczyk01}. However, adapting this technique for public-key cryptosystems is challenging, since the two communicating parties do not have a pre-shared symmetric key. One attempt at such adaption is the Diffie-Hellman integrated encryption scheme (DHIES) \cite{DBLP:journals/iacr/AbdallaBR99,DBLP:conf/ctrsa/AbdallaBR01} proposed by Abdalla, Bellare, and Rogaway, who proved its chosen ciphertext security under a non-standard but well studied assumption called ``Gap Diffie-Hellman problem'' \cite{DBLP:conf/pkc/OkamotoP01}.
+Chosen ciphertext security is a solved problem within the context of symmetric cryptography. It is well understood that authenticated encryption can be achieved by combining a semantically secure symmetric encryption scheme with an existentially unforgeable message authentication code (MAC) using either the ``encrypt-then-MAC'' (AES-GCM, ChaCha20-\texttt{Poly1305}) or ``MAC-then-encrypt'' pattern (AES-CCM)\cite{DBLP:conf/asiacrypt/BellareN00,DBLP:conf/crypto/Krawczyk01}. However, adapting this technique for public-key cryptosystems is challenging, since the two communicating parties do not have a pre-shared symmetric key. One attempt at such adaption is the Diffie-Hellman integrated encryption scheme (DHIES) \cite{DBLP:journals/iacr/AbdallaBR99,DBLP:conf/ctrsa/AbdallaBR01} proposed by Abdalla, Bellare, and Rogaway, who proved its chosen ciphertext security under a non-standard but well studied assumption called ``Gap Diffie-Hellman problem'' \cite{DBLP:conf/pkc/OkamotoP01}.
 
 \subsection{Our contributions}\label{sec:our-contributions}
 Our contributions are as follows:
 
-\subsubsection{New generic CCA secure KEM transformation.} We propose the encrypt-then-MAC KEM transformation. Our transformation constructs a KEM with provable CCA security under the random oracle model using a public-key encryption scheme (PKE) with one-wayness under plaintext-checking attack and a message authentication code with existential unforgeability. Compared to the Fujisaki-Okamoto transformation, which is widely adopted by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project, our transformation replaces \textit{de-randomization} (which might degrade the security of a randomized cryptosystem) and \textit{re-encryption} (which is computationally inefficient and introduces additional risk of side channels) with computing a MAC tag. We formally prove the security of our KEM transformation.
+\subsubsection{New generic CCA secure KEM transformation.} We propose the encrypt-then-MAC KEM transformation. Our transformation constructs a KEM with provable CCA security under the random oracle model using a public-key encryption scheme (PKE) with one-wayness under plaintext-checking attack and a message authentication code with existential unforgeability. Compared to the Fujisaki-Okamoto transformation, which is widely adopted by many KEM candidates in NIST's Post Quantum Cryptography (PQC) standardization project, our transformation replaces \textit{de-randomization} and \textit{re-encryption} with computing and comparing a MAC tag. We formally prove the security of our KEM transformation.
 
-\subsubsection{Instantiation with Classic McEliece.} We present McElieceEtM, a KEM constructed by applying the encrypt-then-MAC transformation to subroutines of Classic McEliece. We implemented McElieceEtM by adapting the reference C implementation, which achieved 9-12\% speedup in throughput (encapsulation time + decapsulation time).
+\subsubsection{Instantiation with \texttt{ML-KEM}.} We present \texttt{ML-KEM-EtM}, an IND-1CCA secure KEM derived from applying the encrypt-then-MAC transformation to \texttt{ML-KEM}'s PKE subroutines. Compared to \texttt{ML-KEM} in FIPS 203 \cite{FIPS203}, \texttt{ML-KEM-EtM} adds a small amount of performance penalty to the encapsulation routine and a small increase in ciphertext size, but removes the expensive re-encryption step in decapsulation, which yields impressive performance improvements.
 
-\subsubsection{Generalizing DHIES.} We demonstrate that the encrypt-then-MAC KEM transformation is a generalization of DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01,DBLP:journals/iacr/AbdallaBR99}, a well-known CCA secure hybrid public-key encryption scheme. Specifically, we prove that the Gap Diffie-Hellman assumption, which is used to prove the CCA security of DHIES, implies one-wayness under plaintext checking attack (OW-PCA) of the ElGamal cryptosystem.
+% \subsubsection{Generalizing DHIES.} We demonstrate that the encrypt-then-MAC KEM transformation is a generalization of DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01,DBLP:journals/iacr/AbdallaBR99}, a well-known CCA secure hybrid public-key encryption scheme. Specifically, we prove that the Gap Diffie-Hellman assumption, which is used to prove the CCA security of DHIES, implies one-wayness under plaintext checking attack (OW-PCA) of the ElGamal cryptosystem.
 
 % \subsubsection{Instantiation with ElGamal and McEliece cryptosystem.} We applied our KEM transformation to the ElGamal cryptosystem and the McEliece cryptosystems. We demonstrate that the ``encrypt-then-MAC'' KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of one-way security under plaintext checking attacks. We also surveyed plaintext checking attacks against many post quantum KEM candidates in the PQC standardizaton project.
 
@@ -106,7 +118,7 @@ Our contributions are as follows:
 
 \subsection{Related works}\label{sec:related-works}
 \subsubsection{Fujisaki-Okamoto transformation}
-Fujisaki and Okamoto proposed to construct CCA secure hybrid PKE by combining a OW-CPA secure PKE and a semantically secure symmetric-key encryption (SKE) scheme \cite{DBLP:conf/crypto/FujisakiO99}. The main techniques, namely \textit{de-randomization} and \textit{re-encrytion} were both introduced in the original proposal. Under ROM, Fujisaki and Okamoto reduced the CCA security of the hybrid PKE tightly to the semantic security of the input SKE and \textit{non-tightly} to the OW-CPA security of the input PKE (with loss factor $q$, the number of hash oracle queries). Later works extended the original proposal to build CCA secure KEM: KEM's security model makes building secure KEM simpler than building secure PKE, and it is well-known that combining a CCA secure KEM with a CCA secure data encapsulation mechanism (DEM), such as some authenticated encryption scheme (e.g. AES-GCM, AES-CCM, ChaCha20-Poly1305), results in a CCA secure hybrid PKE \cite{DBLP:journals/iacr/Shoup01,DBLP:conf/eurocrypt/Shoup00a}. Further studies \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17,DBLP:journals/iacr/BernsteinP18,DBLP:conf/asiacrypt/HovelmannsHM22,DBLP:conf/pqcrypto/XagawaY19,DBLP:conf/crypto/JiangZCWM18} gave tighter security bounds, accounted for decryption failures in the underlying PKE, and analyzed the security under quantum random oracle model (QROM). To this day, the Fujisaki-Okamoto transformation is the only known generic CCA secure transformation that can convert OW-CPA/IND-CPA PKE into a CCA secure KEM. Because of the minimal input requirement and the simple construction, the Fujisaki-Okamoto transformation was widely adopted among post-quantum KEM candidates submitted to the PQC standardization project, including Kyber \cite{DBLP:conf/eurosp/BosDKLLSSSS18}, Saber \cite{DBLP:conf/africacrypt/DAnversKRV18}, FrodoKEM \cite{DBLP:conf/ccs/BosCDMNNRS16}, and Classic McEliece \cite{DBLP:conf/ches/BernsteinCS13,DBLP:conf/ches/Chou17,ClassicMcEliece2022}.
+Fujisaki and Okamoto proposed to construct CCA secure hybrid PKE by combining a OW-CPA secure PKE and a semantically secure symmetric-key encryption (SKE) scheme \cite{DBLP:conf/crypto/FujisakiO99}. The main techniques are \textit{de-randomization} (deriving the randomness in encryption from the plaintext, thus making the encryption deterministic) and \textit{re-encryption} (re-running encryption in decryption and compare the re-encrypted ciphertext with the input ciphertext). Under the random oracle model, Fujisaki and Okamoto reduced the CCA security of the hybrid PKE tightly to the semantic security of the input SKE and \textit{non-tightly} to the OW-CPA security of the input PKE (with loss factor $q$, the number of hash oracle queries). Later works extended the original proposal to build CCA secure KEM: KEM's security model makes building secure KEM simpler than building secure PKE, and it is well-known that combining a CCA secure KEM with a CCA secure data encapsulation mechanism (DEM), such as some authenticated encryption scheme (e.g. AES-GCM, AES-CCM, ChaCha20-\texttt{Poly1305}), results in a CCA secure hybrid PKE \cite{DBLP:journals/iacr/Shoup01,DBLP:conf/eurocrypt/Shoup00a}. Further studies \cite{DBLP:conf/ima/Dent03,DBLP:conf/tcc/HofheinzHK17,DBLP:journals/iacr/BernsteinP18,DBLP:conf/asiacrypt/HovelmannsHM22,DBLP:conf/pqcrypto/XagawaY19,DBLP:conf/crypto/JiangZCWM18} gave tighter security bounds, accounted for decryption failures in the underlying PKE, and analyzed the security under quantum random oracle model (QROM). To this day, the Fujisaki-Okamoto transformation is the only known generic CCA secure transformation that can convert OW-CPA/IND-CPA PKE into a CCA secure KEM. Because of the minimal input requirement and the simple construction, the Fujisaki-Okamoto transformation was widely adopted among post-quantum KEM candidates submitted to the PQC standardization project, including Kyber \cite{DBLP:conf/eurosp/BosDKLLSSSS18}, Saber \cite{DBLP:conf/africacrypt/DAnversKRV18}, FrodoKEM \cite{DBLP:conf/ccs/BosCDMNNRS16}, and Classic McEliece \cite{ClassicMcEliece2022}.
 
 Despite its widespread adoption, the Fujisaki-Okamoto transformation has many flaws: \begin{itemize}
     \item \textbf{Computational inefficiency.} In all variants of Fujisaki-Okamoto transformation, decapsulation routine needs to re-encrypt the decryption to ensure ciphertext non-malleability. For input PKE whose encryption routine carries significant computational cost, such as most lattice-based cryptosystems, re-encryption substantially slows down decapsulation.
@@ -117,86 +129,16 @@ Despite its widespread adoption, the Fujisaki-Okamoto transformation has many fl
 \subsubsection{Other generic CCA transformations}
 Mihir Bellare and Phillip Rogaway proposed \textit{Optimal Asymmetric Encryption Padding (OAEP)} in 1994 \cite{DBLP:conf/eurocrypt/BellareR94} and reduced its CCA security to the one-wayness of the underlying trapdoor permutation under the random oracle model. However, Victor Shoup identified a non-trivial gap in OAEP's security proof that cannot be filled under ROM \cite{DBLP:conf/crypto/Shoup01}, although Fujisaki et al. later proved that RSA-OAEP is secure under the RSA assumption \cite{DBLP:conf/crypto/FujisakiOPS01}. RSA-OAEP is widely used in secure communication protocols such as TLS 1.2. The main drawback of OAEP is that it requires its input to be an one-way trapdoor permutation, which is difficult to find: to this day, RSA remains the only viable candidate to apply OAEP to.
 
-Okamoto and Pointchval proposed REACT \cite{DBLP:conf/ctrsa/OkamotoP01} in 2001, followed by GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02} in 2002. Both are generic CCA transformation with security proved under ROM. Okamoto and Pointcheval first defined the security notion of one-wayness under plaintext checking attack (OW-PCA) and reduced the CCA security of the transformation to the OW-PCA security of the input public-key cryptosystem.
-
-% \begin{figure}[h]
-%     \centering
-%     \begin{minipage}[t]{0.45\textwidth}
-%         \begin{algorithm}[H]
-%             \caption*{$\encrypt_\text{REACT}(\pk, m)$}
-%             \begin{algorithmic}[1]
-%                 \State $w \leftarrow \mathcal{M}_\pke$
-%                 \State $c_1 \leftarrow \encrypt(\pk, w)$
-%                 \State $k \leftarrow G(w)$
-%                 \State $c_2 \leftarrow \mathcal{E}_k(m)$
-%                 \State $c_3 \leftarrow H(w, m, c_1, c_2)$
-%                 \State \Return $(c_1, c_2, c_3)$
-%             \end{algorithmic}
-%         \end{algorithm}
-%     \end{minipage}\hfill
-%     \begin{minipage}[t]{0.45\textwidth}
-%         \begin{algorithm}[H]
-%             \caption*{$\decrypt_\text{REACT}(\sk, c)$}
-%             \begin{algorithmic}[1]
-%                 \Require $c = (c_1, c_2, c_3)$
-%                 \State $\hat{w} \leftarrow \decrypt(\sk, c_1)$
-%                 \State $\hat{k} \leftarrow G(\hat{w})$
-%                 \State $\hat{m} \leftarrow \mathcal{D}_{\hat{k}}(c_2)$
-%                 \If{$H(\hat{w}, \hat{m}, c_1, c_2) = c_3$}
-%                     \State \Return $\hat{m}$
-%                 \Else
-%                     \State \Return $\bot$
-%                 \EndIf
-%             \end{algorithmic}
-%         \end{algorithm}
-%     \end{minipage}
-%     \caption{Given PKE $(\keygen, \encrypt, \decrypt)$, SKE $(\mathcal{E}, \mathcal{D})$, and hash functions $G, H$, REACT constructs a hybrid PKE $(\keygen_\text{REACT}, \encrypt_\text{REACT}, \decrypt_\text{REACT})$}\label{fig:react}
-% \end{figure}
-
-% \begin{figure}[h]
-%     \centering
-%     \begin{minipage}[t]{0.45\textwidth}
-%         \begin{algorithm}[H]
-%             \caption*{$\encrypt_\text{GEM}(\pk, m)$}
-%             \begin{algorithmic}[1]
-%                 \State $r \leftarrow \mathcal{R}$
-%                 \State $s \leftarrow F(m, r)$
-%                 \State $w \leftarrow s \Vert (r \oplus H(s))$
-%                 \State $c_1 \leftarrow \encrypt(\pk, w)$
-%                 \State $k \leftarrow G(w, c_1)$
-%                 \State $c_2 \leftarrow \mathcal{E}_k(m)$
-%                 \State \Return $(c_1, c_2)$
-%             \end{algorithmic}
-%         \end{algorithm}
-%     \end{minipage}
-%     \begin{minipage}[t]{0.45\textwidth}
-%         \begin{algorithm}[H]
-%             \caption*{$\decrypt_\text{GEM}(\sk, c)$}
-%             \begin{algorithmic}[1]
-%                 \Require $(c_1, c_2) \leftarrow c$
-%                 \State $\hat{w} \leftarrow \decrypt(\sk, c_1)$
-%                 \State $(\hat{s}, \hat{t}) \leftarrow \hat{w}$
-%                 \State $\hat{r} \leftarrow \hat{t}\oplus H(\hat{s})$
-%                 \State $\hat{k} \leftarrow G(\hat{w}, c_1)$
-%                 \State $\hat{m} \leftarrow \mathcal{D}_{\hat{k}}(c_2)$
-%                 \If{$F(\hat{m}, \hat{r}) = \hat{s}$}
-%                     \State \Return $\hat{m}$
-%                 \Else \State \Return $\bot$
-%                 \EndIf
-%             \end{algorithmic}
-%         \end{algorithm}
-%     \end{minipage}
-%     \caption{Given PKE $(\keygen, \encrypt, \decrypt)$, SKE $(\mathcal{E}, \mathcal{D})$, and hash functions $F, G, H$, GEM constructs a hybrid PKE $(\keygen_\text{GEM}, \encrypt_\text{GEM}, \decrypt_\text{GEM})$}\label{fig:gem}
-% \end{figure}
+Okamoto and Pointchval proposed REACT \cite{DBLP:conf/ctrsa/OkamotoP01} in 2001, followed by GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02} in 2002. Both are generic CCA transformation with security proved under ROM. Okamoto and Pointcheval first defined the security notion of one-wayness under plaintext checking attack (OW-PCA) and reduced the CCA security of the transformation to the OW-PCA security of the input public-key cryptosystem. One can also draw similarity between the our scheme and the Diffie-Hellman Integrated Encryption Scheme (DHIES) \cite{DBLP:journals/iacr/AbdallaBR99,DBLP:conf/ctrsa/AbdallaBR01}: both schemes protects the integrity of the ciphertext using a MAC whose key is derived from some PKE plaintext. However, our scheme generalizes the security requirement of the underlying PKE and offers a number of performance optimizations, which we will discuss in Section \ref{sec:additional-implementation-notes}.
 
 \subsection{Paper organization}\label{sec:paper-organization}
-In Section \ref{sec:preliminaries}, we review the preliminary definitions and theorems. In Section \ref{sec:the-enc-then-mac-transformation}, we present the encrypt-then-MAC KEM transformation, proves its CCA security, and discusses practical attacks. In Section \ref{sec:application-to-mceliece}, we present McElieceEtM, an instantiation of the encrypt-then-MAC transformation using subroutines from Classic McEliece. In Section \ref{sec:application-to-elgamal}, we show that the encrypt-then-MAC transformation is a generalization of DHIES. 
+In Section \ref{sec:preliminaries}, we review the preliminary definitions and theorems. In Section \ref{sec:the-enc-then-mac-transformation}, we present the encrypt-then-MAC KEM transformation, prove its CCA security, and discuss practical attacks. In Section \ref{sec:applying-encrypt-then-mac-to-ml-kem}, we present \texttt{ML-KEM-EtM}, an instantiation of the encrypt-then-MAC transformation using subroutines from \texttt{ML-KEM}.
 
 \section{Preliminaries}\label{sec:preliminaries}
 \subsubsection{Notations.} For finite set $S$, we use $x \leftsample S$ to denote uniformly random sample from the set. For deterministic routine $f$, we use $x \leftarrow f()$ to denote assigning the output of $f$ to $x$. For randomized routine $g$, we use $x \leftsample g()$ to denote assigning the randomized output of $g$ to $x$. For boolean statement $B$, we denote $\llbrack B \rrbrack$ to be $1$ if $B$ is true and $0$ otherwise. For probabilistic Turing machine $A$, we denote access to oracle $\mathcal{O}$ by $A^\mathcal{O}$. We sometimes model hash function $H$ as a random oracle, in which case we will use $\mathcal{L}^H$ to denote the record of input-output queries $(x, H(x))$ made to the oracle.
 
 \subsection{Public-key encryption scheme}
-\subsubsection{Syntax} A public-key encryption scheme (PKE) is a collection fo three routines $(\keygen, \encrypt, \decrypt)$ defined over some plaintext space $\mathcal{M}$ and some ciphertext space $\mathcal{C}$. Key generation $(\pk, \sk) \leftsample \keygen(1^\lambda)$ is a randomized routine that returns a keypair consisting of a public encryption key and a secret decryption key. The encryption routine $\encrypt: (\pk, m) \mapsto c$ encrypts the input plaintext $m$ under the input public key $\pk$ and produces a ciphertext $c$. The decryption routine $\decrypt: (\sk, c) \mapsto m$ decrypts the input ciphertext $c$ under the input secret key and produces the corresponding plaintext. Where the encryption routine is randomized, we denote the randomness by a coin $r \in \mathcal{R}$ where $\mathcal{R}$ is called the coin space. Decryption routines are assumed to always be deterministic.
+\subsubsection{Syntax} A public-key encryption scheme (PKE) is a collection of three routines $(\keygen, \encrypt, \decrypt)$ defined over some plaintext space $\mathcal{M}$ and some ciphertext space $\mathcal{C}$. Key generation $(\pk, \sk) \leftsample \keygen(1^\lambda)$ is a randomized routine that returns a keypair consisting of a public encryption key and a secret decryption key. The encryption routine $\encrypt: (\pk, m) \mapsto c$ encrypts the input plaintext $m$ under the input public key $\pk$ and produces a ciphertext $c$. The decryption routine $\decrypt: (\sk, c) \mapsto m$ decrypts the input ciphertext $c$ under the input secret key and produces the corresponding plaintext. Where the encryption routine is randomized, we denote the randomness by a coin $r \in \mathcal{R}$ where $\mathcal{R}$ is called the coin space. Decryption routines are assumed to always be deterministic.
 
 \subsubsection{Correctness} A PKE is $\delta$-correct if
 
@@ -325,6 +267,8 @@ $$
 
 By default, all adversaries are assumed to have the public key, with which they can mount chosen plaintext attacks (ATK = CPA). If the adversary as access to a decapsulation oracle $\mathcal{O}^\decap: c \mapsto \decap(\sk, c)$, it is said to mount a chosen-ciphertext attack (ATK = CCA).
 
+\subsubsection{Bounded CCA (qCCA) security} Where the number of decapsulation queries $q$ is fixed, the security notion is called \textit{IND-qCCA} \cite{DBLP:conf/asiacrypt/CramerHHIKPSV07,DBLP:conf/eurocrypt/Huguenin-Dumittan22}. In many practical scenarios such as ephemeral key exchange (e.g. TLS 1.3 handshake \cite{RFC8446}), each key pair is used at most once, which translates to a fixed limit on the number of decapsulation queries allowed in the adversarial games. In these scenarios we only require the KEM to be IND-1CCA secure \cite{DBLP:conf/ccs/SchwabeSW20,DBLP:conf/ccs/DowlingFGS15}.
+
 \subsection{Message authentication code (MAC)}\label{sec:message-authentication-code}
 \subsubsection{Syntax} A message authentication code (MAC) is a collection of two routines $(\sign, \verify)$ defined over some key space $\mathcal{K}$, some message space $\mathcal{M}$, and some tag space $\mathcal{T}$. The signing routine $\sign: (k, m) \mapsto t$ authenticates the message $m$ under the symmetric key $k$ by producing a tag $t$. The verification routine $\verify(k,m,t)$ outputs $1$ if the message-tag pair $(m, t)$ is authentic under the symmetric key $k$ and $0$ otherwise. Many MAC constructions are deterministic: for these constructions it is simpler to denote the signing routine by $t \leftarrow \mac(k, m)$, and verification done using a simple comparison. Some MAC constructions require a distinct or randomized nonce $r \leftsample \mathcal{R}$, and the signing routine will take this additional argument $t \leftarrow \mac(k, m; r)$.
 
@@ -378,7 +322,7 @@ In this section we present the encrypt-then-MAC KEM transformation. The transfor
     \caption{Combining PKE with MAC using encrypt-then-MAC to ensure ciphertext integrity}\label{fig:etm-encap-data-flow}
 \end{figure}
 
-In Section \ref{sec:etm-construction} we will describe the encrypt-then-MAC KEM routines and state the security reduction. In Section \ref{sec:proof-of-etm-theorem} we present the proof reducing the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the unforgeability of the MAC. In Section \ref{sec:ow-pca-security} we discuss how the OW-PCA security of the PKE relates to the CCA security of the encrypt-then-MAC KEM. In Section \ref{sec:discussion-on-real-world-attacks} we discuss some generic attacks on our KEM transformation.
+In Section \ref{sec:etm-construction} we will describe the encrypt-then-MAC KEM routines and state the security reduction. In Section \ref{sec:proof-of-etm-theorem} we present the proof reducing the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the unforgeability of the MAC. In Section \ref{sec:ow-pca-security} we discuss how the OW-PCA security of the PKE relates to the CCA security of the encrypt-then-MAC KEM. In Section \ref{sec:additional-implementation-notes} we discuss some additional implementation details.
 
 \subsection{The construction}\label{sec:etm-construction}
 Let $\mathcal{B}^\ast$ denote the set of finite bit strings. Let $\mathcal{K}_\kem$ denote the set of all possible shared secrets. Let $(\keygen_\pke, \encrypt_\pke, \decrypt_\pke)$ be a PKE defined over message space $\mathcal{M}_\pke$ and ciphertext space $\mathcal{C}_\pke$. Let $\mac: \mathcal{K}_\mac \times \mathcal{B}^\ast \rightarrow \mathcal{T}$ be a MAC over key space $\mathcal{K}_\mac$ and tag space $\mathcal{T}$. Let $G: \mathcal{B}^\ast \rightarrow \mathcal{K}_\mac, H: \mathcal{B}^\ast \rightarrow \mathcal{K}_\kem$ be hash functions. The encrypt-then-MAC transformation $\etm[\pke,\mac,G,H]$ constructs a KEM $(\keygen_\etm, \encap_\etm, \decap_\etm)$ (Figure \ref{fig:etm-routines}).
@@ -657,14 +601,14 @@ A OW-PCA adversary can then simulate the modified IND-CCA game for the KEM adver
 \end{proof}
 
 \subsection{OW-PCA security}\label{sec:ow-pca-security}
-In this section, we survey the OW-PCA security of various well-known PKE schemes and discuss the suitability of applying the encrypt-then-MAC KEM transformation. 
+In this section, we consider the OW-PCA security of various well-known PKE schemes and discuss the suitability of applying the encrypt-then-MAC KEM transformation. 
 
 The security notion of \textit{one-wayness under plaintext-checking attack} (OW-PCA) was introduced by Okamoto and Pointcheval in \cite{DBLP:conf/ctrsa/OkamotoP01}, where the authors reduced the security of a generic CCA secure transformation (REACT) to the OW-PCA security of the input public-key cryptosystem. Following REACT, Pointcheval et al. proposed GEM \cite{DBLP:conf/ctrsa/CoronHJPPT02}, another generic CCA secure transformation whose security reduces to the OW-PCA security of the underlying PKE. Around the time REACT and GEM were published, the best known CCA secure transformation is Optimal Asymmetric Encryption Padding (OAEP)\cite{DBLP:conf/eurocrypt/BellareR94}. Compared to OAEP's requirement for one-way trapdoor permutation, OW-PCA security is easier to achieve: any one-way trapdoor permutation (such as RSA) is automatically OW-PCA secure, while there are cryptosystems that are OW-PCA secure but not one-way trapdoor permutation (Table \ref{tbl:ow-pca-candidates}). More recently, the modular Fujisaki-Okamoto transformation \cite{DBLP:conf/tcc/HofheinzHK17} proposed CCA secure KEM whose security reduces to the OW-PCA security of the input PKE under both ROM and QROM.
 
 Theorem \ref{thm:etm-is-ind-cca-secure} stated that if the underlying PKE is OW-PCA secure, then the encrypt-then-MAC KEM is IND-CCA secure. Conversely, if the underlying PKE is not OW-PCA secure, then the encrypt-then-MAC KEM is not IND-CCA secure. This is captured in Lemma \ref{lemma:ind-cca-implies-ow-pca}
 
 \begin{lemma}\label{lemma:ind-cca-implies-ow-pca}
-    For every OW-PCA adversary $A$ against the underlying PKE, there exists an IND-CCA adversary $B$ against the encrypt-then-MAC KEM such that:
+    For every $q$-query OW-PCA adversary $A$ against the underlying PKE, there exists a $q$-query IND-CCA adversary $B$ against the encrypt-then-MAC KEM such that:
     \begin{equation*}
         \adv^\texttt{IND-CCA}_{\kem_\etm}(B) = \adv^\texttt{OW-PCA}_{\pke}(A)
     \end{equation*}
@@ -724,493 +668,453 @@ For the remainder of this section, we will review the OW-PCA security of some we
 \end{table}
 
 
-\subsubsection{Number-theoretic cryptosystems} The RSA cryptosystem as it was originally proposed in \cite{DBLP:journals/cacm/RivestSA78} is OW-PCA secure. This is because the RSA cryptosystem is a one-way trapdoor permutation \cite{DBLP:conf/crypto/FujisakiOPS01}, meaning that encryption and decryption are both injective. Given some public key $(N=pq, e)$ and a plaintext-ciphertext pair $(m, c)$, one can check that $m$ is the decryption of $c$ by checking that $c \equiv m^e \mod N$, which renders a plaintext-checking oracle completely useless.
+\paragraph{Number-theoretic cryptosystems} The RSA cryptosystem as it was originally proposed in \cite{DBLP:journals/cacm/RivestSA78} is OW-PCA secure. This is because the RSA cryptosystem is a one-way trapdoor permutation \cite{DBLP:conf/crypto/FujisakiOPS01}, meaning that encryption and decryption are both injective. Given some public key $(N=pq, e)$ and a plaintext-ciphertext pair $(m, c)$, one can check that $m$ is the decryption of $c$ by checking that $c \equiv m^e \mod N$, which renders a plaintext-checking oracle completely useless.
 
-The ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is OW-PCA secure if the Gap Diffie-Hellman assumption \cite{DBLP:conf/pkc/OkamotoP01} holds for the underlying group (finite field or elliptic curve). This is the basis on which the CCA security of DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01} is proved. We will discuss in detail in Section \ref{sec:application-to-elgamal}.
+The ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is OW-PCA secure if the Gap Diffie-Hellman assumption \cite{DBLP:conf/pkc/OkamotoP01} holds for the underlying group (finite field or elliptic curve). This is the basis on which the CCA security of DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01} is proved.
 
-\subsubsection{Lattice-based cryptosystems} In many prominent cryptosystems based on the Learning with Error (LWE) problems, the plaintext is encrypted by adding noise. If an adversary adds additional noise to the ciphertext, the modified ciphertext may or may not decrypt back to the same plaintext. Querying the plaintext-checking oracle with modified ciphertexts containing varying amount of noise thus allows an adversary to recover the secret key. Such key-recovery plaintext-checking attacks (KR-PCA) were described for FrodoKEM in \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19}. Similar attacks for Kyber and Saber were described in \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23}. As Peikert pointed out in \cite{cryptoeprint:2014/070}, because of the search-decision equivalence of the (Ring) Learning With Error problem, lattice-based cryptosystems are unlikely to have inherent OW-PCA security. 
+\paragraph{Lattice-based cryptosystems} In many prominent cryptosystems based on the Learning with Error (LWE) problems, the plaintext is encrypted by adding noise. If an adversary adds additional noise to the ciphertext, the modified ciphertext may or may not decrypt back to the same plaintext. Querying the plaintext-checking oracle with modified ciphertexts containing varying amount of noise thus allows an adversary to recover the secret key. Such key-recovery plaintext-checking attacks (KR-PCA) were described for FrodoKEM in \cite{DBLP:conf/crypto/GuoJN20,DBLP:conf/eurocrypt/BaetuDHTV19}. Similar attacks for Kyber and Saber were described in \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/asiacrypt/XagawaIUTH21,DBLP:conf/pqcrypto/GuoM23}. As Peikert pointed out in \cite{cryptoeprint:2014/070}, because of the search-decision equivalence of the (Ring) Learning With Error problem, lattice-based cryptosystems are unlikely to have inherent OW-PCA security. 
 
 NTRU is another family of lattice-based cryptosystems. Hoffstein and Silverman \cite{hoffstein1999reaction} proposed KR-PCA for the original NTRU cryptosystem, which Ueno et al. \cite{DBLP:journals/tches/UenoXTITH22} adapted into a KR-PCA against modern instantiations such as NTRU-HPS and NTRU-HRSS (also see \cite{cryptoeprint:2021/168}). Ueno et al. also adapted \cite{DBLP:conf/crypto/JaulmesJ00} into a KR-PCA against NTRU-Prime.
 
-\subsubsection{Code-based cryptosystems} HQC \cite{hamming-quasi-cyclic-4th-round-submission}, despite being based on hard coding problems, is structurally similar to lattice-based cryptosystems Kyber, Saber, etc. \cite{DBLP:journals/tches/UenoXTITH22}. Consequently, KR-PCA for lattice cryptosystems can be easily adapted to work on HQC \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19}. BIKE \cite{bike-4th-round-submission} is based on the Niederreiter cryptosystem instantiated with quasi-cyclic moderate density parity check (QC-MDPC) code \cite{DBLP:conf/isit/MisoczkiTSB13}. \cite{DBLP:conf/asiacrypt/Guo0S16} described KR-PCA against QC-MDPC code, which can partially recover BIKE secret keys \cite{DBLP:conf/asiacrypt/XagawaIUTH21}. There is no known adaptive attack against Classic McEliece  \cite{DBLP:journals/tches/UenoXTITH22}.
+\paragraph{Code-based cryptosystems} HQC \cite{hamming-quasi-cyclic-4th-round-submission}, despite being based on hard coding problems, is structurally similar to lattice-based cryptosystems Kyber, Saber, etc. \cite{DBLP:journals/tches/UenoXTITH22}. Consequently, KR-PCA for lattice cryptosystems can be easily adapted to work on HQC \cite{DBLP:conf/acns/Huguenin-Dumittan20,DBLP:conf/eurocrypt/BaetuDHTV19}. BIKE \cite{bike-4th-round-submission} is based on the Niederreiter cryptosystem instantiated with quasi-cyclic moderate density parity check (QC-MDPC) code \cite{DBLP:conf/isit/MisoczkiTSB13}. \cite{DBLP:conf/asiacrypt/Guo0S16} described KR-PCA against QC-MDPC code, which can partially recover BIKE secret keys \cite{DBLP:conf/asiacrypt/XagawaIUTH21}. There is no known adaptive attack against Classic McEliece  \cite{DBLP:journals/tches/UenoXTITH22}.
 
-\subsection{Additional implementation notes}\label{sec:discussion-on-real-world-attacks}
-\subsubsection{Securely deriving MAC key} Because the MAC key is pseudorandomly derived from the PKE plaintext (instead of uniformly and independently sampled), it is possible to construct a large lookup table mapping each PKE plaintext to a MAC key, then check the KEM ciphertext $(c, t)$ against each MAC key to recover the pre-image. As was pointed out in \cite{DBLP:journals/iacr/Bernstein21,cryptoeprint:2021/912}, this relationship between the MAC tag and the PKE plaintext could damage the security of the scheme. This can be mitigated by including the PKE public key when deriving the MAC key $k_\mac \leftarrow G(\pk, m)$ or even including random salt at each encapsulation $k_\mac \leftarrow G(\pk, m, \text{salt})$, which can increase the cost of such dictionary attacks.
+\subsection{Additional implementation notes}\label{sec:additional-implementation-notes}
+\paragraph{Securely deriving MAC key} Because the MAC key is pseudorandomly derived from the PKE plaintext (instead of uniformly and independently sampled), it is possible to construct a large lookup table mapping each PKE plaintext to a MAC key, then check the KEM ciphertext $(c, t)$ against each MAC key to recover the pre-image. As was pointed out in \cite{DBLP:journals/iacr/Bernstein21,cryptoeprint:2021/912}, this relationship between the MAC tag and the PKE plaintext could damage the security of the scheme. This can be mitigated by including the PKE public key when deriving the MAC key $k_\mac \leftarrow G(\pk, m)$ or even including random salt at each encapsulation $k_\mac \leftarrow G(\pk, m, \text{salt})$, which can increase the cost of such dictionary attacks.
 
-\subsubsection{One-time MAC} When the encrypt-then-MAC KEM is instantiated with a PKE with a sufficiently large plaintext space, we expect the probability of two encapsulations sampling the same PKE plaintext to be negligible within some reasonable keypair lifetime, and if the hash function is collision resistant, then the probability of two encapsulations deriving the same MAC key is also negligible. Therefore, we speculate that the encrypt-then-MAC KEM can be instantiated with one-time MACs \cite{DBLP:journals/jcss/CarterW79} with no security impact, while one-time MACs can be computationally more efficient than many-time secure MACs (e.g., DHIES proposed to use HMAC and CBC-MAC \cite{DBLP:conf/ctrsa/AbdallaBR01}).
+\paragraph{One-time MAC} When the encrypt-then-MAC KEM is instantiated with a PKE with a sufficiently large plaintext space, we expect the probability of two encapsulations sampling the same PKE plaintext to be negligible within some reasonable keypair lifetime, and if the hash function is collision resistant, then the probability of two encapsulations deriving the same MAC key is also negligible. Therefore, the encrypt-then-MAC KEM can be instantiated with one-time MACs \cite{DBLP:journals/jcss/CarterW79} with no security impact. On the other hand, one-time MACs can be computationally more efficient than many-time secure MACs.
 
-\subsubsection{Deriving shared secret} If the decryption routine of the underlying PKE is not injective, then the shared secret must be derived from both the PKE plaintext and the ciphertext: if the shared secret is derived from the plaintext alone, and the KEM adversary $A$ can find a modified ciphertext that decrypts back to the same PKE plaintext, then $A$ can query the decapsulation oracle with the modified ciphertext and obtain the true decapsulation. However, the shared secret does not have to be derived from hashing the entire ciphertext. Instead, we propose to derive the shared secret from the MAC tag, which is functionally equivalent to a keyed hash of the ciphertext. Since the MAC tag is usually much smaller than the ciphertext, hashing the tag instead of the entire ciphertext can lead to a noticeable  speedup.
+\paragraph{Deriving shared secret} If the decryption routine of the underlying PKE is not injective, then the shared secret must be derived from both the PKE plaintext and the ciphertext: if the shared secret is derived from the plaintext alone, and the KEM adversary $A$ can find a modified ciphertext that decrypts back to the same PKE plaintext, then $A$ can query the decapsulation oracle with the modified ciphertext and obtain the true decapsulation. However, the shared secret does not have to be derived from hashing the entire ciphertext. Instead, we propose to derive the shared secret from the MAC tag, which is functionally equivalent to a keyed hash of the ciphertext. Since the MAC tag is usually much smaller than the ciphertext, hashing the tag instead of the entire ciphertext can lead to a noticeable  speedup.
 
-\section{Applying encrypt-then-MAC to code-based cryptosystem}\label{sec:application-to-mceliece}
-{\it Background.} Code-based cryptography was introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow P \cdot G \cdot S$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P$ and $S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector $\mathbf{e}$ to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, and finally, the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code \cite{DBLP:journals/tit/BerlekampMT78}. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{niederreiter1986knapsack} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix, $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard \cite{DBLP:journals/tit/BerlekampMT78}. Compared to the McEliece formulation, the Niederreiter variant enjoys a smaller public key and smaller ciphertexts.
+% \section{Applying encrypt-then-MAC to code-based cryptosystem}\label{sec:application-to-mceliece}
+% {\it Background.} Code-based cryptography was introduced by Robert J. McEliece in 1978 \cite{McEliece1978}. The McEliece cryptosystem samples a random $(n, k)$-linear code over some finite field $\mathbb{F}$ with generator matrix $G \in \mathbb{F}^{n \times k}$, then generates the public key by scrambling the generator matrix $\pk = G^\prime \leftarrow P \cdot G \cdot S$ using a secret permutation matrix $P \in \mathbb{F}^{n \times n}$ and a secret invertible matrix $S\in\mathbb{F}^{k \times k}$. Because $P$ and $S$ are both invertible, $G^\prime$ is also a generator matrix for an $(n, k)$-linear code. The secret key consists of the decoding routine, the secret permutation matrix, and the secret invertible matrix. A plaintext message $m$ is encrypted by first encoding it using $G^\prime$, then adding an error vector $\mathbf{e}$ to the codeword: $c \leftarrow G^\prime\cdot m + \mathbf{e}$. To decrypt a ciphertext, the permutation is first removed, then the error vector is removed using the decoding routine, and finally, the message is recovered. The one-wayness of the McEliece cryptosystem reduces to the NP-hard problem of decoding a random linear code \cite{DBLP:journals/tit/BerlekampMT78}. Harald Niederreiter improved the efficiency of the McEliece cryptosystem in 1986 \cite{niederreiter1986knapsack} by replacing the generator matrix of a random linear code with the parity-check matrix. Correspondingly, the plaintext space becomes the set of fixed-weight error vectors, which are encrypted by computing the syndrome under the parity-check matrix, $c \leftarrow H\mathbf{e}$. The one-wayness of the Niederreiter variant reduces to the syndrome decoding problem, which is proven NP-hard \cite{DBLP:journals/tit/BerlekampMT78}. Compared to the McEliece formulation, the Niederreiter variant enjoys a smaller public key and smaller ciphertexts.
 
-\textit{Remark.} There are three code-based post-quantum KEM candidates in the fourth round of NIST's PQC standardization project: HQC \cite{hamming-quasi-cyclic-4th-round-submission}, BIKE \cite{bike-4th-round-submission}, and Classic McEliece \cite{ClassicMcEliece2022}. As discussed in Section \ref{sec:ow-pca-security}, there exist full or partial key recovery plaintext checking attacks against HQC and BIKE. While there is no rigorous proof that Classic McEliece is OW-PCA, there is also no known plaintext checking attack. The CCA security of instantiating the encrypt-then-MAC KEM with Classic McEliece is thus based on the conjectured OW-PCA security of the one-way subroutines described in Section \ref{sec:classic-mceliece}.
+% \textit{Remark.} There are three code-based post-quantum KEM candidates in the fourth round of NIST's PQC standardization project: HQC \cite{hamming-quasi-cyclic-4th-round-submission}, BIKE \cite{bike-4th-round-submission}, and Classic McEliece \cite{ClassicMcEliece2022}. As discussed in Section \ref{sec:ow-pca-security}, there exist full or partial key recovery plaintext checking attacks against HQC and BIKE. Regarding Classic McEliece, Ueno et al. \cite{DBLP:journals/tches/UenoXTITH22} stated in 2022 that \textit{there is no known adaptive attack on the PKE of Classic McEliece}. To our knowledge there is no new plaintext-checking attack proposed after \cite{DBLP:journals/tches/UenoXTITH22}. The CCA security of instantiating the encrypt-then-MAC KEM with Classic McEliece is thus based on the conjectured OW-PCA security of the subroutines described in Section \ref{sec:classic-mceliece} below.
 
-\subsection{Construction of McElieceEtM}\label{sec:classic-mceliece}
-%\subsection{Classic McEliece}\label{sec:classic-mceliece}
-Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layers. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$.
+% \subsection{Construction of McElieceEtM}\label{sec:classic-mceliece}
+% %\subsection{Classic McEliece}\label{sec:classic-mceliece}
+% Classic McEliece \cite{ClassicMcEliece2022} is an IND-CCA secure post-quantum KEM submitted to the PQC standardization project and is currently one of three viable fourth-round KEM candidates. Classic McEliece is constructed in two layers. The first layer is a OW-CPA secure PKE based on the Niederreiter cryptosystem using a random binary Goppa code, and the second layer is a modified Fujisaki-Okamoto transformation. Each instance of Classic McEliece is parameterized by the base field size $m$ (which induces a finite field with order $q = 2^m$), the codeword size $n$, and the error vector weight $t$.
 
-\begin{figure}[hp]
-\begin{algorithm}[H]
-    \caption{$\texttt{SeededKeyGen}(\delta)$}\label{alg:mceliece-seeded-keygen}
-    \begin{algorithmic}[1]
-        \Require $l$-bit seed $\delta$
-        \State Expand $\delta$ to $n + \sigma_2 q + \sigma_1 t + l$ bits, where $\delta_1 = 16, \delta_2 = 32$
-        \State Denote the last $l$ bits by $\delta^\prime$
-        \State Denote the first $n$ bits by $s$
-        \State Compute $\alpha_0, \ldots, \alpha_{q-1}$ from the next $\sigma_2 q$ bits using the \texttt{FieldOrdering} algorithm. If this fails, set $\delta \leftarrow \delta^\prime$ and restart
-        \State Compute $g$ from the next $\delta_1 t$ bits using the \texttt{Irreducible} algorithm. If this fails, set $\delta \leftarrow \delta^\prime$ and restart
-        \State $\Gamma \leftarrow (g, \alpha_0, \alpha_1, \ldots, \alpha_{n-1})$
-        \State Compute $(T, c_{mt-\mu}, \ldots, c_{mt-1}, \Gamma^\prime) \leftarrow \texttt{MatGen}(\Gamma)$. If this fails, set $\delta \leftarrow \delta^\prime$ and restart
-        \State Write $\Gamma^\prime$ as $(g, \alpha_0^\prime, \alpha_1^\prime, \ldots, \alpha_{n-1}^\prime)$
-        \State Set $\alpha = (\alpha_0^\prime, \ldots, \alpha_{n-1}^\prime, \alpha_n, \ldots, \alpha_{q-1})$ and $c = (c_{mt-\mu}, \ldots, c_{mt-1})$
-        \State Output $T$ as the public key and $(\delta, c, g, \alpha, s)$ as private key
-    \end{algorithmic}
-\end{algorithm}
-\vspace{-4em}
-\begin{algorithm}[H]
-    \caption{$\texttt{Encode}(T, \mathbf{e})$}\label{alg:mceliece-encode}
-    \begin{algorithmic}[1]
-        \Require Public key $T\in\mathbb{F}_2^{mt \times (n - mt)}$
-        \Require Weight-t vector $\mathbf{e}\in\mathbb{F}_2^n$
-        \State Define $H = (I_{mt} \mid T)$
-        \State Compute and return $\mathbf{c} \leftarrow H\mathbf{e} \in \mathbb{F}_2^{mt}$
-    \end{algorithmic}
-\end{algorithm}
-\vspace{-4em}
-\begin{algorithm}[H]
-    \caption{$\texttt{Decode}(\Gamma, \mathbf{c})$}\label{alg:mceliece-decode}
-    \begin{algorithmic}[1]
-        \Require Secret key $\Gamma = (g, \alpha_0, \ldots, \alpha_{n-1})$
-        \Require Syndrome $\mathbf{c}\in\mathbb{F}_2^{mt}$
-        \State Extend $\mathbf{c}$ to $\mathbf{v} \in\mathbb{F}_2^n$ by appending 0's 
-        \State Find the unique Goppa codeword $\mathbf{w}\in\mathbb{F}_2^n$ such that $H\mathbf{w} = 0$ and $\mathbf{w}$ has Hamming distance no more than $t$ from $\mathbf{v}$. If there is no such $\mathbf{w}$, return $\bot$
-        \State \Return  $\mathbf{e} \leftarrow \mathbf{v} + \mathbf{w}$
-    \end{algorithmic}
-\end{algorithm}
-\vspace{-4em}
-\begin{algorithm}[H]
-    \caption{$\texttt{Encap}(\pk)$}\label{alg:mceliece-encap}
-    \begin{algorithmic}[1]
-        \Require Public key $\pk = T\in\mathbb{F}_2^{mt \times (n - mt)}$
-        \State Use \texttt{FixedWeight} to generate a vector $\mathbf{e} \in \mathbf{F}_2^n$ with Hamming weight $t$
-        \State Compute $\mathbf{c} \leftarrow \texttt{Encode}(T, \mathbf{e})$
-        \State Compute $K \leftarrow H(1, \mathbf{e}, \mathbf{c})$
-        \State \Return $(\mathbf{c}, K)$
-    \end{algorithmic}
-\end{algorithm}
-\vspace{-4em}
-\begin{algorithm}[H]
-    \caption{$\texttt{Decap}(\sk, \mathbf{c})$}\label{alg:mceliece-decap}
-    \begin{algorithmic}[1]
-        \Require Secret key $\sk$ contains $s \in \mathbb{F}_2^n$ and $\Gamma = (g, \alpha_0, \alpha_1, \ldots, \alpha_{n-1})$
-        \Require Ciphertext $\mathbf{c} \in \mathbb{F}_2^{mt}$
-        \State Set $b \leftarrow 1$
-        \State Compute $\mathbf{e} \leftarrow \texttt{Decode}(\Gamma, \mathbf{c})$
-        \If{$\wt(\mathbf{e})\neq t \lor H\mathbf{e}\neq\mathbf{c}$}
-            \State Set $\mathbf{e} \leftarrow s, b \leftarrow 0$
-        \EndIf
-        \State \Return $K \leftarrow H(b, \mathbf{e}, \mathbf{c})$
-    \end{algorithmic}
-\end{algorithm}
-\end{figure}
+% \begin{figure}[hp]
+% \begin{algorithm}[H]
+%     \caption{$\texttt{SeededKeyGen}(\delta)$}\label{alg:mceliece-seeded-keygen}
+%     \begin{algorithmic}[1]
+%         \Require $l$-bit seed $\delta$
+%         \State Expand $\delta$ to $n + \sigma_2 q + \sigma_1 t + l$ bits, where $\delta_1 = 16, \delta_2 = 32$
+%         \State Denote the last $l$ bits by $\delta^\prime$
+%         \State Denote the first $n$ bits by $s$
+%         \State Compute $\alpha_0, \ldots, \alpha_{q-1}$ from the next $\sigma_2 q$ bits using the \texttt{FieldOrdering} algorithm. If this fails, set $\delta \leftarrow \delta^\prime$ and restart
+%         \State Compute $g$ from the next $\delta_1 t$ bits using the \texttt{Irreducible} algorithm. If this fails, set $\delta \leftarrow \delta^\prime$ and restart
+%         \State $\Gamma \leftarrow (g, \alpha_0, \alpha_1, \ldots, \alpha_{n-1})$
+%         \State Compute $(T, c_{mt-\mu}, \ldots, c_{mt-1}, \Gamma^\prime) \leftarrow \texttt{MatGen}(\Gamma)$. If this fails, set $\delta \leftarrow \delta^\prime$ and restart
+%         \State Write $\Gamma^\prime$ as $(g, \alpha_0^\prime, \alpha_1^\prime, \ldots, \alpha_{n-1}^\prime)$
+%         \State Set $\alpha = (\alpha_0^\prime, \ldots, \alpha_{n-1}^\prime, \alpha_n, \ldots, \alpha_{q-1})$ and $c = (c_{mt-\mu}, \ldots, c_{mt-1})$
+%         \State Output $T$ as the public key and $(\delta, c, g, \alpha, s)$ as private key
+%     \end{algorithmic}
+% \end{algorithm}
+% \vspace{-4em}
+% \begin{algorithm}[H]
+%     \caption{$\texttt{Encode}(T, \mathbf{e})$}\label{alg:mceliece-encode}
+%     \begin{algorithmic}[1]
+%         \Require Public key $T\in\mathbb{F}_2^{mt \times (n - mt)}$
+%         \Require Weight-t vector $\mathbf{e}\in\mathbb{F}_2^n$
+%         \State Define $H = (I_{mt} \mid T)$
+%         \State Compute and return $\mathbf{c} \leftarrow H\mathbf{e} \in \mathbb{F}_2^{mt}$
+%     \end{algorithmic}
+% \end{algorithm}
+% \vspace{-4em}
+% \begin{algorithm}[H]
+%     \caption{$\texttt{Decode}(\Gamma, \mathbf{c})$}\label{alg:mceliece-decode}
+%     \begin{algorithmic}[1]
+%         \Require Secret key $\Gamma = (g, \alpha_0, \ldots, \alpha_{n-1})$
+%         \Require Syndrome $\mathbf{c}\in\mathbb{F}_2^{mt}$
+%         \State Extend $\mathbf{c}$ to $\mathbf{v} \in\mathbb{F}_2^n$ by appending 0's 
+%         \State Find the unique Goppa codeword $\mathbf{w}\in\mathbb{F}_2^n$ such that $H\mathbf{w} = 0$ and $\mathbf{w}$ has Hamming distance no more than $t$ from $\mathbf{v}$. If there is no such $\mathbf{w}$, return $\bot$
+%         \State \Return  $\mathbf{e} \leftarrow \mathbf{v} + \mathbf{w}$
+%     \end{algorithmic}
+% \end{algorithm}
+% \vspace{-4em}
+% \begin{algorithm}[H]
+%     \caption{$\texttt{Encap}(\pk)$}\label{alg:mceliece-encap}
+%     \begin{algorithmic}[1]
+%         \Require Public key $\pk = T\in\mathbb{F}_2^{mt \times (n - mt)}$
+%         \State Use \texttt{FixedWeight} to generate a vector $\mathbf{e} \in \mathbf{F}_2^n$ with Hamming weight $t$
+%         \State Compute $\mathbf{c} \leftarrow \texttt{Encode}(T, \mathbf{e})$
+%         \State Compute $K \leftarrow H(1, \mathbf{e}, \mathbf{c})$
+%         \State \Return $(\mathbf{c}, K)$
+%     \end{algorithmic}
+% \end{algorithm}
+% \vspace{-4em}
+% \begin{algorithm}[H]
+%     \caption{$\texttt{Decap}(\sk, \mathbf{c})$}\label{alg:mceliece-decap}
+%     \begin{algorithmic}[1]
+%         \Require Secret key $\sk$ contains $s \in \mathbb{F}_2^n$ and $\Gamma = (g, \alpha_0, \alpha_1, \ldots, \alpha_{n-1})$
+%         \Require Ciphertext $\mathbf{c} \in \mathbb{F}_2^{mt}$
+%         \State Set $b \leftarrow 1$
+%         \State Compute $\mathbf{e} \leftarrow \texttt{Decode}(\Gamma, \mathbf{c})$
+%         \If{$\wt(\mathbf{e})\neq t \lor H\mathbf{e}\neq\mathbf{c}$}
+%             \State Set $\mathbf{e} \leftarrow s, b \leftarrow 0$
+%         \EndIf
+%         \State \Return $K \leftarrow H(b, \mathbf{e}, \mathbf{c})$
+%     \end{algorithmic}
+% \end{algorithm}
+% \end{figure}
 
-Algorithm \ref{alg:mceliece-seeded-keygen} describes the key generation routine of Classic McEliece. In step 4, \texttt{FieldOrdering} takes the input bits and outputs either $\bot$ or a sequence $(\alpha_0, \ldots, \alpha_{q-1})$ distinct elements of $\mathbb{F}_q$. In step 5, \texttt{Irreducible}  takes the input bits and outputs either $\bot$ or a monic irreducible degree-$t$ polynomial $g \in \mathbb{F}_q[x]$. In step 7, \texttt{MatGen} outputs either $\bot$ or an $mt \times k$ matrix over $\mathbb{F}_2$. We refer readers to \cite{ClassicMcEliece2022} for details of these subroutines.
+% Algorithm \ref{alg:mceliece-seeded-keygen} describes the key generation routine of Classic McEliece. In step 4, \texttt{FieldOrdering} takes the input bits and outputs either $\bot$ or a sequence $(\alpha_0, \ldots, \alpha_{q-1})$ distinct elements of $\mathbb{F}_q$. In step 5, \texttt{Irreducible}  takes the input bits and outputs either $\bot$ or a monic irreducible degree-$t$ polynomial $g \in \mathbb{F}_q[x]$. In step 7, \texttt{MatGen} outputs either $\bot$ or an $mt \times k$ matrix over $\mathbb{F}_2$. We refer readers to \cite{ClassicMcEliece2022} for details of these subroutines.
 
-Algorithms \ref{alg:mceliece-encode} and \ref{alg:mceliece-decode} describe the encoding and decoding subroutines of the Niederreiter layer. Note that our description of the decoding routine differs from \cite{ClassicMcEliece2022} in that we did not include the weight and/or re-encryption check. Instead, they are included in the description of the decapsulation subroutines (Algorithm \ref{alg:mceliece-decap}). This is because we later plan to substitute these checks with computing a MAC tag when applying the encrypt-then-MAC KEM transformation.
+% Algorithms \ref{alg:mceliece-encode} and \ref{alg:mceliece-decode} describe the encoding and decoding subroutines of the Niederreiter layer. Note that our description of the decoding routine differs from \cite{ClassicMcEliece2022} in that we did not include the weight and/or re-encryption check. Instead, they are included in the description of the decapsulation subroutines (Algorithm \ref{alg:mceliece-decap}). This is because we later plan to substitute these checks with computing a MAC tag when applying the encrypt-then-MAC KEM transformation.
 
-Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classic McEliece's KEM construction using the CPA secure Niedereitter cryptosystem described above. In step 1 of Algorithm \ref{alg:mceliece-encap}, \texttt{FixedWeight} samples a random vector $\mathbf{e}\in\mathbb{F}_2^n$ with Hamming weight $t$. In this KEM construction, Classic McEliece makes use of re-encryption (step 3 of Algorithm \ref{alg:mceliece-decap}) to ensure the integrity of the ciphertext. \vspace{0.1cm}
+% Algorithms \ref{alg:mceliece-encap} and \ref{alg:mceliece-decap} describe Classic McEliece's KEM construction using the CPA secure Niedereitter cryptosystem described above. In step 1 of Algorithm \ref{alg:mceliece-encap}, \texttt{FixedWeight} samples a random vector $\mathbf{e}\in\mathbb{F}_2^n$ with Hamming weight $t$. In this KEM construction, Classic McEliece makes use of re-encryption (step 3 of Algorithm \ref{alg:mceliece-decap}) to ensure the integrity of the ciphertext. \vspace{0.1cm}
 
-\noindent{\bf Subroutines of McElieceEtM.} We instantiate the encrypt-then-MAC KEM transformation using \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} as subroutines. The result is called McElieceEtM. Figure \ref{fig:mceliece-plus} presents the encapsulation and decapsulation routines of McElieceEtM. Its key generation routine is identical to the key generation of Classic McEliece. Its encapsulation derives a MAC key from the output of \texttt{FixedWeight} and signs the syndrome computed from \texttt{Encode}. In decapsulation, weight and syndrome check is replaced with re-deriving the MAC key and checking the tag.
+% \noindent{\bf Subroutines of McElieceEtM.} We instantiate the encrypt-then-MAC KEM transformation using \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} as subroutines. The result is called McElieceEtM. Figure \ref{fig:mceliece-plus} presents the encapsulation and decapsulation routines of McElieceEtM. Its key generation routine is identical to the key generation of Classic McEliece. Its encapsulation derives a MAC key from the output of \texttt{FixedWeight} and signs the syndrome computed from \texttt{Encode}. In decapsulation, weight and syndrome check is replaced with re-deriving the MAC key and checking the tag.
 
-\begin{figure}[h]
-    \centering
+%  {\color{blue} You may add:
+ 
+%  According to Theorem ??, the conjec-
+% tured OW-PCA security is true for Classic McEliece, then  McElieceEtM, constructed in Figure \ref{fig:mceliece-plus} is CCA secure. }
+ 
+ 
+
+% \begin{figure}[h]
+%     \centering
     
-    \begin{minipage}[t]{0.48\textwidth}
-        \begin{algorithm}[H]
-            \caption{$\encap_\text{McElieceEtM}(\pk)$}
-            \begin{algorithmic}[1]
-                \Require Public key $\pk = T \in\mathbb{F}_2^{mt \times n}$
-                \State $\mathbf{e} \leftsample \texttt{FixedWeight}()$
-                \State $k \leftarrow G(\mathbf{e})$
-                \State $\mathbf{c} \leftarrow \texttt{Encode}(T, \mathbf{e})$
-                \State $t \leftarrow \mac(k, c)$
-                \State $K \leftarrow H(\mathbf{e}, \mathbf{c})$
-                \State \Return $(\mathbf{c}, K)$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.48\textwidth}
-        \begin{algorithm}[H]
-            \caption{$\decap_\text{McElieceEtM}(\sk, c)$}
-            \begin{algorithmic}[1]
-                \Require Secret key $\sk = (\Gamma, s)$
-                \Require Ciphertext $c = (\mathbf{c}, t)$
-                \State $\hat{\mathbf{e}} \leftarrow \texttt{Decode}(\Gamma, \mathbf{c})$
-                \State $\hat{k} \leftarrow G(\hat{\mathbf{e}})$
-                \If{$\mac(\hat{k}, \mathbf{c}) \neq t$}
-                    \State $K \leftarrow H(s, \mathbf{c})$
-                \Else
-                    \State $K \leftarrow H(\mathbf{e}, \mathbf{c})$
-                \EndIf
-                \State\Return $K$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}
+%     \begin{minipage}[t]{0.48\textwidth}
+%         \begin{algorithm}[H]
+%             \caption{$\encap_\text{McElieceEtM}(\pk)$}
+%             \begin{algorithmic}[1]
+%                 \Require Public key $\pk = T \in\mathbb{F}_2^{mt \times n}$
+%                 \State $\mathbf{e} \leftsample \texttt{FixedWeight}()$
+%                 \State $k \leftarrow G(\mathbf{e})$
+%                 \State $\mathbf{c} \leftarrow \texttt{Encode}(T, \mathbf{e})$
+%                 \State $t \leftarrow \mac(k, c)$
+%                 \State $K \leftarrow H(\mathbf{e}, \mathbf{c})$
+%                 \State \Return $(\mathbf{c}, K)$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}\hfill
+%     \begin{minipage}[t]{0.48\textwidth}
+%         \begin{algorithm}[H]
+%             \caption{$\decap_\text{McElieceEtM}(\sk, c)$}
+%             \begin{algorithmic}[1]
+%                 \Require Secret key $\sk = (\Gamma, s)$
+%                 \Require Ciphertext $c = (\mathbf{c}, t)$
+%                 \State $\hat{\mathbf{e}} \leftarrow \texttt{Decode}(\Gamma, \mathbf{c})$
+%                 \State $\hat{k} \leftarrow G(\hat{\mathbf{e}})$
+%                 \If{$\mac(\hat{k}, \mathbf{c}) \neq t$}
+%                     \State $K \leftarrow H(s, \mathbf{c})$
+%                 \Else
+%                     \State $K \leftarrow H(\mathbf{e}, \mathbf{c})$
+%                 \EndIf
+%                 \State\Return $K$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}
 
-    \caption{McElieceEtM: applying encrypt-then-MAC to the Niedereitter cryptosystem}\label{fig:mceliece-plus}
-\end{figure}
+%     \caption{McElieceEtM: applying encrypt-then-MAC to the Niederreiter cryptosystem}\label{fig:mceliece-plus}
+% \end{figure}
 
-\subsection{Choosing MAC}\label{sec:choosing-mac}
-For a concrete instantiation of McElieceEtM, we chose four MACs covering a variety of architectures. All MACs are parameterized with a 256-bit key and 128-bit tag, except for KMAC256, which can have a variable key and tag length.
 
-\paragraph{Poly1305 \cite{DBLP:conf/fse/Bernstein05} and GMAC \cite{NIST80038D}} are both Carter-Wegman style MACs \cite{DBLP:journals/jcss/CarterW79,DBLP:journals/jcss/WegmanC81}, which compute the tag using finite field arithmetic. It first parses the message into a sequence of finite field elements, then evalutes a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key. Specifically, Poly1305 operates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$. GMAC operates in the binary extension field $\mathbb{F}_{2^{128}}$.
+% \subsection{Performance benchmark}
+% The subroutines \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} were taken from the \texttt{vec} implementation submitted to the fourth round of NIST PQC standardization project\footnote{\url{https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-Round4.tar.gz}}. While there are a total of 10 sets of parameters in Classic McEliece (see Section \ref{sec:classic-mceliece-parameter-sets}), we only modified the 5 standard parameter variants. The only difference between the standard variants and the f-variants is the key generation routine, which is not the focus of this paper. Key pairs are fully interoperable between the standard and the f-variants, and the encapsulation/decapsulation routines are entirely identical.
 
-\textit{Remark} In our implementation, we used {\tt OpenSSL 3.3.1}'s \texttt{EVP\_MAC} interface. Within this interface, the Poly1305 implementation does not include a nonce and is thus only one-time secure. On the other hand, GMAC is implemented by passing all data into the associated data field of the authenticated encryption scheme AES-256-GCM. Assuming that nonce does not repeat within the lifetime of the symmetric key, GMAC is many-time secure.
+% We implement the McElieceEtM KEM in the {\tt C} language to benchmark the encapsulation and decapsulation algorithms for above four different MACs.  
+% We used the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is compiled using Apple Clang 15.0.0. The performance measurement is run on Apple Silicon M1 chip. The CPU clock is measured using \texttt{mach\_absolute\_time}. Each routine is run 10000 times, with median times reported in Table \ref{tbl:mceliece-plus-performance}.
 
-\paragraph{CMAC \cite{NIST80038B}} is based on the CBC-MAC \cite{DBLP:conf/crypto/BlackR00}. To compute a CMAC tag, the message is first padded and parsed into blocks. Each block is first XOR'ed with the previous block's output, then encrypted under a block cipher using the secret key. The final output is XOR'ed with a sub-key derived from the secret key before being encrypted for one last time. In our implementation, the block cipher is instantiated with AES-256, which makes it particularly suitable for embedded devices with constrainted computing capacity but hardware support for AES. CMAC is many-time secure.
+% \begin{table}[hp]
+%     \centering
+%     % \footnotesize
+%     \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
+%         \hline
+%         \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece348864} & 215 & 2471 & 2686 \\
+%         \hline
+%         \texttt{mceliece348864 + \texttt{Poly1305}} & 316 (+46.98\%) & 2074 (-16.07\%) & 2390 (-11.02\%) \\
+%         \hline
+%         \texttt{mceliece348864 + \texttt{GMAC}} & 335 (+55.81\%) & 2087 (-15.54\%) & 2422 (-9.83\%) \\
+%         \hline
+%         \texttt{mceliece348864 + \texttt{CMAC}} & 340 (+58.14\%) & 2092 (-15.34\%) & 2432 (-9.46\%) \\
+%         \hline
+%         \texttt{mceliece348864 + \texttt{KMAC256}} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
+%         \hline
+%     \end{tabular}\vspace{2em}
+%     \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
+%         \hline
+%         \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece460896} & 487 & 6694 & 7181 \\
+%         \hline
+%         \texttt{mceliece460896 + \texttt{Poly1305}} & 514 (+5.54\%) & 5784 (-13.59\%) & 6298 (-12.30\%) \\
+%         \hline
+%         \texttt{mceliece460896 + \texttt{GMAC}} & 565 (+16.02\%) & 5809 (-13.22\%) & 6374 (-11.24\%) \\
+%         \hline
+%         \texttt{mceliece460896 + \texttt{CMAC}} & 544 (+11.70\%) & 5905 (-11.79\%) & 6449 (-10.19\%) \\
+%         \hline
+%         \texttt{mceliece460896 + \texttt{KMAC256}} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
+%         \hline
+%     \end{tabular}\vspace{2em}
+%     \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
+%         \hline
+%         \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
+%         \hline
+%         \texttt{mceliece6688128 + \texttt{Poly1305}} & 889 (+8.95\%) & 6509 (-13.21\%) & 7398 (-11.04\%) \\
+%         \hline
+%         \texttt{mceliece6688128 + \texttt{GMAC}} & 890 (+9.07\%) & 6521 (-13.05\%) & 7411 (-10.88\%) \\
+%         \hline
+%         \texttt{mceliece6688128 + \texttt{CMAC}} & 900 (+10.29\%) & 6540 (-12.80\%) & 7440 (-10.53\%) \\
+%         \hline
+%         \texttt{mceliece6688128 + \texttt{KMAC256}} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
+%         \hline
+%     \end{tabular}\vspace{2em}
+%     \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
+%         \hline
+%         \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
+%         \hline
+%         \texttt{mceliece6960119 + \texttt{Poly1305}} & 735 (+5.15\%) & 6389 (-12.02\%) & 7124 (-10.51\%) \\
+%         \hline
+%         \texttt{mceliece6960119 + \texttt{GMAC}} & 753 (+7.73\%) & 6450 (-11.18\%) & 7203 (-9.52\%) \\
+%         \hline
+%         \texttt{mceliece6960119 + \texttt{CMAC}} & 763 (+9.16\%) & 6428 (-11.48\%) & 7191 (-9.67\%) \\
+%         \hline
+%         \texttt{mceliece6960119 + \texttt{KMAC256}} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
+%         \hline
+%     \end{tabular}\vspace{2em}
+%     \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
+%         \hline
+%         \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
+%         \hline
+%         \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
+%         \hline
+%         \texttt{mceliece8192128 + \texttt{Poly1305}} & 955 (+11.31\%) & 6547 (-12.29\%) & 7502 (-9.85\%) \\
+%         \hline
+%         \texttt{mceliece8192128 + \texttt{GMAC}} & 957 (+11.54\%) & 6550 (-12.25\%) & 7507 (-9.79\%) \\
+%         \hline
+%         \texttt{mceliece8192128 + \texttt{CMAC}} & 945 (+10.14\%) & 6546 (-12.30\%) & 7491 (-9.99\%) \\
+%         \hline
+%         \texttt{mceliece8192128 + \texttt{KMAC256}} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
+%         \hline
+%     \end{tabular}\vspace{2em}
+%     \caption{McElieceEtM achieves 9-12\% speedup in combined ``encapsulate + decapsulate'' compared to Classic McEliece}\label{tbl:mceliece-plus-performance}
+% \end{table}
 
-\paragraph{KMAC256 \cite{NIST800185}} is a pseudorandom function and keyed hash function based on \textit{KECCAK} \cite{NISTFIPS202}, although unlike SHAKE, altering the requested output length generates a new unrelated output. KMAC256 is slower than other MACs, but it is the only construction with a flexible key and tag length. We fixed the key length at 256 bits, and varied the tag length to 128, 192, and 256 bits depending on the desired security levels.
+% \section{Application to ElGamal}\label{sec:application-to-elgamal}
+% Applying the encrypt-then-MAC KEM transformation to the ElGamal cryptosystem results in a construction that is highly similar to DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01}. In this section, we will show that the encrypt-then-MAC KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of OW-PCA security. Specifically, we sketch a proof of the following lemma.
 
-\paragraph{Remark} There are new lightweight MACs such as EliMAC \cite{DBLP:journals/tosc/DobraunigMN23}, LightMAC \cite{DBLP:conf/fse/LuykxPTY16}, and ZMAC \cite{DBLP:conf/crypto/IwataMPS17}, which may offer a better performance than the MACs listed above. However, the performance of the encrypt-then-MAC KEM is dominated by the public-key cryptographic operations and the key-derivation functions. For KEMs with a relatively short ciphertext, such as Classic McEliece, the performance impact of the MAC is insignificant.
+% \begin{lemma}\label{lemma:elgamal-is-ow-pca}
+%     For every OW-PCA adversary $A$ against the ElGamal cryptosystem, there exists a Gap Diffie-Hellman problem solver $B$ such that:
 
-\subsection{Performance benchmark}
-The subroutines \texttt{SeededKeyGen}, \texttt{FixedWeight}, \texttt{Encode}, and \texttt{Decode} were taken from the \texttt{vec} implementation submitted to the fourth round of NIST PQC standardization project\footnote{\url{https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-Round4.tar.gz}}. While there are a total of 10 sets of parameters in Classic McEliece (see Section \ref{sec:classic-mceliece-parameter-sets}), we only modified the 5 standard parameter variants. The only difference between the standard variants and the f-variants is the key generation routine, which is not the focus of this paper. Key pairs are fully interoperable between the standard and the f-variants, and the encapsulation/decapsulation routines are entirely identical.
+%     \begin{equation*}
+%         \text{Adv}_\text{GapDH}(B) = \text{Adv}_\text{ElGamal}^\texttt{OW-PCA}(A).
+%     \end{equation*}
+% \end{lemma}
 
-We implement the McElieceEtM KEM in the {\tt C} language to benchmark the encapsulation and decapsulation algorithms for above four different MACs.  
-We used the MAC implementations from {\tt OpenSSL 3.5.0}. Our C code is compiled using Apple Clang 15.0.0. The performance measurement is run on Apple Silicon M1 chip. The CPU clock is measured using \texttt{mach\_absolute\_time}. Each routine is run 10000 times, with median times reported in Table \ref{tbl:mceliece-plus-performance}.
+% Each ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is parameterized by a cyclic group $G = \langle g \rangle$ of prime order $q > 2$. A summary of the routine is shown in Figure \ref{fig:elgamal-routines}:
 
-\begin{table}[hp]
-    \centering
-    % \footnotesize
-    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
-        \hline
-        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece348864} & 215 & 2471 & 2686 \\
-        \hline
-        \texttt{mceliece348864 + poly1305} & 316 (+46.98\%) & 2074 (-16.07\%) & 2390 (-11.02\%) \\
-        \hline
-        \texttt{mceliece348864 + gmac} & 335 (+55.81\%) & 2087 (-15.54\%) & 2422 (-9.83\%) \\
-        \hline
-        \texttt{mceliece348864 + cmac} & 340 (+58.14\%) & 2092 (-15.34\%) & 2432 (-9.46\%) \\
-        \hline
-        \texttt{mceliece348864 + kmac256} & 304 (+41.40\%) & 2093 (-15.30\%) & 2397 (-10.76\%) \\
-        \hline
-    \end{tabular}\vspace{2em}
-    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
-        \hline
-        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece460896} & 487 & 6694 & 7181 \\
-        \hline
-        \texttt{mceliece460896 + poly1305} & 514 (+5.54\%) & 5784 (-13.59\%) & 6298 (-12.30\%) \\
-        \hline
-        \texttt{mceliece460896 + gmac} & 565 (+16.02\%) & 5809 (-13.22\%) & 6374 (-11.24\%) \\
-        \hline
-        \texttt{mceliece460896 + cmac} & 544 (+11.70\%) & 5905 (-11.79\%) & 6449 (-10.19\%) \\
-        \hline
-        \texttt{mceliece460896 + kmac256} & 570 (+17.04\%) & 5760 (-13.95\%) & 6330 (-11.85\%) \\
-        \hline
-    \end{tabular}\vspace{2em}
-    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
-        \hline
-        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece6688128} & 816 & 7500 & 8316 \\
-        \hline
-        \texttt{mceliece6688128 + poly1305} & 889 (+8.95\%) & 6509 (-13.21\%) & 7398 (-11.04\%) \\
-        \hline
-        \texttt{mceliece6688128 + gmac} & 890 (+9.07\%) & 6521 (-13.05\%) & 7411 (-10.88\%) \\
-        \hline
-        \texttt{mceliece6688128 + cmac} & 900 (+10.29\%) & 6540 (-12.80\%) & 7440 (-10.53\%) \\
-        \hline
-        \texttt{mceliece6688128 + kmac256} & 901 (+10.42\%) & 6546 (-12.72\%) & 7447 (-10.45\%) \\
-        \hline
-    \end{tabular}\vspace{2em}
-    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
-        \hline
-        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece6960119} & 699 & 7262 & 7961 \\
-        \hline
-        \texttt{mceliece6960119 + poly1305} & 735 (+5.15\%) & 6389 (-12.02\%) & 7124 (-10.51\%) \\
-        \hline
-        \texttt{mceliece6960119 + gmac} & 753 (+7.73\%) & 6450 (-11.18\%) & 7203 (-9.52\%) \\
-        \hline
-        \texttt{mceliece6960119 + cmac} & 763 (+9.16\%) & 6428 (-11.48\%) & 7191 (-9.67\%) \\
-        \hline
-        \texttt{mceliece6960119 + kmac256} & 765 (+9.44\%) & 6303 (-13.21\%) & 7068 (-11.22\%) \\
-        \hline
-    \end{tabular}\vspace{2em}
-    \begin{tabular}[c]{|p{15em}|p{7em}|p{7em}|p{7em}|}
-        \hline
-        \textbf{Parameter set} & \texttt{Enc} & \texttt{Dec} & \texttt{Enc + Dec} \\
-        \hline
-        \texttt{mceliece8192128} & 858 & 7464 & 8322 \\
-        \hline
-        \texttt{mceliece8192128 + poly1305} & 955 (+11.31\%) & 6547 (-12.29\%) & 7502 (-9.85\%) \\
-        \hline
-        \texttt{mceliece8192128 + gmac} & 957 (+11.54\%) & 6550 (-12.25\%) & 7507 (-9.79\%) \\
-        \hline
-        \texttt{mceliece8192128 + cmac} & 945 (+10.14\%) & 6546 (-12.30\%) & 7491 (-9.99\%) \\
-        \hline
-        \texttt{mceliece8192128 + kmac256} & 957 (+11.54\%) & 6574 (-11.92\%) & 7531 (-9.50\%) \\
-        \hline
-    \end{tabular}\vspace{2em}
-    \caption{McElieceEtM achieves 9-12\% speedup in combined ``encapsulate + decapsulate'' compared to Classic McEliece}\label{tbl:mceliece-plus-performance}
-\end{table}
+% \begin{figure}[H]
+%     \centering
 
-\section{Application to ElGamal}\label{sec:application-to-elgamal}
-Applying the encrypt-then-MAC KEM transformation to the ElGamal cryptosystem results in a construction that is highly similar to DHIES \cite{DBLP:conf/ctrsa/AbdallaBR01}. In this section, we will show that the encrypt-then-MAC KEM transformation is a generalization of DHIES by showing that the Gap Diffie-Hellman assumption is a special case of OW-PCA security. Specifically, we sketch a proof of the following lemma.
-
-\begin{lemma}\label{lemma:elgamal-is-ow-pca}
-    For every OW-PCA adversary $A$ against the ElGamal cryptosystem, there exists a Gap Diffie-Hellman problem solver $B$ such that:
-
-    \begin{equation*}
-        \text{Adv}_\text{GapDH}(B) = \text{Adv}_\text{ElGamal}^\texttt{OW-PCA}(A).
-    \end{equation*}
-\end{lemma}
-
-Each ElGamal cryptosystem \cite{DBLP:journals/tit/Elgamal85} is parameterized by a cyclic group $G = \langle g \rangle$ of prime order $q > 2$. A summary of the routine is shown in Figure \ref{fig:elgamal-routines}:
-
-\begin{figure}[H]
-    \centering
-
-    \begin{minipage}[t]{0.32\textwidth}
-        \begin{algorithm}[H]
-            \caption*{\texttt{KeyGen()}}
-            \begin{algorithmic}[1]
-                \State $x \leftsample \mathbb{Z}_q$
-                \State $\sk \leftarrow x$
-                \State $\pk \leftarrow g^x$
-                \State \Return $(\pk, \sk)$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.31\textwidth}
-        \begin{algorithm}[H]
-            \caption*{$\encrypt(\pk, m)$}
-            \begin{algorithmic}[1]
-                \Require $m \in G$
-                \Require $\pk = g^x \in G$
-                \State $y \leftsample \mathbb{Z}_q$
-                \State $w \leftarrow g^y$
-                \State $v \leftarrow m \cdot (g^x)^y$
-                \State \Return $(w, v)$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.35\textwidth}
-        \begin{algorithm}[H]
-            \caption*{$\decrypt(\sk, c)$}
-            \begin{algorithmic}[1]
-                \Require $\sk = x \in \mathbb{Z}_q$
-                \Require $c = (w, v) \in G \times G$
-                \State $\hat{m} \leftarrow (w^x)^{-1}\cdot v$
-                \State \Return $\hat{m}$
-            \end{algorithmic}
-        \end{algorithm}
-    \end{minipage}
+%     \begin{minipage}[t]{0.32\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{\texttt{KeyGen()}}
+%             \begin{algorithmic}[1]
+%                 \State $x \leftsample \mathbb{Z}_q$
+%                 \State $\sk \leftarrow x$
+%                 \State $\pk \leftarrow g^x$
+%                 \State \Return $(\pk, \sk)$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}\hfill
+%     \begin{minipage}[t]{0.31\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\encrypt(\pk, m)$}
+%             \begin{algorithmic}[1]
+%                 \Require $m \in G$
+%                 \Require $\pk = g^x \in G$
+%                 \State $y \leftsample \mathbb{Z}_q$
+%                 \State $w \leftarrow g^y$
+%                 \State $v \leftarrow m \cdot (g^x)^y$
+%                 \State \Return $(w, v)$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}\hfill
+%     \begin{minipage}[t]{0.35\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\decrypt(\sk, c)$}
+%             \begin{algorithmic}[1]
+%                 \Require $\sk = x \in \mathbb{Z}_q$
+%                 \Require $c = (w, v) \in G \times G$
+%                 \State $\hat{m} \leftarrow (w^x)^{-1}\cdot v$
+%                 \State \Return $\hat{m}$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}
     
-    \caption{ElGamal cryptosystem over cyclic group $G = \langle g \rangle$ of prime order $q$}\label{fig:elgamal-routines}
-\end{figure}
+%     \caption{ElGamal cryptosystem over cyclic group $G = \langle g \rangle$ of prime order $q$}\label{fig:elgamal-routines}
+% \end{figure}
 
-The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational and decisional Diffie-Hellman problem:
+% The security of ElGamal cryptosystem reduces to the conjectured intractability of the computational and decisional Diffie-Hellman problem:
 
-\begin{definition}[\textbf{computational Diffie-Hellman problem}]
-    Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$, compute $g^{xy}$.
-\end{definition}
-\begin{definition}[\textbf{decisional Diffie-Hellman problem}]
-    Let $x, y, z \leftsample \mathbb{Z}_q$ be uniformly random samples. Let $h \leftsample \{g^z, g^{xy}\}$ be randomly chosen between $g^z$ and $g^{xy}$. Given $(g, g^x, g^y, h)$, determine whether $h$ is $g^{xy}$ or $g^z$. 
-\end{definition}
+% \begin{definition}[\textbf{computational Diffie-Hellman problem}]
+%     Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$, compute $g^{xy}$.
+% \end{definition}
+% \begin{definition}[\textbf{decisional Diffie-Hellman problem}]
+%     Let $x, y, z \leftsample \mathbb{Z}_q$ be uniformly random samples. Let $h \leftsample \{g^z, g^{xy}\}$ be randomly chosen between $g^z$ and $g^{xy}$. Given $(g, g^x, g^y, h)$, determine whether $h$ is $g^{xy}$ or $g^z$. 
+% \end{definition}
 
-It is also conjectured in \cite{DBLP:conf/ctrsa/AbdallaBR01} (and later extensively studied in \cite{DBLP:conf/pkc/OkamotoP01}) that for the certain choice of cyclic group $G$, the computational Diffie-Hellman problem remains intractable even if the adversary as access to a restricted decisional Diffie-Hellman oracle. This assumption is captured in the Gap Diffie-Hellman problem:
+% It is also conjectured in \cite{DBLP:conf/ctrsa/AbdallaBR01} (and later extensively studied in \cite{DBLP:conf/pkc/OkamotoP01}) that for the certain choice of cyclic group $G$, the computational Diffie-Hellman problem remains intractable even if the adversary as access to a restricted decisional Diffie-Hellman oracle. This assumption is captured in the Gap Diffie-Hellman problem:
 
-\begin{definition}[\textbf{Gap Diffie-Hellman problem}]
-    Let $G = \langle g \rangle$ be a cyclic group of prime order $q > 2$. Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$ and a restricted DDH oracle $\mathcal{O}^\text{DDH}: (u, v) \mapsto \llbrack u^x = v \rrbrack$, compute $g^{xy}$.
-\end{definition}
+% \begin{definition}[\textbf{Gap Diffie-Hellman problem}]
+%     Let $G = \langle g \rangle$ be a cyclic group of prime order $q > 2$. Let $x, y \leftsample \mathbb{Z}_q$ be uniformly random samples. Given $(g, g^x, g^y)$ and a restricted DDH oracle $\mathcal{O}^\text{DDH}: (u, v) \mapsto \llbrack u^x = v \rrbrack$, compute $g^{xy}$.
+% \end{definition}
 
-We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}. 
-\begin{proof}
-    We will prove by a sequence of games. A summary can be found in Figure \ref{fig:elgamal-pca-games}
+% We now present the proof for Lemma \ref{lemma:elgamal-is-ow-pca}. 
+% \begin{proof}
+%     We will prove by a sequence of games. A summary can be found in Figure \ref{fig:elgamal-pca-games}
 
-    \begin{figure}[h]
-        \centering
+%     \begin{figure}[h]
+%         \centering
 
-        \begin{minipage}[t]{0.4\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$G_0 - G_2$}
-                \begin{algorithmic}[1]
-                    \State $x \leftsample \mathbb{Z}_q$
-                    \State $m^\ast \leftsample G$
-                    \State $y \leftsample \mathbb{Z}_q, w \leftarrow g^y$
-                    \State $v \leftarrow m^\ast \cdot (g^x)^y$
-                        \Comment{$G_0$ - $G_1$}
-                    \State $v \leftsample G$
-                        \Comment{$G_2$}
-                    \State $c^\ast \leftarrow (w, v)$
-                    \State $\hat{m} \leftsample A^{\pco}(g^x, c^\ast)$
-                        \Comment{$G_0$}
-                    \State $\hat{m} \leftsample A^{\pco_1}(g^x, c^\ast)$
-                        \Comment{$G_1$ - $G_2$}
-                    \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
-                        \Comment{$G_0$ - $G_1$}
-                    \State \Return $\llbrack \hat{m} = w^{-x}\cdot v \rrbrack$
-                        \Comment{$G_2$}
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
-        \begin{minipage}[t]{0.4\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\pco(m, c=(w, v))$}
-                \begin{algorithmic}[1]
-                    \State \Return $\llbrack m = (w^x)^{-1}\cdot v\rrbrack$
-                \end{algorithmic}
-            \end{algorithm}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\pco_1(m, c=(w, v))$}
-                \begin{algorithmic}[1]
-                    \State \Return $\llbrack (w^x) = m^{-1} \cdot v \rrbrack$
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
+%         \begin{minipage}[t]{0.4\textwidth}
+%             \begin{algorithm}[H]
+%                 \caption*{$G_0 - G_2$}
+%                 \begin{algorithmic}[1]
+%                     \State $x \leftsample \mathbb{Z}_q$
+%                     \State $m^\ast \leftsample G$
+%                     \State $y \leftsample \mathbb{Z}_q, w \leftarrow g^y$
+%                     \State $v \leftarrow m^\ast \cdot (g^x)^y$
+%                         \Comment{$G_0$ - $G_1$}
+%                     \State $v \leftsample G$
+%                         \Comment{$G_2$}
+%                     \State $c^\ast \leftarrow (w, v)$
+%                     \State $\hat{m} \leftsample A^{\pco}(g^x, c^\ast)$
+%                         \Comment{$G_0$}
+%                     \State $\hat{m} \leftsample A^{\pco_1}(g^x, c^\ast)$
+%                         \Comment{$G_1$ - $G_2$}
+%                     \State \Return $\llbrack \hat{m} = m^\ast \rrbrack$
+%                         \Comment{$G_0$ - $G_1$}
+%                     \State \Return $\llbrack \hat{m} = w^{-x}\cdot v \rrbrack$
+%                         \Comment{$G_2$}
+%                 \end{algorithmic}
+%             \end{algorithm}
+%         \end{minipage}
+%         \begin{minipage}[t]{0.4\textwidth}
+%             \begin{algorithm}[H]
+%                 \caption*{$\mathcal{O}^\pco(m, c=(w, v))$}
+%                 \begin{algorithmic}[1]
+%                     \State \Return $\llbrack m = (w^x)^{-1}\cdot v\rrbrack$
+%                 \end{algorithmic}
+%             \end{algorithm}
+%             \begin{algorithm}[H]
+%                 \caption*{$\mathcal{O}^\pco_1(m, c=(w, v))$}
+%                 \begin{algorithmic}[1]
+%                     \State \Return $\llbrack (w^x) = m^{-1} \cdot v \rrbrack$
+%                 \end{algorithmic}
+%             \end{algorithm}
+%         \end{minipage}
 
-        \caption{ The sequence of games in proving Lemma \ref{lemma:elgamal-is-ow-pca}}\label{fig:elgamal-pca-games}
-    \end{figure}
+%         \caption{ The sequence of games in proving Lemma \ref{lemma:elgamal-is-ow-pca}}\label{fig:elgamal-pca-games}
+%     \end{figure}
 
-    \emph{Game 0} is the OW-PCA game. Adversary $A$ has access to the plaintext-checking oracle $\mathcal{O}^\pco$ and wins the game if it can correctly recover the challenge plaintext $m^\ast$.
+%     \emph{Game 0} is the OW-PCA game. Adversary $A$ has access to the plaintext-checking oracle $\mathcal{O}^\pco$ and wins the game if it can correctly recover the challenge plaintext $m^\ast$.
 
-    \emph{Game 1} is identical to game 0, except that the formulation of the $\mathcal{O}^\pco$ is changed. When servicing the plaintext-checking query $(m, c = (w, v))$, $\pco_1$ checks whether $w^x$ is equal to $m^{-1} \cdot v$. Observe that in the cyclic group $G$, the algebraic expressions in $\mathcal{O}^\pco$ and $\mathcal{O}^\pco_1$ are equivalent, which means that $\mathcal{O}^\pco_1$ behaves identically to $\mathcal{O}^\pco$.
+%     \emph{Game 1} is identical to game 0, except that the formulation of the $\mathcal{O}^\pco$ is changed. When servicing the plaintext-checking query $(m, c = (w, v))$, $\pco_1$ checks whether $w^x$ is equal to $m^{-1} \cdot v$. Observe that in the cyclic group $G$, the algebraic expressions in $\mathcal{O}^\pco$ and $\mathcal{O}^\pco_1$ are equivalent, which means that $\mathcal{O}^\pco_1$ behaves identically to $\mathcal{O}^\pco$.
 
-    \emph{Game 2} is identical to game 1 except for two modifications: first, when computing the challenge ciphertext, $v$ is no longer computed from $m^\ast$ but is randomly sampled; second, the win condition changed from $\hat{m} = m^\ast$ to $\hat{m} = w^{-x}\cdot v$. It is easy to verify that Game 0 through Game 2 are algebraically equivalent:
+%     \emph{Game 2} is identical to game 1 except for two modifications: first, when computing the challenge ciphertext, $v$ is no longer computed from $m^\ast$ but is randomly sampled; second, the win condition changed from $\hat{m} = m^\ast$ to $\hat{m} = w^{-x}\cdot v$. It is easy to verify that Game 0 through Game 2 are algebraically equivalent:
 
-    \begin{equation*}
-        \adv_0(A) = \adv_1(A) = \adv_2(A). 
-    \end{equation*}
+%     \begin{equation*}
+%         \adv_0(A) = \adv_1(A) = \adv_2(A). 
+%     \end{equation*}
 
-    The Gap Diffie-Hellman adversary $B$ can perfectly simulate game 2 for $A$ (see Figure \ref{fig:ow-pca-to-gap-dh}): $B$ receives as the Gap Diffie-Hellman problem inputs $g^x$ and $g^y$. $g^x$ simulates an ElGamal public key, where as $g^y$ simulates the first component of the challenge ciphertext. As in game 2, the second component of the challenge ciphertext can be randomly sampled. Finally, the $\mathcal{O}^\pco_1$ from game 2 can be perfectly simulated using the restricted DDH oracle $\mathcal{O}^\text{DDH}$.
+%     The Gap Diffie-Hellman adversary $B$ can perfectly simulate game 2 for $A$ (see Figure \ref{fig:ow-pca-to-gap-dh}): $B$ receives as the Gap Diffie-Hellman problem inputs $g^x$ and $g^y$. $g^x$ simulates an ElGamal public key, where as $g^y$ simulates the first component of the challenge ciphertext. As in game 2, the second component of the challenge ciphertext can be randomly sampled. Finally, the $\mathcal{O}^\pco_1$ from game 2 can be perfectly simulated using the restricted DDH oracle $\mathcal{O}^\text{DDH}$.
 
-    \begin{figure}[h]
-        \centering
+%     \begin{figure}[h]
+%         \centering
 
-        \begin{minipage}[t]{0.45\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$B^{\mathcal{O}^\text{DDH}}(g, g^x, g^y)$}
-                \begin{algorithmic}[1]
-                    \State $w \leftarrow g^y$
-                    \State $v \leftsample G$
-                    \State $c^\ast \leftarrow (w, v)$
-                    \State $\hat{m} \leftsample A^{\pco_2}(g^x, c^\ast)$
-                    \State \Return $\hat{m}^{-1}\cdot v$
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
-        \begin{minipage}[t]{0.45\textwidth}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\text{DDH}(u, v)$}
-                \begin{algorithmic}[1]
-                    \State \Return $\llbrack u^x = v \rrbrack$
-                \end{algorithmic}
-            \end{algorithm}\vspace{-1.13cm}
-            \begin{algorithm}[H]
-                \caption*{$\mathcal{O}^\pco_2(m, c=(w, v))$}
-                \begin{algorithmic}[1]
-                    \State \Return $\mathcal{O}^\text{DDH}(w, m^{-1}\cdot v)$
-                \end{algorithmic}
-            \end{algorithm}
-        \end{minipage}
+%         \begin{minipage}[t]{0.45\textwidth}
+%             \begin{algorithm}[H]
+%                 \caption*{$B^{\mathcal{O}^\text{DDH}}(g, g^x, g^y)$}
+%                 \begin{algorithmic}[1]
+%                     \State $w \leftarrow g^y$
+%                     \State $v \leftsample G$
+%                     \State $c^\ast \leftarrow (w, v)$
+%                     \State $\hat{m} \leftsample A^{\pco_2}(g^x, c^\ast)$
+%                     \State \Return $\hat{m}^{-1}\cdot v$
+%                 \end{algorithmic}
+%             \end{algorithm}
+%         \end{minipage}
+%         \begin{minipage}[t]{0.45\textwidth}
+%             \begin{algorithm}[H]
+%                 \caption*{$\mathcal{O}^\text{DDH}(u, v)$}
+%                 \begin{algorithmic}[1]
+%                     \State \Return $\llbrack u^x = v \rrbrack$
+%                 \end{algorithmic}
+%             \end{algorithm}\vspace{-1.13cm}
+%             \begin{algorithm}[H]
+%                 \caption*{$\mathcal{O}^\pco_2(m, c=(w, v))$}
+%                 \begin{algorithmic}[1]
+%                     \State \Return $\mathcal{O}^\text{DDH}(w, m^{-1}\cdot v)$
+%                 \end{algorithmic}
+%             \end{algorithm}
+%         \end{minipage}
 
-        \caption{Gap Diffie-Hellman adversary $B$ simulates game 2 for $A$}\label{fig:ow-pca-to-gap-dh}
-    \end{figure}
+%         \caption{Gap Diffie-Hellman adversary $B$ simulates game 2 for $A$}\label{fig:ow-pca-to-gap-dh}
+%     \end{figure}
 
-    If $A$ wins game 2, then its output is $\hat{m} = w^{-x}\cdot v = g^{-xy}\cdot v$, so $m^{-1}\cdot v$ is $g^{xy}$, the correct answer to the Gap Diffie-Hellman problem. In other words, $B$ solves its Gap Diffie-Hellman problem if and only if $A$ wins the simulated game 2: 
+%     If $A$ wins game 2, then its output is $\hat{m} = w^{-x}\cdot v = g^{-xy}\cdot v$, so $m^{-1}\cdot v$ is $g^{xy}$, the correct answer to the Gap Diffie-Hellman problem. In other words, $B$ solves its Gap Diffie-Hellman problem if and only if $A$ wins the simulated game 2: 
     
-    $$\adv_2(A) = \adv_\text{GapDH}(B).$$
-\end{proof}
+%     $$\adv_2(A) = \adv_\text{GapDH}(B).$$
+% \end{proof}
 
+\section{Applying encrypt-then-MAC to \texttt{ML-KEM}}\label{sec:applying-encrypt-then-mac-to-ml-kem}
+\texttt{ML-KEM} is an IND-CCA secure post-quantum KEM standardized by NIST in FIPS 203 \cite{FIPS203}. The chosen-ciphertext security of \texttt{ML-KEM} is achieved in two steps. First, \texttt{ML-KEM} constructs a PKE whose IND-CPA security reduces to the conjectured intractability of the decisional Module Learning with Error (MLWE) problem \cite{DBLP:conf/stoc/Regev05,DBLP:conf/eurocrypt/LyubashevskyPR10,DBLP:journals/jacm/Regev09,DBLP:conf/stoc/Peikert09} (see Figure \ref{fig:k-pke-routines} in Appendix). Then, \texttt{ML-KEM} applies the Fujisaki-Okamoto transformation to convert the IND-CPA secure PKE into an IND-CCA secure KEM (see Figure \ref{fig:ml-kem-routines} in Appendix).
 
-\section{Concluding remarks}\label{sec:conclusion}
-In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then applied the encrypt-then-MAC transformation to the ElGamal cryptosystem and the McEliece cryptosystem, and implemented the transformed McElieceEtM in C using a variety of MACs. On average, McElieceEtM achieved 9-12\% increase in throughput compared to Classic McEliece, which uses the Fujisaki-Okamoto transformation to convert OW-CPA encryption scheme into a CCA secure KEM.
+\subsection{\texttt{ML-KEM} under encrypt-then-MAC}
+We apply the encrypt-then-MAC transformation to the PKE routines of \texttt{ML-KEM} \cite{FIPS203}. The resulting KEM is denoted as \texttt{ML-KEM-EtM} (Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between \texttt{ML-KEM-EtM} and \texttt{ML-KEM}. The \texttt{ML-KEM-EtM} encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
 
-In Section \ref{sec:ow-pca-security} we mentioned that Kyber/ML-KEM's underlying PKE subroutines are not OW-PCA secure, which means that applying the encrypt-then-MAC KEM transformation to the PKE subroutines will not achieve full IND-CCA security. However, the plaintext-checking attack against Kyber requires several thousands of oracle queries, which translates to equivalent complexity of any chosen-ciphertext attacks. Therefore, it may be safe to apply the encrypt-then-MAC transformation to Kyber/ML-KEM with the restriction that each key pair is used at most once, such as in TLS 1.3 handshake. In Kyber/ML-KEM, the encryption routine is significantly slower than the decryption routine, so the encrypt-then-MAC transformation achieves significant performance improvements over the Fujisaki-Okamoto transformation. We show this instantiation of encrypt-then-MAC transform over ML-KEM and their performances in  Appendix \ref{sec:applying-encrypt-then-mac-to-ml-kem}. 
-
-% We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:journals/siamcomp/Shor97} is inapplicable to most MAC constructions, the encrypt-then-MAC KEM transformation can be applied to a quantum-resistant PKE scheme to derive a post-quantum CCA-secure KEM scheme. In future works, we plan to analyze the security reduction under the quantum random oracle model, which can inform us of the appropriate parameters for the MAC.
-
-\bibliographystyle{splncs04}
-\bibliography{biblio.bib}
-
-\appendix
-\section{Classic McEliece parameter sets}\label{sec:classic-mceliece-parameter-sets}
-Classic McEliece has a total of 10 parameter sets. Five of them are presented in Table \ref{tab:classic-mceliece-parameter-sets}. The other five (called ``f-variants'') are identical to the five presented here, except for the internal implementation of the key generation routines. The f-variant key pairs and ciphertexts are fully interoperable with the normal variants, and the encapsulation/decapsulation routines are entirely identical.
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{|p{8em}|p{5em}|p{5em}|p{5em}|p{8em}|}
-        \hline
-        Parameter set & public key & secret key & ciphertext & security level \cite{classic-mceliece-security-guide} \\
-        \hline
-        \texttt{mceliece348864} & 261120 & 6492 & 96 & category 1 \\
-        \hline
-        \texttt{mceliece460896} & 524160 & 13608 & 156 & category 3 \\
-        \hline
-        \texttt{mceliece6688128} & 1044992 & 13932 & 208 & category 5 \\
-        \hline
-        \texttt{mceliece6960119} & 1047319 & 13948 & 194 & category 5 \\
-        \hline
-        \texttt{mceliece8192128} & 1357824 & 14120 & 208 & category 5 \\
-        \hline
-    \end{tabular}
-    \caption{Public key, secret key, and ciphertext sizes are measured in bytes.}\label{tab:classic-mceliece-parameter-sets}
-\end{table}
-
-NIST evaluates concrete security levels against the difficulty of AES brute-force attack and/or SHA-2 collision attacks \cite{NIST_PQC_Evaluation}. There are five categories of concrete securities (in increasing security levels): \begin{enumerate}
-    \item Key search on AES-128, $2^{143}$ classical gates.
-    \item Finding collision on SHA256/SHA3-256, $2^{146}$ classical gates.
-    \item Key search on AES-192, $2^{207}$ classical gates.
-    \item Finding collision on SHA384/SHA3-384, $2^{210}$ classical gates.
-    \item Key search on AES-256, $2^{272}$ classical gates.
-\end{enumerate}
-
-\section{ML-KEM-EtM: applying encrypt-then-MAC to ML-KEM}\label{sec:applying-encrypt-then-mac-to-ml-kem}
-We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM \cite{FIPS203}. The resulting KEM is called ML-KEM-EtM (Figure \ref{fig:ml-kem-plus-routines}). The key generation routines are identical between ML-KEM-EtM and ML-KEM. The ML-KEM-EtM   encapsulation and decapsulation algorithms make use of two additional algorithms, namely a {\sf MAC} and a {\sf KDF}.
+In Section \ref{sec:ow-pca-security}, we mentioned that \texttt{ML-KEM}'s PKE subroutines are not OW-PCA secure. Consequently, applying the encrypt-then-MAC KEM transformation to the PKE subroutines will not achieve full IND-CCA security. However, the plaintext-checking attack against \texttt{ML-KEM} requires several thousands of oracle queries, which translates to equivalent complexity of any chosen-ciphertext attacks. Therefore, \texttt{ML-KEM-EtM} achieves IND-1CCA security and is suitable for use in ephemeral key exchange such as in post-quantum TLS 1.3 key exchange \cite{DBLP:conf/ccs/SchwabeSW20,DBLP:conf/eurocrypt/Huguenin-Dumittan22,DBLP:conf/asiacrypt/ZhouJZ24,DBLP:conf/asiacrypt/JiangMZ23}. In \texttt{ML-KEM}, the encryption subroutine is significantly slower than the decryption subroutine, so the encrypt-then-MAC transformation achieves significant performance improvements over the Fujisaki-Okamoto transformation.
 
 \begin{figure}[h]
     \centering
 
-    \begin{minipage}[t]{0.5\textwidth}
+    \begin{minipage}[t]{0.34\textwidth}
         \begin{algorithm}[H]
-            \caption*{$\texttt{ML-KEM-EtM}\texttt{.}\keygen\texttt{()}$}
+            \caption*{$\keygen_\texttt{ML-KEM-EtM}()$}
             \begin{algorithmic}[1]
                 \State $z \leftsample \{0,1\}^{256}$
-                \State $(\pk, \sk^\prime) \leftsample \texttt{K-PKE}.\keygen()$
+                \State $(\pk, \sk^\prime) \leftsample \keygen_\texttt{K-PKE}()$
                 \State $h \leftarrow H(\pk)$
                 \State $\sk \leftarrow (sk^\prime \Vert \pk \Vert h \Vert z)$
                 \State \Return $(\pk, \sk)$
             \end{algorithmic}
-        \end{algorithm}\vspace{-0.5cm}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.3\textwidth}
         \begin{algorithm}[H]
-            \caption*{$\texttt{ML-KEM-EtM}\texttt{.}\encap\texttt{(\pk)}$}
+            \caption*{$\encap_\texttt{ML-KEM-EtM}(\pk)$}
             \begin{algorithmic}[1]
                 \State $m \leftsample \{0,1\}^{256}$
-                \State $(\overline{K}, k) \leftarrow G(m \Vert H(\pk))$
-                \State $c^\prime \leftsample \texttt{K-PKE}.\encrypt(\pk, m)$
+                \State $h \leftarrow H(\pk)$
+                \State $(\overline{K}, k) \leftarrow G(m \Vert h)$
+                \State $c^\prime \leftsample \encrypt_\texttt{K-PKE}(\pk, m)$
                 \State $t \leftarrow \mac(k, c^\prime)$
                 \State $K \leftarrow \texttt{KDF}(\overline{K} \Vert t)$
                 \State $c \leftarrow (c^\prime, t)$
                 \State \Return $(c, K)$
             \end{algorithmic}
         \end{algorithm}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.49\textwidth}
+    \end{minipage}
+    \begin{minipage}[t]{0.34\textwidth}
         \begin{algorithm}[H]
-            \caption*{$\texttt{ML-KEM-EtM}\texttt{.}\decap\texttt{(\sk, c)}$}
+            \caption*{$\decap_\texttt{ML-KEM-EtM}(\sk, c)$}
             \begin{algorithmic}[1]
-                \Require Secret key $\sk = (\sk^\prime \Vert \pk \Vert h \Vert z)$
-                \Require Ciphertext $c = (c^\prime \Vert t)$
+                % \Require Secret key $\sk = (\sk^\prime \Vert \pk \Vert h \Vert z)$
+                % \Require Ciphertext $c = (c^\prime \Vert t)$
                 \State $(\sk^\prime, \pk, h, z) \leftarrow \sk$
                 \State $(c^\prime, t) \leftarrow c$
-                \State $\hat{m} \leftarrow \texttt{K-PKE}.\decrypt(\sk^\prime, c^\prime)$
+                \State $\hat{m} \leftarrow \decrypt_\texttt{K-PKE}(\sk^\prime, c^\prime)$
                 \State $(\overline{K}, \hat{k}) \leftarrow G(\hat{m} \Vert h)$
                 \State $\hat{t} \leftarrow \mac(\hat{k}, c^\prime)$
                 \If{$\hat{t} = t$}
@@ -1223,14 +1127,23 @@ We apply the encrypt-then-MAC transformation to the K-PKE routines of ML-KEM \ci
         \end{algorithm}
     \end{minipage}
 
-    \caption{\texttt{ML-KEM-EtM} applies the encrypt-then-MAC KEM transformation to the K-PKE sub-routines of ML-KEM. $G$ is SHA3-512, $H$ is SHA3-256, $\texttt{KDF}$ is SHAKE256}\label{fig:ml-kem-plus-routines}
+    \caption{\texttt{ML-KEM-EtM} applies the encrypt-then-MAC KEM transformation to the PKE subroutines of \texttt{ML-KEM}.}\label{fig:ml-kem-plus-routines}
 \end{figure}
 
-We measured the CPU cycles of the individual routines of \texttt{ML-KEM-EtM}. Our implementation extended from Kyber's reference implementation \footnote{\url{https://github.com/pq-crystals/kyber}}. All C code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region.
+\subsection{Choosing MAC}\label{sec:choosing-mac}
+For a concrete instantiation of \texttt{ML-KEM-EtM}, we chose four MACs covering a variety of design architectures. All MACs are parameterized with a 256-bit key and 128-bit tag.
 
-Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then-MAC transformation achieves massive CPU cycle count reduction in decapsulation while incurring only a minimal increase of encapsulation cycle count and ciphertext size. Since \texttt{K-PKE.\encrypt} carries significantly more computational complexity than \texttt{K-PKE.\decrypt} or any MAC we chose, the performance advantage of the encrypt-then-MAC transformation over the Fujisaki-Okamoto transformation is dominated by the runtime saving gained from replacing \emph{re-encryption} with MAC. A comparison between ML-KEM and variations of the ML-KEM-EtM can be found in Table \ref{tbl:kem-performance}.
+\paragraph{\texttt{Poly1305} \cite{DBLP:conf/fse/Bernstein05} and \texttt{\texttt{GMAC}} \cite{NIST80038D}} are both Carter-Wegman style MACs \cite{DBLP:journals/jcss/CarterW79,DBLP:journals/jcss/WegmanC81}, which compute the tag using finite field arithmetic. It first parses the message into a sequence of finite field elements, then evalutes a polynomial whose coefficients are the message blocks and whose indeterminate is the secret key. Specifically, \texttt{Poly1305} operates in the prime field $\mathbb{F}_q$ where $q = 2^{130} - 5$. \texttt{\texttt{GMAC}} operates in the binary extension field $\mathbb{F}_{2^{128}}$.
 
-\begin{table}[hp]
+\textit{Remark.} In our implementation, we used {\tt OpenSSL 3.3.1}'s \texttt{EVP\_MAC} interface. Within this interface, the \texttt{Poly1305} implementation does not include a nonce and is thus only one-time secure. On the other hand, \texttt{GMAC} is implemented by passing all data into the associated data field of the authenticated encryption scheme AES-256-GCM. Assuming that nonce does not repeat within the lifetime of the symmetric key, \texttt{GMAC} is many-time secure.
+
+\paragraph{\texttt{CMAC} \cite{NIST80038B}} is based on the CBC-MAC \cite{DBLP:conf/crypto/BlackR00}. To compute a \texttt{CMAC} tag, the message is first padded and parsed into blocks. Each block is first XOR'ed with the previous block's output, then encrypted under a block cipher using the secret key. The final output is XOR'ed with a sub-key derived from the secret key before being encrypted for one last time. In our implementation, the block cipher is instantiated with AES-256, which makes it particularly suitable for embedded devices with constrainted computing capacity but hardware support for AES. \texttt{CMAC} is many-time secure.
+
+\paragraph{\texttt{KMAC256} \cite{NIST800185}} is a pseudorandom function and keyed hash function based on \texttt{KECCAK} \cite{NISTFIPS202}, although unlike the extendable output function (XOF) \texttt{SHAKE}, altering the requested output length generates a new unrelated output. \texttt{KMAC256} is slower than other MACs, but it is the only construction with a flexible key and tag length.
+
+\paragraph{Remark} There are new lightweight MACs such as EliMAC \cite{DBLP:journals/tosc/DobraunigMN23}, LightMAC \cite{DBLP:conf/fse/LuykxPTY16}, and ZMAC \cite{DBLP:conf/crypto/IwataMPS17}, which may offer a better performance than the MACs listed above. However, the performance of the encrypt-then-MAC KEM is dominated by the public-key cryptographic operations and the impact of the MAC is insignificant.
+
+\begin{table}[h]
     \centering
     \footnotesize
     \caption{CPU cycles of each KEM routine}\label{tbl:kem-performance}
@@ -1249,7 +1162,7 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
     %     Average & 76171 \\
     %     \hline
     % \end{tabular}
-    \begin{tabular}[t]{|p{15em}|p{4em}|p{4em}|p{4em}|p{4em}|}
+    \begin{tabular}[t]{|p{15em}|p{5em}|p{5em}|p{5em}|p{5em}|}
         \hline
         \multirow{2}{*}{\bf Parameters} 
         & \multicolumn{2}{|c|}{$\encap$ cycles/tick} 
@@ -1257,18 +1170,18 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
         \cline{2-5}
         & Median & Average & Median & Average \\
         \hline
-        \texttt{ML-KEM-512} & 91467 & 92065 & 121185 & 121650 \\
+        \texttt{ML-KEM-512} & 91,467 & 92,065 & 121,185 & 121,650 \\
         \hline
         % \text{Kyber512} & 97811 & 98090 & 119937 & 120299 \\
         % \hline
         % ML-KEM+-512
-        \texttt{ML-KEM-EtM-512} + Poly1305 & 93157 & 93626 & 33733 & 33908 \\
+        \texttt{ML-KEM-EtM-512} + \texttt{Poly1305} & 93,157 & 93,626 & 33,733 & 33,908 \\
         \hline
-        \texttt{ML-KEM-EtM-512} + GMAC & 97369 & 97766 & 37725 & 37831 \\
+        \texttt{ML-KEM-EtM-512} + \texttt{GMAC} & 97,369 & 97,766 & 37,725 & 37,831 \\
         \hline
-        \texttt{ML-KEM-EtM-512} + CMAC & 99739 & 99959 & 40117 & 39943 \\
+        \texttt{ML-KEM-EtM-512} + \texttt{CMAC} & 99,739 & 99,959 & 40,117 & 39,943 \\
         \hline
-        \texttt{ML-KEM-EtM-512} + KMAC256 & 101009 & 101313 & 40741 & 40916 \\
+        \texttt{ML-KEM-EtM-512} + \texttt{KMAC256} & 101,009 & 101,313 & 40,741 & 40,916 \\
         \hline
     \end{tabular}\vspace{0.3cm}
 
@@ -1286,7 +1199,7 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
     %     Average & 130650 \\
     %     \hline
     % \end{tabular}
-    \begin{tabular}[t]{|p{15em}|p{4em}|p{4em}|p{4em}|p{4em}|}
+    \begin{tabular}[t]{|p{15em}|p{5em}|p{5em}|p{5em}|p{5em}|}
         \hline
         \multirow{2}{*}{\bf Parameters} 
         & \multicolumn{2}{|c|}{$\encap$ cycles/tick} 
@@ -1294,15 +1207,15 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
         \cline{2-5}
         & Median & Average & Median & Average \\
         \hline
-        \texttt{ML-KEM-768} & 136405 & 147400 & 186445 & 187529 \\
+        \texttt{ML-KEM-768} & 136,405 & 147,400 & 186,445 & 187,529 \\
         \hline
-        \texttt{ML-KEM-EtM-768} + Poly1305 & 146405 & 146860 & 43315 & 43463 \\
+        \texttt{ML-KEM-EtM-768} + \texttt{Poly1305} & 146,405 & 146,860 & 43,315 & 43,463 \\
         \hline
-        \texttt{ML-KEM-EtM-768} + GMAC & 149525 & 150128 & 46513 & 46706 \\
+        \texttt{ML-KEM-EtM-768} + \texttt{GMAC} & 149,525 & 150,128 & 46,513 & 46,706 \\
         \hline
-        \texttt{ML-KEM-EtM-768} + CMAC & 153139 & 153735 & 49841 & 50074 \\
+        \texttt{ML-KEM-EtM-768} + \texttt{CMAC} & 153,139 & 153,735 & 49,841 & 50,074 \\
         \hline
-        \texttt{ML-KEM-EtM-768} + KMAC256 & 155219 & 155848 & 52415 & 52611 \\
+        \texttt{ML-KEM-EtM-768} + \texttt{KMAC256} & 155,219 & 155,848 & 52,415 & 52,611 \\
         \hline
     \end{tabular}\vspace{0.3cm}
 
@@ -1320,7 +1233,7 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
     %     Average & 195465 \\
     %     \hline
     % \end{tabular}
-    \begin{tabular}[t]{|p{15em}|p{4em}|p{4em}|p{4em}|p{4em}|}
+    \begin{tabular}[t]{|p{15em}|p{5em}|p{5em}|p{5em}|p{5em}|}
         \hline
         \multirow{2}{*}{\bf Parameters} 
         & \multicolumn{2}{|c|}{$\encap$ cycles/tick} 
@@ -1328,17 +1241,492 @@ Compared to the Fujisaki-Okamoto transformation used in ML-KEM, the encrypt-then
         \cline{2-5}
         & Median & Average & Median & Average \\
         \hline
-        \texttt{ML-KEM-1024} & 199185 & 199903 & 246245 & 247320 \\
+        \texttt{ML-KEM-1024} & 199,185 & 199,903 & 246,245 & 247,320 \\
         \hline
-        \texttt{ML-KEM-EtM-1024} + Poly1305 & 205763 & 206499 & 51375 & 51562 \\
+        \texttt{ML-KEM-EtM-1024} + \texttt{Poly1305} & 205,763 & 206,499 & 51,375 & 51,562 \\
         \hline
-        \texttt{ML-KEM-EtM-1024} + GMAC & 208805 & 209681 & 54573 & 54780 \\
+        \texttt{ML-KEM-EtM-1024} + \texttt{GMAC} & 208,805 & 209,681 & 54,573 & 54,780 \\
         \hline
-        \texttt{ML-KEM-EtM-1024} + CMAC & 213667 & 214483 & 59175 & 59408 \\
+        \texttt{ML-KEM-EtM-1024} + \texttt{CMAC} & 213,667 & 214,483 & 59,175 & 59,408 \\
         \hline
-        \texttt{ML-KEM-EtM-1024} + KMAC256 & 216761 & 217468 & 62269 & 62516 \\
+        \texttt{ML-KEM-EtM-1024} + \texttt{KMAC256} & 216,761 & 217,468 & 62,269 & 62,516 \\
         \hline
     \end{tabular}
 \end{table}
-\end{document}
 
+
+\subsection{Experimental results}
+Our implementation of \texttt{ML-KEM-EtM} in extended from \texttt{Kyber}'s reference implementation \footnote{\url{https://github.com/pq-crystals/kyber}}. Source code is compiled with \texttt{GCC 11.4.1} and \texttt{OpenSSL 3.0.8}. All binaries are executed on an AWS c7a.medium instance (AMD EPYC 9R14 CPU at 3.7 GHz and 1 GB of RAM) in the \texttt{us-west-2} region. We measured the CPU cycles count of the encapsulation/decapsulation routines of \texttt{ML-KEM-EtM} using the \texttt{RDTSC} instruction. 
+
+Compared to the FO transformation used in \texttt{ML-KEM}, the encrypt-then-MAC transformation achieves a massive CPU cycle count reduction in decapsulation while incurring only a minimal increase of encapsulation cycle count and ciphertext size. Since \texttt{K-PKE.\encrypt} carries significantly more computational complexity than \texttt{K-PKE.\decrypt} or any MAC we chose, the performance advantage of the encrypt-then-MAC transformation over the Fujisaki-Okamoto transformation is dominated by the runtime saving gained from replacing \emph{re-encryption} with MAC. A timing comparison between the \texttt{ML-KEM} and the variations of the \texttt{ML-KEM-EtM} is provided in Table \ref{tbl:kem-performance}.
+
+
+\section{Concluding remarks}\label{sec:conclusion}
+In this paper we presented ``encrypt-then-MAC'', a KEM constructed from a PKE and a MAC. We reduced the IND-CCA security of the KEM tightly to the OW-PCA security of the underlying PKE and non-tightly to the security of the underlying MAC. We also analyzed generic attacks on the KEM and proposed countermeasures. We then proposed \texttt{ML-KEM-EtM}, an IND-1CCA secure KEM derived from applying the encrypt-then-MAC transformation to the PKE subroutines of \texttt{ML-KEM}. Compared to \texttt{ML-KEM}, \texttt{ML-KEM-EtM} replaces the expensive re-encryption with computing a MAC tag. At the cost of minimal increase in encapsulation cost and ciphertext size, \texttt{ML-KEM-EtM} achieves substantially faster decapsulation, which makes it a great candidate for constructing efficient post-quantum key exchange protocols.
+
+% We speculate that because Shor's algorithm \cite{DBLP:conf/focs/Shor94,DBLP:journals/siamcomp/Shor97} is inapplicable to most MAC constructions, the encrypt-then-MAC KEM transformation can be applied to a quantum-resistant PKE scheme to derive a post-quantum CCA-secure KEM scheme. In future works, we plan to analyze the security reduction under the quantum random oracle model, which can inform us of the appropriate parameters for the MAC.
+
+\bibliographystyle{splncs04}
+\bibliography{biblio.bib}
+
+\appendix
+\section{\texttt{ML-KEM} subroutines}
+Below are high-level summaries of \texttt{ML-KEM}'s subroutines.
+
+\begin{figure}[h]
+    \centering
+
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\keygen_\texttt{K-PKE}$}
+            \begin{algorithmic}[1]
+                \State $A \leftsample R_q^{k \times k}$
+                \State $\mathbf{s} \leftsample \mathcal{X}_{\eta_1}^k$
+                \State $\mathbf{e} \leftsample \mathcal{X}_{\eta_1}^k$
+                \State $\mathbf{t} \leftarrow A\mathbf{s} + \mathbf{e}$
+                \State $\pk \leftarrow (A, \mathbf{t})$
+                \State $\sk \leftarrow \mathbf{s}$
+                \State \Return $(\pk, \sk)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\encrypt_\texttt{K-PKE}(\pk, m)$}
+            \begin{algorithmic}[1]
+                \Ensure $\pk = (A, \mathbf{t})$
+                \Ensure $m \in R_2$
+                \State $\mathbf{r} \leftsample \mathcal{X}_{\eta_1}^k$
+                \State $\mathbf{e}_1 \leftsample \mathcal{X}_{\eta_2}^k$
+                \State $e_2 \leftsample \mathcal{X}_{\eta_2}$
+                \State $\mathbf{c}_1 \leftarrow A\mathbf{r} + \mathbf{e}_1$
+                \State $c_2 \leftarrow \mathbf{t}^\intercal \mathbf{r} + e_2 + m \cdot \lfloor \frac{q}{2}\rceil$
+                \State \Return $(\mathbf{c}_1, c_2)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\decrypt_\texttt{K-PKE}(\sk, c)$}
+            \begin{algorithmic}[1]
+                \Ensure $c = (\mathbf{c}_1, c_2)$
+                \Ensure $\sk = \mathbf{s}$
+                \State $\hat{m} \leftarrow c_2 - \mathbf{c}_1^\intercal \cdot \mathbf{s}$
+                \State $\hat{m} \leftarrow \texttt{Round}(\hat{m})$
+                \State \Return $\hat{m}$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    
+    \caption{K-PKE is an IND-CPA secure PKE based on the conjectured intractability of the Module Learning with Error (MWLE) problem}\label{fig:k-pke-routines}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    
+    \begin{minipage}[t]{0.35\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\keygen_\texttt{ML-KEM}()$}
+            \begin{algorithmic}[1]
+                \State $(\pk, \sk^\prime) \leftsample \keygen_\texttt{K-PKE}()$
+                \State $h \leftarrow G(\pk)$
+                \State $z \leftsample \mathcal{M}$
+                \State $\sk \leftarrow (\sk^\prime, \pk, h, z)$
+                \State \Return $(\pk, \sk)$
+            \end{algorithmic}
+        \end{algorithm} \vspace{-0.5cm}
+    \end{minipage}
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\encap_\texttt{ML-KEM}(\pk)$}
+            \begin{algorithmic}[1]
+                \State $m \leftsample \mathcal{M}$
+                \State $h \leftarrow G(\pk)$
+                \State $(K, r) \leftarrow H(m, h)$
+                \State $c \leftarrow \encrypt_\texttt{K-PKE}(\pk, m ,r)$
+                \State \Return $(c, K)$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+    \begin{minipage}[t]{0.33\textwidth}
+        \begin{algorithm}[H]
+            \caption*{$\decap_\texttt{ML-KEM}(\sk, c)$}
+            \begin{algorithmic}[1]
+                \State $\hat{m} \leftarrow \decrypt_\texttt{K-PKE}(\sk^\prime, c)$
+                \State $(\overline{K}, \hat{r}) \leftarrow H(\hat{m}, h)$
+                \State $\hat{c} \leftarrow \encrypt_\texttt{K-PKE}(\pk, m, \hat{r})$
+                \If{$\hat{c} = c$}
+                    \State $K \leftarrow \overline{K}$
+                \Else 
+                    \State $K \leftarrow G(c, z)$
+                \EndIf
+                \State \Return $K$
+            \end{algorithmic}
+        \end{algorithm}
+    \end{minipage}
+
+    \caption{\texttt{ML-KEM} uses the Fujisaki-Okamoto transformation to convert CPA-secure PKE into CCA-secure KEM. Hash function $G$ is \texttt{SHA3-256}, $H$ is \texttt{SHA3-512}}\label{fig:ml-kem-routines}
+\end{figure}
+
+
+% \section{Classic McEliece parameter sets}\label{sec:classic-mceliece-parameter-sets}
+% Classic McEliece has a total of 10 parameter sets. Five of them are presented in Table \ref{tab:classic-mceliece-parameter-sets}. The other five (called ``f-variants'') are identical to the five presented here, except for the internal implementation of the key generation routines. The f-variant key pairs and ciphertexts are fully interoperable with the normal variants, and the encapsulation/decapsulation routines are entirely identical.
+
+% \begin{table}[h]
+%     \centering
+%     \begin{tabular}{|p{8em}|p{5em}|p{5em}|p{5em}|p{8em}|}
+%         \hline
+%         Parameter set & public key & secret key & ciphertext & security level \cite{classic-mceliece-security-guide} \\
+%         \hline
+%         \texttt{mceliece348864} & 261120 & 6492 & 96 & category 1 \\
+%         \hline
+%         \texttt{mceliece460896} & 524160 & 13608 & 156 & category 3 \\
+%         \hline
+%         \texttt{mceliece6688128} & 1044992 & 13932 & 208 & category 5 \\
+%         \hline
+%         \texttt{mceliece6960119} & 1047319 & 13948 & 194 & category 5 \\
+%         \hline
+%         \texttt{mceliece8192128} & 1357824 & 14120 & 208 & category 5 \\
+%         \hline
+%     \end{tabular}\vspace{0.5em}
+%     \caption{Public key, secret key, and ciphertext sizes are measured in bytes.}\label{tab:classic-mceliece-parameter-sets}
+% \end{table}
+
+% NIST evaluates concrete security levels against the difficulty of AES brute-force attack and/or SHA-2 collision attacks \cite{NIST_PQC_Evaluation}. There are five categories of concrete securities (in increasing security levels): \begin{enumerate}
+%     \item Key search on AES-128, $2^{143}$ classical gates.
+%     \item Finding collision on SHA256/SHA3-256, $2^{146}$ classical gates.
+%     \item Key search on AES-192, $2^{207}$ classical gates.
+%     \item Finding collision on SHA384/SHA3-384, $2^{210}$ classical gates.
+%     \item Key search on AES-256, $2^{272}$ classical gates.
+% \end{enumerate}
+\section{Key exchange protocols}\label{sec:key-exchange-protocols}
+The CRYSTALS-Kyber team \cite{DBLP:conf/eurosp/BosDKLLSSSS18} proposed three key exchange protocols:\begin{itemize}
+    \item $\texttt{Kyber.KE}$ for a passively secure ephemeral key exchange.
+    \item $\texttt{Kyber.UAKE}$ for unilaterally authenticated key exchange.
+    \item \texttt{Kyber.AKE} for mutually authenticated key exchange
+\end{itemize}
+
+First formally proposed in \cite{DBLP:conf/stoc/BellareCK98} and later analyzed in \cite{DBLP:conf/eurocrypt/CanettiK01}, these key exchange protocols all achieve weak forward secrecy, and the authenticated key exchange protocols are resistant to certain categories of active adversaries (e.g. Man-in-the-Middle attacks).
+
+We implemented each of the three key exchange protocols using \texttt{ML-KEM-EtM} and \texttt{ML-KEM}, then measured the round trip time of each handshake. We denote the party who sends the first message to be the client and the other party to be the server. Round trip time (RTT) is defined to be the time interval between the moment before the client starts generating ephemeral keypairs and the moment after the client derives the final session key. All experiments are run on a pair of AWS c7a.medium instances both located in the \texttt{us-west-2} region. For each experiment, a total of 10,000 rounds of key exchange are performed, with the median and average round trip time (measured in microsecond $\mu s$) recorded.
+
+\paragraph{Unauthenticated key exchange}
+In unauthenticated key exchange (KE), a single pair of ephemeral keypair is generated by the client. The client transmits the ephemeral public key $\pk_e$ to the server, who runs the encapsulation routine and transmits the ciphertext $c_e$ back to the client. The client finally decapsulates the ciphertext to recover the shared secret. The key derivation function is instantiated using \texttt{Shake256}, and the final session key is 256 bits in length. \texttt{ML-KEM-EtM-512} with \texttt{Poly1305} reduces RTT by 23.9\% compared to \texttt{ML-KEM-512}; \texttt{ML-KEM-EtM-768} reduces RTT by up to 26.7\%; \texttt{ML-KEM-EtM-1024} with reduces RTT by up to 28.5\% (See Table \ref{tbl:ke-rtt}).
+
+% \begin{figure}[h]
+%     \centering
+%     \begin{minipage}[b]{0.4\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\texttt{KE}_\texttt{C}()$}\label{alg:ke-client}
+%             \begin{algorithmic}[1]
+%                 \State $(\pk_e, \sk_e) \leftsample \keygen()$
+%                 \State $\texttt{send}(\pk_e)$
+%                 \State $c_e \leftarrow \texttt{read}()$
+%                 \State $K_e \leftarrow \decap(\sk_e, c_e)$
+%                 \State $K \leftarrow \texttt{KDF}(K_e)$
+%                 \State \Return $K$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}\hspace{3em}
+%     \begin{minipage}[b]{0.4\textwidth}
+%             \begin{algorithm}[H]
+%                 \caption*{$\texttt{KE}_\texttt{S}()$}\label{alg:ke-server}
+%                 \begin{algorithmic}[1]
+%                     \State $\pk_e \leftarrow \texttt{read}()$
+%                     \State $(c_e, K_e) \leftsample \encap(\pk_e)$
+%                     \State $\texttt{send}(c_e)$
+%                     \State $K \leftarrow \texttt{KDF}(K_e)$
+%                     \State \Return $K$
+%                 \end{algorithmic}
+%             \end{algorithm}
+%     \end{minipage}
+
+%     \caption{Unauthenticated key exchange (KE) routines}\label{fig:ke-routines}
+% \end{figure}
+
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \caption{KE RTT comparison}\label{tbl:ke-rtt}
+
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-512} & 800 & 768 & 92 & 97 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{Poly1305} & 800 & 784 & 70 & 72 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{GMAC} & 800 & 784 & 73 & 76 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{CMAC} & 800 & 784 & 75 & 79 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{KMAC256} & 800 & 784 & 76 & 78 \\
+        \hline
+    \end{tabular}\vspace{0.3cm}
+    
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-768} & 1184 & 1088 & 135 & 140 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{Poly1305} & 1184 & 1120 & 99 & 104 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{GMAC} & 1184 & 1120 & 101 & 105 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{CMAC} & 1184 & 1120 & 103 & 109 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{KMAC256} & 1184 & 1120 & 103 & 107 \\
+        \hline
+    \end{tabular}\vspace{0.3cm}
+
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-1024} & 1568 & 1568 & 193 & 199 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{Poly1305} & 1568 & 1600 & 138 & 141 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{GMAC} & 1568 & 1600 & 140 & 145 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{CMAC} & 1568 & 1600 & 143 & 148 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{KMAC256} & 1568 & 1600 & 144 & 149 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{Unilaterally authenticated key exchange}
+In unilaterally authenticated key exchange (UAKE), the authenticating party proves its identity to the other party by demonstrating possession of a secret key that corresponds to a published long-term public key. In this implementation, the client possesses the long-term public key $\pk_S$ of the server, and the server authenticates itself by correctly decrypting the challenge encryption sent by the client using its long-term secret key $\sk_S$. \texttt{ML-KEM-EtM-512} with \texttt{Poly1305} reduces RTT by 29.0\% compared to \texttt{ML-KEM-512}; \texttt{ML-KEM-EtM-768} reduces RTT by up to 33.0\%; \texttt{ML-KEM-EtM-1024} reduces RTT by up to 34.8\% (See Table \ref{tbl:uake-rtt}).
+
+% \begin{figure}[h]
+%     \centering
+%     \begin{minipage}[b]{0.4\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\texttt{UAKE}_\texttt{C}(\pk_S)$}
+%             \begin{algorithmic}[1]
+%                 \Require Server's long-term $\pk_S$
+%                 \State $(\pk_e, \sk_e) \leftsample \keygen()$
+%                 \State $(c_S, K_S) \leftsample \encap(\pk_S)$
+%                 \State $\texttt{send}(\pk_e, c_S)$
+%                 \State $c_e \leftarrow \texttt{read}()$
+%                 \State $K_e \leftarrow \decap(\sk_e, c_e)$
+%                 \State $K \leftarrow \texttt{KDF}(K_e \Vert K_S)$
+%                 \State \Return $K$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}\hspace{3em}
+%     \begin{minipage}[b]{0.4\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\texttt{UAKE}_\texttt{S}(\sk_S)$}
+%             \begin{algorithmic}[1]
+%                 \Require Server's long-term $\sk_S$
+%                 \State $(\pk_e, c_S) \leftarrow \texttt{read}()$
+%                 \State $K_S \leftarrow \decap(\sk_S, c_S)$
+%                 \State $(c_e, K_e) \leftsample \encap(\pk_e)$
+%                 \State $\texttt{send}(c_e)$
+%                 \State $K \leftarrow \texttt{KDF}(K_e \Vert K_S)$
+%                 \State \Return $K$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}
+
+%     \caption{Unilaterally authenticated key exchange (UAKE) routines}\label{fig:uake-routines}
+% \end{figure}
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \caption{UAKE RTT comparison}\label{tbl:uake-rtt}
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-512} & 1568 & 768 & 145 & 151 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{Poly1305} & 1584 & 784 & 103 & 106 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{GMAC} & 1584 & 784 & 106 & 110 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{CMAC} & 1584 & 784 & 108 & 112 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{KMAC256} & 1584 & 784 & 109 & 113 \\
+        \hline
+    \end{tabular}\vspace{0.3cm}
+
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-768} & 2272 & 1088 & 215 & 222 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{Poly1305} & 2288 & 1104 & 144 & 150 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{GMAC} & 2288 & 1104 & 149 & 156 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{CMAC} & 2288 & 1104 & 153 & 160 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{KMAC256} & 2288 & 1104 & 154 & 159 \\
+        \hline
+    \end{tabular}\vspace{0.3cm}
+
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-1024} & 3136 & 1568 & 310 & 318 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{Poly1305} & 3152 & 1584 & 202 & 209 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{GMAC} & 3152 & 1584 & 212 & 228 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{CMAC} & 3152 & 1584 & 212 & 218 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{KMAC256} & 3152 & 1584 & 213 & 220 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{Mutually authenticated key exchange (AKE)}
+Mutually authenticated key exchange is largely identical to unilaterally authenticated key exchange, except for that client authentication is required. This means that client possesses server's long-term public key $\pk_S$ and its own long-term secret key $\sk_C$, while the server possesses client's long-term public key $\pk_C$ and its own long-term secret key $\sk_S$. The session key is derived by applying \texttt{KDF} onto the concatenation of shared secrets produced under the ephemeral keypair, server's long-term keypair, and client's long-term keypair, in this order. \texttt{ML-KEM-EtM-512} with \texttt{Poly1305} reduces RTT by 39.5\% compared to \texttt{ML-KEM-512}; \texttt{ML-KEM-EtM-768} reduces RTT by up to 35.3\%; \texttt{ML-KEM-EtM-1024} reduces RTT by up to 48.0\% (See Table \ref{tbl:ake-rtt}).
+
+% \begin{figure}[H]
+%     \centering
+%     \begin{minipage}[b]{0.49\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\texttt{AKE}_\texttt{C}(\pk_S, \sk_C)$}
+%             \begin{algorithmic}[1]
+%                 \Require Server's long-term $\pk_S$
+%                 \Require Client's long-term $\sk_C$
+%                 \State $(\pk_e, \sk_e) \leftsample \keygen()$
+%                 \State $(c_S, K_S) \leftsample \encap(\pk_S)$
+%                 \State $\texttt{send}(\pk_e, c_S)$
+%                 \State $(c_e, c_C) \leftarrow \texttt{read}()$
+%                 \State $K_e \leftarrow \decap(\sk_e, c_e)$
+%                 \State $K_C \leftarrow \decap(\sk_e, c_C)$
+%                 \State $K \leftarrow \texttt{KDF}(K_e \Vert K_S \Vert K_C)$
+%                 \State \Return $K$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}
+%     \begin{minipage}[b]{0.49\textwidth}
+%         \begin{algorithm}[H]
+%             \caption*{$\texttt{AKE}_\texttt{S}(\sk_S, \pk_C)$}
+%             \begin{algorithmic}[1]
+%                 \Require Server's long-term $\sk_S$
+%                 \Require Client's long-term $\pk_C$
+%                 \State $(\pk_e, c_S) \leftarrow \texttt{read}()$
+%                 \State $K_S \leftarrow \decap(\sk_S, c_S)$
+%                 \State $(c_e, K_e) \leftsample \encap(\pk_e)$
+%                 \State $(c_C, K_C) \leftsample \encap(\pk_C)$
+%                 \State $\texttt{send}(c_e, c_C)$
+%                 \State $K \leftarrow \texttt{KDF}(K_e \Vert K_S \Vert K_C)$
+%                 \State \Return $K$
+%             \end{algorithmic}
+%         \end{algorithm}
+%     \end{minipage}
+    
+%     \caption{Mutually authenticated key exchange (AKE) routines}\label{fig:ake-routines}
+% \end{figure}
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \caption{AKE RTT comparison}\label{tbl:ake-rtt}
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-512} & 1568 & 1536 & 220 & 213 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{Poly1305} & 1584 & 1568 & 133 & 138 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{GMAC} & 1584 & 1568 & 139 & 143 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{CMAC} & 1584 & 1568 & 143 & 148 \\
+        \hline
+        \texttt{ML-KEM-EtM-512} + \texttt{KMAC256} & 1584 & 1568 & 145 & 151 \\
+        \hline
+    \end{tabular}\vspace{0.3cm}
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-768} & 2272 & 2176 & 294 & 301 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{Poly1305} & 2288 & 2208 & 190 & 196 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{GMAC} & 2288 & 2208 & 197 & 210 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{CMAC} & 2288 & 2208 & 202 & 208 \\
+        \hline
+        \texttt{ML-KEM-EtM-768} + \texttt{KMAC256} & 2288 & 2208 & 204 & 210 \\
+        \hline
+    \end{tabular}\vspace{0.3cm}
+    \begin{tabular}{|p{14em}|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{Parameter set}
+        & \multirow{2}{*}{Client TX bytes}
+        & \multirow{2}{*}{Server TX bytes}
+        & \multicolumn{2}{|c|}{RTT ($\us$)} \\
+        \cline{4-5}
+        & & & Median & Average \\
+        \hline
+        \texttt{ML-KEM-1024} & 3136 & 3136 & 512 & 511 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{Poly1305} & 3152 & 3168 & 266 & 273 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{GMAC} & 3152 & 3168 & 273 & 282 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{CMAC} & 3152 & 3168 & 280 & 287 \\
+        \hline
+        \texttt{ML-KEM-EtM-1024} + \texttt{KMAC256} & 3152 & 3168 & 282 & 288 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\end{document}
